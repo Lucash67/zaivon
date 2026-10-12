@@ -304,3 +304,106 @@
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 }
+
+/*
+ * OMNI v2 (/v2). Cores com significado fixo: ok = recebido, pending = a receber,
+ * info/primary = parceiro/informação, alert = investigar, third = terceiros/custo.
+ * Componentes oklch sem "oklch()" para o Tailwind aplicar opacidade (bg-o-ok/12).
+ */
+.omni2 {
+  --o-background: 0.17 0.03 255;
+  --o-foreground: 0.98 0.005 250;
+  --o-card: 0.225 0.04 256;
+  --o-surface: 0.2 0.035 256;
+  --o-popover: 0.23 0.04 256;
+  --o-primary: 0.67 0.17 262;
+  --o-primary-foreground: 0.15 0.03 260;
+  --o-muted: 0.27 0.04 256;
+  --o-muted-foreground: 0.72 0.03 255;
+  --o-accent: 0.29 0.05 258;
+  --o-ok: 0.77 0.17 152;
+  --o-pending: 0.83 0.14 80;
+  --o-info: 0.67 0.17 262;
+  --o-alert: 0.7 0.18 22;
+  --o-third: 0.67 0.17 292;
+  --o-sidebar: 0.19 0.035 256;
+  --o-sidebar-foreground: 0.78 0.03 255;
+  --o-sidebar-accent: oklch(0.67 0.17 262 / 14%);
+  --o-border: oklch(1 0 0 / 9%);
+  --o-input: oklch(1 0 0 / 14%);
+  color-scheme: dark;
+}
+
+.omni2.omni2-light {
+  --o-background: 0.975 0.006 255;
+  --o-foreground: 0.2 0.035 260;
+  --o-card: 1 0 0;
+  --o-surface: 0.955 0.01 255;
+  --o-popover: 1 0 0;
+  --o-primary: 0.56 0.19 262;
+  --o-primary-foreground: 0.99 0 0;
+  --o-muted: 0.94 0.012 255;
+  --o-muted-foreground: 0.47 0.03 257;
+  --o-accent: 0.93 0.025 258;
+  --o-ok: 0.55 0.15 152;
+  --o-pending: 0.62 0.14 75;
+  --o-info: 0.56 0.19 262;
+  --o-alert: 0.56 0.2 25;
+  --o-third: 0.52 0.18 292;
+  --o-sidebar: 0.99 0.003 255;
+  --o-sidebar-foreground: 0.3 0.03 260;
+  --o-sidebar-accent: oklch(0.94 0.02 258);
+  --o-border: oklch(0.9 0.012 255);
+  --o-input: oklch(0.88 0.015 255);
+  color-scheme: light;
+}
+
+/* Cores usadas pelos gráficos (Recharts) dentro da v2. */
+.omni2 {
+  --color-border: var(--o-border);
+  --color-foreground: oklch(var(--o-foreground));
+  --color-muted-foreground: oklch(var(--o-muted-foreground));
+  --color-popover: oklch(var(--o-popover));
+  --color-ok: oklch(var(--o-ok));
+  --color-pending: oklch(var(--o-pending));
+  --color-info: oklch(var(--o-info));
+  --color-alert: oklch(var(--o-alert));
+  --color-third: oklch(var(--o-third));
+  font-size: 14px;
+}
+
+@layer base {
+  .omni2,
+  .omni2 * {
+    border-color: var(--o-border);
+  }
+}
+
+.omni2 h1,
+.omni2 h2,
+.omni2 h3 {
+  font-family: var(--font-sora), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.omni2 :focus-visible {
+  outline: 2px solid oklch(var(--o-primary));
+  outline-offset: 2px;
+}
+
+.omni2 .num {
+  font-variant-numeric: tabular-nums;
+}
+
+.omni2 .eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: oklch(var(--o-muted-foreground));
+}
+
+/* Grades sem colunas definidas não podem crescer além da tela (tabelas rolam por dentro). */
+.omni2 .grid:not([class*="grid-cols"]) {
+  grid-template-columns: minmax(0, 1fr);
+}

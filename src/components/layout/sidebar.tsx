@@ -110,6 +110,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
     setExpanded(() => {
       const next: Partial<Record<NavSectorId, boolean>> = { ...stored };
       if (Object.keys(stored).length === 0) next.operate = true;
+      if (stored.omni === undefined) next.omni = true;
       return next;
     });
   }, []);

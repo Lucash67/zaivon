@@ -26,6 +26,14 @@ export interface MonthPlan {
   practicalAtStart?: number;
   scenarios: { conservative: number; ambitious: number };
   indicators: MonthIndicator[];
+  /** Mesmos indicadores em números, para comparar com o realizado. */
+  targets?: {
+    profitPerDay: number;
+    unitsPerDay: [number, number];
+    ownCapitalPerDay: [number, number];
+    thirdPartyMaxPerDay: number;
+    maxLossesPerDay: number;
+  };
   notes: string[];
 }
 
@@ -66,6 +74,13 @@ export const MONTH_PLANS: MonthPlan[] = [
       { label: "Fiados de setembro", target: "Receber até 10/10", why: "Feito: Mikelly quitou em 01/10 e Ana Laura em 06/10." },
       { label: "Perdas", target: "No máximo 2 por dia", why: "Setembro teve dias com 4 a 7 não identificadas." },
     ],
+    targets: {
+      profitPerDay: 77,
+      unitsPerDay: [30, 32],
+      ownCapitalPerDay: [50, 80],
+      thirdPartyMaxPerDay: 27,
+      maxLossesPerDay: 2,
+    },
     notes: [
       "Seg a sex são dias de venda; 12/10 é feriado nacional.",
       "Rendimentos do cofrinho (≈ R$ 1,40/dia) entram no banco, mas não contam no lucro do dia.",
