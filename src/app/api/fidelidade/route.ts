@@ -4,6 +4,7 @@ import { apiError } from "@/shared/api-messages";
 import { isAuthFailure, requireApiSession } from "@/lib/auth/require-api-session";
 import { withTenantScope } from "@/lib/auth/with-tenant-api";
 import { requireTenantBusinessWrite } from "@/lib/auth/tenant-scope";
+import { SALGADOS_BUSINESS_ID, isAllBusinesses } from "@/lib/business-units";
 import {
   deactivateParticipant,
   deliverLoyaltyReward,
@@ -30,15 +31,16 @@ export async function GET(request: NextRequest) {
     const listClients = sp.get("listClients") === "1";
 
     return await withTenantScope(auth, businessId, async (scope) => {
+      const scopedId = isAllBusinesses(scope.businessId) ? SALGADOS_BUSINESS_ID : scope.businessId;
       if (listClients) {
-        const clients = await listLoyaltyClientsForEnroll(scope.businessId);
+        const clients = await listLoyaltyClientsForEnroll(scopedId);
         return NextResponse.json({ clients });
       }
       if (clientId) {
-        const detail = await getLoyaltyClientDetail(scope.businessId, clientId);
+        const detail = await getLoyaltyClientDetail(scopedId, clientId);
         return NextResponse.json({ detail });
       }
-      const view = await getLoyaltyView(scope.businessId, weekStart);
+      const view = await getLoyaltyView(scopedId, weekStart);
       return NextResponse.json({ view });
     });
   } catch (error) {

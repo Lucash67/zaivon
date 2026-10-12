@@ -137,6 +137,41 @@ async function loadRelatedData(operationDayId: string): Promise<RelatedDiaryData
   return { purchase, losses, actions, hypotheses, lessons };
 }
 
+/** Carrega os dados relacionados de vários dias com uma consulta por tabela (evita N+1). */
+async function loadRelatedDataBatch(operationDayIds: string[]): Promise<Map<string, RelatedDiaryData>> {
+  const result = new Map<string, RelatedDiaryData>();
+  if (operationDayIds.length === 0) return result;
+  for (const id of operationDayIds) {
+    result.set(id, { purchase: null, losses: [], actions: [], hypotheses: [], lessons: [] });
+  }
+
+  const db = await getPostgresDb();
+  const [purchases, losses, actions, hypotheses, lessons] = await Promise.all([
+    queryAll(db.select().from(dailyPurchases).where(inArray(dailyPurchases.operationDayId, operationDayIds))),
+    queryAll(db.select().from(operationalLosses).where(inArray(operationalLosses.operationDayId, operationDayIds))),
+    queryAll(db.select().from(operationalActions).where(inArray(operationalActions.operationDayId, operationDayIds))),
+    queryAll(db.select().from(productHypotheses).where(inArray(productHypotheses.operationDayId, operationDayIds))),
+    queryAll(db.select().from(operationalLessons).where(inArray(operationalLessons.operationDayId, operationDayIds))),
+  ]);
+
+  const purchaseIds = purchases.map((p) => p.id);
+  const items = purchaseIds.length
+    ? await queryAll(db.select().from(dailyPurchaseItems).where(inArray(dailyPurchaseItems.dailyPurchaseId, purchaseIds)))
+    : [];
+
+  for (const p of purchases) {
+    const related = result.get(p.operationDayId);
+    if (related && !related.purchase) {
+      related.purchase = { ...p, items: items.filter((i) => i.dailyPurchaseId === p.id) };
+    }
+  }
+  for (const row of losses) result.get(row.operationDayId)?.losses.push(row);
+  for (const row of actions) result.get(row.operationDayId)?.actions.push(row);
+  for (const row of hypotheses) result.get(row.operationDayId)?.hypotheses.push(row);
+  for (const row of lessons) result.get(row.operationDayId)?.lessons.push(row);
+  return result;
+}
+
 function assembleDiaryRecord(
   day: OperationDayRow,
   diary: DiaryRow,
@@ -394,9 +429,10 @@ export async function listDiaryEntryRecords(
       .orderBy(desc(operationDays.operationDate)),
   );
 
+  const relatedByDay = await loadRelatedDataBatch(rows.map((row) => row.day.id));
   const records: DiaryRecord[] = [];
   for (const row of rows) {
-    const related = await loadRelatedData(row.day.id);
+    const related = relatedByDay.get(row.day.id)!;
     records.push(
       assembleDiaryRecord(
         {

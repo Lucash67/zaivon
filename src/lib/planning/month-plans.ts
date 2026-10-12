@@ -63,7 +63,7 @@ export const MONTH_PLANS: MonthPlan[] = [
       { label: "Unidades vendidas", target: "30 a 32 por dia", why: "Fim de setembro rendeu R$ 70–80 nessa faixa." },
       { label: "Capital próprio", target: "R$ 50 a R$ 80 por dia", why: "Acima disso o ROI cai abaixo de 100%." },
       { label: "Terceiros", target: "Até R$ 27 por dia", why: "Menos dependência do dinheiro da família no estoque." },
-      { label: "Fiados de setembro", target: "Receber até 10/10", why: "Ana Laura R$ 75 e Mikelly R$ 35 viram caixa." },
+      { label: "Fiados de setembro", target: "Receber até 10/10", why: "Feito: Mikelly quitou em 01/10 e Ana Laura em 06/10." },
       { label: "Perdas", target: "No máximo 2 por dia", why: "Setembro teve dias com 4 a 7 não identificadas." },
     ],
     notes: [

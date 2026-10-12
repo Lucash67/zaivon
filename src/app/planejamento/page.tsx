@@ -6,11 +6,280 @@ import { ModuleShell } from "@/components/layout/module-shell";
 import { PageLoader } from "@/components/ui/loading";
 import { useBusinessScope } from "@/hooks/use-business-scope";
 import { cn, formatCurrency } from "@/lib/utils";
-import type { PlanningDay, PlanningView } from "@/lib/planning/planning-service";
+import type { PlanningDay, PlanningTrend, PlanningView, TrendCurveSeries } from "@/lib/planning/planning-service";
 
 function signed(n: number): string {
   if (n === 0) return "—";
   return `${n > 0 ? "+" : "−"}${formatCurrency(Math.abs(n))}`;
+}
+
+function pct(n: number): string {
+  const rounded = Math.round(n * 10) / 10;
+  return `${rounded >= 0 ? "+" : "−"}${Math.abs(rounded).toLocaleString("pt-BR")}%`;
+}
+
+const CURVE_COLORS: Record<TrendCurveSeries["tone"], string> = {
+  plan: "var(--text-muted)",
+  warn: "var(--brand-orange)",
+  base: "var(--brand-secondary)",
+  good: "var(--brand-green)",
+};
+
+function WeeklyAverageChart({ trend, target }: { trend: PlanningTrend; target: number }) {
+  const max = Math.max(target, ...trend.weeks.map((w) => w.average), 1) * 1.1;
+  return (
+    <div className="rounded-2xl border border-surface-border bg-surface-card p-4">
+      <div className="relative flex h-48 items-end gap-3">
+        <div
+          className="absolute inset-x-0 border-t border-dashed border-text-muted"
+          style={{ bottom: `${(target / max) * 100}%` }}
+        >
+          <span className="absolute -top-5 right-0 text-[10px] text-text-muted">alvo {formatCurrency(target)}</span>
+        </div>
+        {trend.weeks.map((w, i) => (
+          <div key={w.label} className="flex h-full flex-1 flex-col items-center justify-end gap-1">
+            <span className="text-xs font-semibold text-text-primary">{formatCurrency(w.average)}</span>
+            <div
+              className={cn(
+                "w-full rounded-t-lg",
+                i === trend.weeks.length - 1 ? "bg-brand-green" : w.average >= target ? "bg-brand-green/50" : "bg-brand-orange/60",
+              )}
+              style={{ height: `${(w.average / max) * 100}%` }}
+            />
+          </div>
+        ))}
+      </div>
+      <div className="mt-2 flex gap-3">
+        {trend.weeks.map((w) => (
+          <span key={w.label} className="flex-1 text-center text-[11px] text-text-muted">
+            {w.label}
+            <br />
+            {w.days} dia{w.days === 1 ? "" : "s"}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CumulativeCurve({ trend, goal }: { trend: PlanningTrend; goal: number }) {
+  const W = 640;
+  const H = 240;
+  const pad = { l: 48, r: 12, t: 12, b: 24 };
+  const values = trend.curve.series.flatMap((s) => s.data.filter((v): v is number => v != null));
+  const max = Math.max(goal, ...values) * 1.05;
+  const n = trend.curve.labels.length;
+  const x = (i: number) => pad.l + (n <= 1 ? 0 : (i / (n - 1)) * (W - pad.l - pad.r));
+  const y = (v: number) => H - pad.b - (v / max) * (H - pad.t - pad.b);
+  const ticks = [0, 0.25, 0.5, 0.75, 1].map((f) => Math.round((max * f) / 100) * 100);
+  return (
+    <div className="rounded-2xl border border-surface-border bg-surface-card p-4">
+      <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full">
+        {ticks.map((t) => (
+          <g key={t}>
+            <line x1={pad.l} x2={W - pad.r} y1={y(t)} y2={y(t)} stroke="var(--surface-border)" strokeWidth={1} />
+            <text x={pad.l - 6} y={y(t) + 3} textAnchor="end" fontSize={10} fill="var(--text-muted)">
+              {t.toLocaleString("pt-BR")}
+            </text>
+          </g>
+        ))}
+        <line x1={pad.l} x2={W - pad.r} y1={y(goal)} y2={y(goal)} stroke="var(--text-primary)" strokeDasharray="4 4" strokeWidth={1} />
+        <text x={W - pad.r} y={y(goal) - 4} textAnchor="end" fontSize={10} fill="var(--text-primary)">
+          meta {formatCurrency(goal)}
+        </text>
+        {trend.curve.series.map((s) => (
+          <polyline
+            key={s.label}
+            fill="none"
+            stroke={CURVE_COLORS[s.tone]}
+            strokeWidth={s.tone === "plan" ? 1.5 : 2.5}
+            strokeDasharray={s.tone === "plan" ? "3 3" : undefined}
+            points={s.data
+              .map((v, i) => (v == null ? null : `${x(i)},${y(v)}`))
+              .filter(Boolean)
+              .join(" ")}
+          />
+        ))}
+        {trend.curve.labels.map((l, i) => (
+          <text key={`${l}-${i}`} x={x(i)} y={H - 6} textAnchor="middle" fontSize={9} fill="var(--text-muted)">
+            {l}
+          </text>
+        ))}
+      </svg>
+      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+        {trend.curve.series.map((s) => (
+          <span key={s.label} className="flex items-center gap-1.5 text-xs text-text-secondary">
+            <span className="inline-block h-0.5 w-4" style={{ background: CURVE_COLORS[s.tone] }} />
+            {s.label}
+          </span>
+        ))}
+      </div>
+      <p className="mt-1 text-xs text-text-muted">
+        Eixo X: dia de venda · Eixo Y: lucro acumulado no mês (R$). Até o último fechamento as linhas seguem o realizado.
+      </p>
+    </div>
+  );
+}
+
+function SimpleTable({
+  headers,
+  rows,
+  tones,
+}: {
+  headers: string[];
+  rows: string[][];
+  tones?: Array<"good" | "warn" | "base" | null | undefined>;
+}) {
+  return (
+    <div className="overflow-x-auto rounded-2xl border border-surface-border bg-surface-card">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="text-left text-xs uppercase tracking-wide text-text-muted">
+            {headers.map((h, i) => (
+              <th key={h} className={cn("px-4 py-2", i > 0 && "text-right")}>
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, r) => (
+            <tr
+              key={row[0]}
+              className={cn(
+                "border-t border-surface-border",
+                tones?.[r] === "base" && "bg-surface-elevated font-semibold",
+              )}
+            >
+              {row.map((cell, i) => (
+                <td
+                  key={i}
+                  className={cn(
+                    "px-4 py-2",
+                    i === 0 ? "text-text-secondary" : "text-right text-text-primary",
+                    i > 0 && tones?.[r] === "good" && "text-brand-green",
+                    i > 0 && tones?.[r] === "warn" && "text-brand-orange",
+                  )}
+                >
+                  {cell}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function TrendSection({ data, trend }: { data: PlanningView; trend: PlanningTrend }) {
+  const growthVsPrev =
+    trend.previousAverage != null ? ((trend.monthAverage - trend.previousAverage) / trend.previousAverage) * 100 : null;
+  const weekGrowth =
+    trend.weekAverage != null && trend.previousWeekAverage
+      ? ((trend.weekAverage - trend.previousWeekAverage) / trend.previousWeekAverage) * 100
+      : null;
+  const base = trend.scenarios.find((s) => s.id === "recent");
+  return (
+    <div className="space-y-8">
+      <Section
+        title="Tendência do lucro"
+        subtitle="Recalculada a cada fechamento de dia · lucro final = operacional + bônus"
+      >
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <Kpi
+            label={growthVsPrev != null ? `Média do mês (${pct(growthVsPrev)} vs ${trend.previousLabel})` : "Média do mês"}
+            value={formatCurrency(trend.monthAverage)}
+            tone={trend.monthAverage >= data.dailyTarget ? "good" : "warn"}
+          />
+          {trend.weekAverage != null && (
+            <Kpi
+              label={weekGrowth != null ? `Última semana (${pct(weekGrowth)} vs anterior)` : "Última semana"}
+              value={formatCurrency(trend.weekAverage)}
+              tone={trend.weekAverage >= data.dailyTarget ? "good" : "warn"}
+            />
+          )}
+          <Kpi label="Média dos últimos 10 dias" value={formatCurrency(trend.recentAverage)} />
+          {base && data.remainingDays > 0 && (
+            <Kpi
+              label={`Mês projetado (${pct(base.vsGoalPct)} vs meta)`}
+              value={formatCurrency(base.bank ?? base.profit)}
+              tone={base.vsGoalPct >= 0 ? "good" : "warn"}
+            />
+          )}
+        </div>
+      </Section>
+
+      <div className="grid gap-6 xl:grid-cols-2">
+        <Section title="Média por semana" subtitle="Lucro médio por dia útil nas últimas semanas">
+          <WeeklyAverageChart trend={trend} target={data.dailyTarget} />
+        </Section>
+        <Section title="Quanto a média aumentou" subtitle="Variação percentual entre períodos">
+          <SimpleTable
+            headers={["Comparação", "De", "Para", "Variação"]}
+            rows={trend.comparisons.map((c) => [c.label, formatCurrency(c.from), formatCurrency(c.to), pct(c.change)])}
+            tones={trend.comparisons.map((c) => (c.change >= 0 ? "good" : "warn"))}
+          />
+        </Section>
+      </div>
+
+      {data.remainingDays > 0 && (
+        <Section title="Projeção para o fim do mês" subtitle={`Realizado + média × ${data.remainingDays} dias de venda restantes`}>
+          <CumulativeCurve trend={trend} goal={data.goal} />
+          <SimpleTable
+            headers={["Cenário", "Por dia", "Lucro no mês", "vs meta", "vs plano", "Banco c/ rendimentos"]}
+            rows={trend.scenarios.map((s) => [
+              s.label,
+              formatCurrency(s.perDay),
+              formatCurrency(s.profit),
+              pct(s.vsGoalPct),
+              pct(s.vsPlanPct),
+              s.bank != null ? formatCurrency(s.bank) : "—",
+            ])}
+            tones={trend.scenarios.map((s) => s.tone)}
+          />
+          <p className="text-xs text-text-muted">
+            Meta = {formatCurrency(data.goal)} no banco · plano = {formatCurrency(data.dailyTarget)} × {data.sellingDays} dias ={" "}
+            {formatCurrency(trend.planTotal)} de lucro.
+            {trend.rendimento != null &&
+              ` Rendimentos do cofrinho no mês: ${formatCurrency(trend.rendimento)} (≈ ${formatCurrency(trend.rendimentoPerDay)} por dia de venda).`}
+          </p>
+        </Section>
+      )}
+
+      <div className="grid gap-6 xl:grid-cols-2">
+        <Section title="Contra o planejado" subtitle="Plano do mês × realizado e projeção-base">
+          <SimpleTable
+            headers={["Item", "Plano", "Real / projetado", "Diferença"]}
+            rows={trend.planComparison.map((p) => [p.label, formatCurrency(p.plan), formatCurrency(p.actual), pct(p.change)])}
+            tones={trend.planComparison.map((p) => (p.change >= 0 ? "good" : "warn"))}
+          />
+        </Section>
+        {trend.headroom.length > 0 && data.neededPerRemainingDay != null && (
+          <Section
+            title="Quanto a média pode cair"
+            subtitle={`E ainda bater a meta com ${formatCurrency(data.neededPerRemainingDay)} por dia`}
+          >
+            <SimpleTable
+              headers={["A partir de", "Média", "Pode cair"]}
+              rows={trend.headroom.map((h) => [h.label, formatCurrency(h.from), pct(h.change)])}
+            />
+          </Section>
+        )}
+      </div>
+
+      <Section title="Leitura da tendência" subtitle="Gerada a partir do diário e do cofrinho">
+        <ul className="space-y-2 rounded-2xl border border-surface-border bg-surface-card p-4">
+          {trend.insights.map((line) => (
+            <li key={line} className="flex gap-2 text-sm text-text-primary">
+              <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-green" />
+              {line}
+            </li>
+          ))}
+        </ul>
+      </Section>
+    </div>
+  );
 }
 
 function roi(day: PlanningDay): string {
@@ -173,6 +442,8 @@ export default function PlanejamentoPage() {
           </div>
         </Section>
 
+        {data.trend && <TrendSection data={data} trend={data.trend} />}
+
         <Section
           title="Planejado × realizado por dia"
           subtitle={`Barra verde = lucro final do diário · traço = alvo de ${formatCurrency(data.dailyTarget)}`}
@@ -255,7 +526,7 @@ export default function PlanejamentoPage() {
           </div>
         </Section>
 
-        <div className="grid gap-6 xl:grid-cols-2">
+        <div className={cn("grid gap-6", !data.trend && "xl:grid-cols-2")}>
           <Section title="Semanas" subtitle="Soma dos dias de venda de cada semana">
             <div className="overflow-hidden rounded-2xl border border-surface-border bg-surface-card">
               <table className="w-full text-sm">
@@ -291,6 +562,7 @@ export default function PlanejamentoPage() {
             </div>
           </Section>
 
+          {!data.trend && (
           <Section
             title="Projeções"
             subtitle={
@@ -322,6 +594,7 @@ export default function PlanejamentoPage() {
               Ritmo recente = média dos últimos 10 dias de venda registrados ({formatCurrency(data.recentAverage)}).
             </p>
           </Section>
+          )}
         </div>
 
         <Section title="Indicadores do mês" subtitle="O que acompanhar todo dia para bater a meta">
