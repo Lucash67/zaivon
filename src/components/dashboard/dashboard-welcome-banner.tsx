@@ -82,16 +82,16 @@ export function DashboardWelcomeBanner({ className, viewDate }: DashboardWelcome
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
       className={cn(
-        "relative mb-4 overflow-hidden rounded-2xl border border-[#7C3CFF]/20 bg-surface-card p-4 sm:p-5",
+        "relative mb-4 overflow-hidden rounded-2xl border border-z-primary/20 bg-surface-card p-4 sm:p-5",
         className,
       )}
     >
       <div
-        className="pointer-events-none absolute -right-10 -top-12 h-36 w-36 rounded-full bg-[#7C3CFF]/15 blur-3xl"
+        className="pointer-events-none absolute -right-10 -top-12 h-36 w-36 rounded-full bg-z-primary/15 blur-3xl"
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute -bottom-14 left-1/3 h-28 w-28 rounded-full bg-[#0CD4FF]/10 blur-3xl"
+        className="pointer-events-none absolute -bottom-14 left-1/3 h-28 w-28 rounded-full bg-z-emerald/10 blur-3xl"
         aria-hidden
       />
 
@@ -113,8 +113,8 @@ export function DashboardWelcomeBanner({ className, viewDate }: DashboardWelcome
                 className={cn(
                   "group inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold transition-all",
                   action.primary
-                    ? "border-transparent bg-brand-gradient text-white shadow-[0_4px_20px_rgba(124,60,255,0.35)] hover:brightness-110"
-                    : "border-surface-border bg-surface-base/50 text-text-primary hover:border-[#7C3CFF]/35",
+                    ? "border-transparent bg-brand-gradient text-brand-on shadow-[0_4px_20px_rgb(var(--z-primary-rgb)/0.35)] hover:brightness-110"
+                    : "border-surface-border bg-surface-base/50 text-text-primary hover:border-z-primary/35",
                 )}
               >
                 <Icon className="h-4 w-4" strokeWidth={2} />

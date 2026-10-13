@@ -365,7 +365,7 @@ export function WeekFocusSection({ pulse }: { pulse: WeekPulse }) {
                 <>
                   <div className="mt-3 flex items-center justify-between gap-2">
                     <span className="text-[11px] font-bold text-text-secondary">Meta unidades</span>
-                    <span className="text-[11px] font-bold text-[#0CD4FF]">
+                    <span className="text-[11px] font-bold text-z-emerald">
                       {Math.round(pulse.unitsGoalProgress)}% · {pulse.units}/{pulse.unitsGoalTarget}
                     </span>
                   </div>
@@ -376,7 +376,7 @@ export function WeekFocusSection({ pulse }: { pulse: WeekPulse }) {
                       transition={{ duration: 0.7, delay: 0.32, ease: "easeOut" }}
                       className={cn(
                         "h-full rounded-full",
-                        pulse.unitsGoalProgress >= 100 ? "bg-emerald-400" : "bg-[#0CD4FF]",
+                        pulse.unitsGoalProgress >= 100 ? "bg-emerald-400" : "bg-z-emerald",
                       )}
                     />
                   </div>

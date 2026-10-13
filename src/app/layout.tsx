@@ -1,7 +1,14 @@
 import type { Metadata, Viewport } from "next";
-import { Sora } from "next/font/google";
+import { Inter, Sora } from "next/font/google";
 import { Providers } from "@/components/providers";
+import { HUB_BRAND_ASSETS } from "@/constants/hub-brand";
 import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
 
 const sora = Sora({
   subsets: ["latin"],
@@ -10,11 +17,15 @@ const sora = Sora({
 });
 
 export const metadata: Metadata = {
-  title: "OMNI Business — Gestão da operação | OMNI",
+  title: "ZAIVON Business — Gestão da operação | ZAIVON",
   description:
-    "OMNI Business — produto de gestão do ecossistema OMNI. Operação, vendas, financeiro e indicadores em um só lugar.",
+    "ZAIVON Business — produto de gestão do ecossistema ZAIVON. Operação, vendas, financeiro e indicadores em um só lugar.",
   icons: {
-    icon: "/icons/hub-favicon.svg",
+    icon: [
+      { url: HUB_BRAND_ASSETS.favicon, sizes: "64x64", type: "image/png" },
+      { url: HUB_BRAND_ASSETS.favicon32, sizes: "32x32", type: "image/png" },
+    ],
+    apple: HUB_BRAND_ASSETS.appleTouch,
   },
 };
 
@@ -22,14 +33,14 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
-  themeColor: "#0D0F17",
+  themeColor: "#05070B",
   interactiveWidget: "resizes-content",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR" className="dark" suppressHydrationWarning>
-      <body className={`${sora.variable} font-sans`}>
+      <body className={`${inter.variable} ${sora.variable} font-sans`}>
         <Providers>{children}</Providers>
       </body>
     </html>

@@ -38,7 +38,7 @@ export function EmptyModuleState({
     >
       <div
         className={cn(
-          "mb-3 flex items-center justify-center rounded-xl bg-gradient-to-br from-[#7C3CFF]/20 to-[#0CD4FF]/15 text-[#7C3CFF]",
+          "mb-3 flex items-center justify-center rounded-xl bg-gradient-to-br from-z-primary/20 to-z-emerald/15 text-z-primary",
           compact ? "h-10 w-10" : "mb-4 h-12 w-12",
         )}
       >

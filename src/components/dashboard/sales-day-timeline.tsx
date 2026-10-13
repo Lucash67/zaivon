@@ -24,18 +24,18 @@ const PERIOD_META = {
   morning: {
     label: "Manhã",
     icon: Sun,
-    gradient: "from-[#7C3CFF]/20 via-[#0CD4FF]/10 to-transparent",
-    border: "border-[#7C3CFF]/25",
-    accent: "text-[#7C3CFF]",
-    dot: "bg-[#7C3CFF]",
+    gradient: "from-z-primary/20 via-z-emerald/10 to-transparent",
+    border: "border-z-primary/25",
+    accent: "text-z-primary",
+    dot: "bg-z-primary",
   },
   afternoon: {
     label: "Tarde",
     icon: Sunset,
-    gradient: "from-[#3882F6]/20 via-[#0CD4FF]/10 to-transparent",
-    border: "border-[#3882F6]/25",
-    accent: "text-[#0CD4FF]",
-    dot: "bg-[#3882F6]",
+    gradient: "from-z-info/20 via-z-emerald/10 to-transparent",
+    border: "border-z-info/25",
+    accent: "text-z-emerald",
+    dot: "bg-z-info",
   },
 } as const;
 
@@ -45,8 +45,8 @@ const STATUS_STYLES = {
     amount: "text-emerald-300",
   },
   warning: {
-    badge: "bg-[#7C3CFF]/15 text-[#0CD4FF] ring-[#7C3CFF]/30",
-    amount: "text-[#0CD4FF]",
+    badge: "bg-z-warning/15 text-z-warning ring-z-warning/30",
+    amount: "text-z-warning",
   },
   neutral: {
     badge: "bg-surface-elevated text-text-muted ring-surface-border",
@@ -110,7 +110,7 @@ export function SalesDayTimeline({ groups, onLoyaltyChange }: SalesDayTimelinePr
             <span className="h-2 w-2 rounded-full bg-emerald-400" /> Pago
           </span>
           <span className="flex items-center gap-1">
-            <span className="h-2 w-2 rounded-full bg-[#7C3CFF]" /> Pendente / Perda
+            <span className="h-2 w-2 rounded-full bg-z-warning" /> Pendente / Perda
           </span>
         </span>
       </div>
@@ -208,7 +208,7 @@ export function SalesDayTimeline({ groups, onLoyaltyChange }: SalesDayTimelinePr
                             type="button"
                             disabled={busyId === entry.id}
                             onClick={() => void toggleLoyalty(entry.id, !entry.loyaltyConfirmed)}
-                            className="mt-1 text-[11px] font-medium text-[#0CD4FF] underline-offset-2 hover:underline disabled:opacity-50"
+                            className="mt-1 text-[11px] font-medium text-z-emerald underline-offset-2 hover:underline disabled:opacity-50"
                           >
                             {entry.loyaltyConfirmed
                               ? "Remover da fidelidade"

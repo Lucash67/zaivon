@@ -24,7 +24,7 @@ export function LhHubBackground() {
         preserveAspectRatio="xMidYMid slice"
         xmlns="http://www.w3.org/2000/svg"
       >
-        <g stroke="#7C3CFF" fill="none" strokeLinecap="square">
+        <g stroke="#B7FF3C" fill="none" strokeLinecap="square">
           <path d="M0 640 H1440" strokeWidth="1" opacity="0.09" />
           <path d="M0 760 H1440" strokeWidth="1" opacity="0.06" />
           <path d="M720 80 V820" strokeWidth="1" opacity="0.07" />
@@ -45,7 +45,7 @@ export function LhHubBackground() {
           preserveAspectRatio="xMidYMax slice"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <g className="lh-hub-background__wave-guide" stroke="#7C3CFF" fill="none">
+          <g className="lh-hub-background__wave-guide" stroke="#B7FF3C" fill="none">
             {WAVE_GUIDES.map((d, i) => (
               <path key={i} d={d} strokeWidth="0.12" opacity={0.06 + (i % 3) * 0.02} />
             ))}

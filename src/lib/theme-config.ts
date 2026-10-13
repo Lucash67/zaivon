@@ -7,7 +7,7 @@ export const THEME_META: Record<
 > = {
   dark: { label: "Escuro", next: "light", icon: Moon },
   light: { label: "Claro", next: "brand", icon: Sun },
-  brand: { label: "OMNI", next: "dark", icon: Sparkles },
+  brand: { label: "ZAIVON", next: "dark", icon: Sparkles },
 };
 
 export function resolveTheme(value?: string): AppTheme {

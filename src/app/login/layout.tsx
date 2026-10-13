@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Sora } from "next/font/google";
+import { HUB_BRAND_ASSETS } from "@/constants/hub-brand";
 import "./hub-login.css";
 
 const sora = Sora({
@@ -9,11 +10,12 @@ const sora = Sora({
 });
 
 export const metadata: Metadata = {
-  title: "OMNI — Entrar",
+  title: "ZAIVON — Entrar",
   description:
-    "Acesse o ecossistema OMNI. Conexão, organização e inteligência para o seu negócio.",
+    "Acesse o ecossistema ZAIVON. Inteligência, controle e evolução para o seu negócio.",
   icons: {
-    icon: "/icons/hub-favicon.svg",
+    icon: [{ url: HUB_BRAND_ASSETS.favicon, sizes: "64x64", type: "image/png" }],
+    apple: HUB_BRAND_ASSETS.appleTouch,
   },
 };
 

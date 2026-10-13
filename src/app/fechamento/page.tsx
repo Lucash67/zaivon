@@ -18,7 +18,7 @@ import type { ForecastScenarioKey, MonthCloseView } from "@/lib/month-close-view
 
 const CONFIDENCE_STYLE: Record<string, string> = {
   alta: "border-brand-green/25 bg-brand-green/5 text-brand-green",
-  média: "border-[#7C3CFF]/30 bg-[#7C3CFF]/10 text-[#0CD4FF]",
+  média: "border-z-warning/30 bg-z-warning/10 text-z-warning",
   baixa: "border-brand-red/25 bg-brand-red/5 text-brand-red",
 };
 
@@ -150,8 +150,8 @@ export default function FechamentoPage() {
                 className={cn(
                   "min-h-[36px] rounded-lg border px-3 py-2 text-xs font-medium capitalize transition-all sm:min-h-0 sm:py-1.5",
                   month.monthKey === reference.monthKey
-                    ? "border-transparent bg-brand-gradient text-white shadow-[0_4px_16px_rgba(124,60,255,0.3)]"
-                    : "border-surface-border text-text-secondary hover:border-[#7C3CFF]/30 hover:text-text-primary",
+                    ? "border-transparent bg-brand-gradient text-brand-on shadow-[0_4px_16px_rgb(var(--z-primary-rgb)/0.3)]"
+                    : "border-surface-border text-text-secondary hover:border-z-primary/30 hover:text-text-primary",
                 )}
               >
                 {month.label}
@@ -168,7 +168,7 @@ export default function FechamentoPage() {
           </span>
         </div>
 
-        <div className="rounded-2xl border border-[#7C3CFF]/25 bg-gradient-to-br from-[#7C3CFF]/10 via-surface-card to-[#0CD4FF]/5 px-4 py-3 text-sm leading-relaxed text-text-secondary">
+        <div className="rounded-2xl border border-z-primary/25 bg-gradient-to-br from-z-primary/10 via-surface-card to-z-emerald/5 px-4 py-3 text-sm leading-relaxed text-text-secondary">
           <span className="font-medium text-text-primary">Leitura do fechamento: </span>
           {view.narrative}
         </div>
@@ -230,8 +230,8 @@ export default function FechamentoPage() {
                 className={cn(
                   "rounded-xl border px-3 py-3 text-left transition-all",
                   row.key === selected
-                    ? "border-[#7C3CFF]/50 bg-gradient-to-br from-[#7C3CFF]/15 to-[#0CD4FF]/5 shadow-[0_0_24px_rgba(124,60,255,0.12)]"
-                    : "border-surface-border hover:border-[#7C3CFF]/30",
+                    ? "border-z-primary/50 bg-gradient-to-br from-z-primary/15 to-z-emerald/5 shadow-[0_0_24px_rgb(var(--z-primary-rgb)/0.12)]"
+                    : "border-surface-border hover:border-z-primary/30",
                 )}
               >
                 <p className="text-xs font-semibold capitalize text-text-primary">{row.label}</p>
@@ -264,7 +264,7 @@ export default function FechamentoPage() {
             {derivedGoals.map((goal) => (
               <div
                 key={goal.type}
-                className="rounded-lg border border-[#7C3CFF]/15 bg-surface-elevated/40 px-3 py-2"
+                className="rounded-lg border border-z-primary/15 bg-surface-elevated/40 px-3 py-2"
               >
                 <p className="text-[10px] uppercase text-text-muted">{goal.label}</p>
                 <p className="text-sm font-bold">{formatCurrency(goal.targetRevenue)}</p>

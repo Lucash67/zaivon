@@ -48,9 +48,9 @@ const PERIOD_OPTIONS: Array<{ id: PeriodProjectionPeriod; label: string }> = [
 const SCENARIO_ORDER: ProjectionScenarioKey[] = ["conservador", "base", "otimista"];
 
 const SCENARIO_ACCENT: Record<ProjectionScenarioKey, string> = {
-  conservador: "text-[#3882F6]",
-  base: "text-[#0CD4FF]",
-  otimista: "text-[#7C3CFF]",
+  conservador: "text-z-info",
+  base: "text-z-emerald",
+  otimista: "text-z-primary",
 };
 
 function isScenarioKey(value: string | null): value is ProjectionScenarioKey {

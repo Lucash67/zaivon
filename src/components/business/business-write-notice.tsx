@@ -8,8 +8,8 @@ export function BusinessWriteNotice({ message, className }: BusinessWriteNoticeP
     <div
       className={
         className
-          ? `rounded-xl border border-[#7C3CFF]/30 bg-gradient-to-r from-[#7C3CFF]/10 to-[#0CD4FF]/5 px-4 py-3 text-sm text-text-secondary ${className}`
-          : "rounded-xl border border-[#7C3CFF]/30 bg-gradient-to-r from-[#7C3CFF]/10 to-[#0CD4FF]/5 px-4 py-3 text-sm text-text-secondary"
+          ? `rounded-xl border border-z-primary/30 bg-gradient-to-r from-z-primary/10 to-z-emerald/5 px-4 py-3 text-sm text-text-secondary ${className}`
+          : "rounded-xl border border-z-primary/30 bg-gradient-to-r from-z-primary/10 to-z-emerald/5 px-4 py-3 text-sm text-text-secondary"
       }
     >
       {message}

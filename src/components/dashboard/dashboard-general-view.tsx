@@ -71,14 +71,14 @@ export function DashboardGeneralView({
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-3xl border border-[#7C3CFF]/25 bg-gradient-to-br from-[#7C3CFF]/12 via-surface-card to-[#0CD4FF]/10 p-4 sm:p-8"
+        className="relative overflow-hidden rounded-3xl border border-z-primary/25 bg-gradient-to-br from-z-primary/12 via-surface-card to-z-emerald/10 p-4 sm:p-8"
       >
         <div
-          className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-[#7C3CFF]/20 blur-3xl"
+          className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-z-primary/20 blur-3xl"
           aria-hidden
         />
         <div
-          className="pointer-events-none absolute -bottom-20 -left-10 h-40 w-40 rounded-full bg-[#0CD4FF]/15 blur-3xl"
+          className="pointer-events-none absolute -bottom-20 -left-10 h-40 w-40 rounded-full bg-z-emerald/15 blur-3xl"
           aria-hidden
         />
         <div className="relative">

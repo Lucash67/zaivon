@@ -32,7 +32,7 @@ interface DayReport {
 
 const statusColors = {
   hit: "bg-brand-green",
-  close: "bg-[#0CD4FF]",
+  close: "bg-z-emerald",
   miss: "bg-brand-red",
 };
 

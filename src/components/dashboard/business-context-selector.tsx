@@ -113,7 +113,7 @@ export function BusinessContextSelector({ variant = "inline" }: BusinessContextS
                 onClick={() => selectBusiness(option.id)}
                 className={cn(
                   "flex min-h-[44px] w-full items-center px-3 py-2 text-left text-sm text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary lg:min-h-0",
-                  activeBusinessId === option.id && "font-medium text-[#7C3CFF]",
+                  activeBusinessId === option.id && "font-medium text-z-primary",
                 )}
               >
                 {option.name}

@@ -116,7 +116,7 @@ export function OmniProvider({ children }: { children: ReactNode }) {
     placeholderData: (prev) => prev,
   });
   if (q.isLoading) {
-    return <div className="grid min-h-[60vh] place-items-center text-sm text-o-muted-foreground">Carregando a OMNI…</div>;
+    return <div className="grid min-h-[60vh] place-items-center text-sm text-o-muted-foreground">Carregando a ZAIVON…</div>;
   }
   if (q.error || !q.data) {
     return (

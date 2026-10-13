@@ -1,40 +1,64 @@
+/* eslint-disable @next/next/no-img-element */
 import { cn } from "@/components/ui/utils";
+import { HUB_BRAND_ASSETS } from "@/constants/hub-brand";
 
 interface OmniRingProps {
   size?: number;
   className?: string;
 }
 
-/** Anel OMNI — gradiente roxo → ciano (marca-mãe). */
+/**
+ * Monograma ZAIVON Vertex (ZV). Ocupa o mesmo quadrado do antigo anel OMNI e
+ * preserva a proporção da arte (object-contain).
+ */
 export function OmniRing({ size = 32, className }: OmniRingProps) {
-  const id = `omni-ring-${size}`;
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 48 48"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={cn("shrink-0", className)}
+    <span
+      className={cn("inline-flex shrink-0 items-center justify-center", className)}
+      style={{ width: size, height: size }}
       aria-hidden
     >
-      <defs>
-        <linearGradient id={id} x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#7C3CFF" />
-          <stop offset="0.5" stopColor="#3882F6" />
-          <stop offset="1" stopColor="#0CD4FF" />
-        </linearGradient>
-      </defs>
-      <circle
-        cx="24"
-        cy="24"
-        r="16"
-        stroke={`url(#${id})`}
-        strokeWidth="5"
-        strokeLinecap="round"
-        fill="none"
+      <img src={HUB_BRAND_ASSETS.monogram} alt="" className="h-full w-full object-contain" draggable={false} />
+    </span>
+  );
+}
+
+/**
+ * Lettering oficial "ZAIVON" (recorte do wordmark). `onDark` força a versão clara;
+ * sem ele, troca para a versão escura no tema light.
+ */
+export function ZaivonWordtype({
+  height = 14,
+  onDark = false,
+  className,
+}: {
+  height?: number;
+  onDark?: boolean;
+  className?: string;
+}) {
+  const style = { height, width: "auto" } as const;
+  if (onDark) {
+    return (
+      <img src={HUB_BRAND_ASSETS.wordtypeLight} alt="ZAIVON" style={style} className={className} draggable={false} />
+    );
+  }
+  return (
+    <span className={cn("inline-flex items-center", className)}>
+      <img
+        src={HUB_BRAND_ASSETS.wordtypeLight}
+        alt="ZAIVON"
+        style={style}
+        className="[.light_&]:hidden"
+        draggable={false}
       />
-    </svg>
+      <img
+        src={HUB_BRAND_ASSETS.wordtypeDark}
+        alt="ZAIVON"
+        style={style}
+        className="hidden [.light_&]:block"
+        draggable={false}
+      />
+    </span>
   );
 }
 
@@ -43,33 +67,15 @@ export function LhMonogram({ size = 32, className }: OmniRingProps) {
   return <OmniRing size={size} className={className} />;
 }
 
-/** Anel outline grande — watermark no fundo do login (sem fill). */
+/** Monograma grande e discreto — watermark no fundo do login. */
 export function LhMonogramOutline({ className }: { className?: string }) {
   return (
-    <svg
-      viewBox="0 0 48 48"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={cn(className)}
+    <img
+      src={HUB_BRAND_ASSETS.monogram}
+      alt=""
       aria-hidden
-    >
-      <defs>
-        <linearGradient id="omni-outline-grad" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#7C3CFF" />
-          <stop offset="0.5" stopColor="#3882F6" />
-          <stop offset="1" stopColor="#0CD4FF" />
-        </linearGradient>
-      </defs>
-      <circle
-        cx="24"
-        cy="24"
-        r="16"
-        stroke="url(#omni-outline-grad)"
-        strokeWidth="3.5"
-        strokeLinecap="round"
-        fill="none"
-        opacity="0.35"
-      />
-    </svg>
+      draggable={false}
+      className={cn("object-contain opacity-[0.07]", className)}
+    />
   );
 }

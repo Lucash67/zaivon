@@ -98,7 +98,7 @@ export function DashboardDayView({
           idleDay
             ? "border-surface-border bg-surface-card"
             : profitPositive
-              ? "border-brand-green/25 bg-gradient-to-br from-brand-green/10 via-surface-card to-[#7C3CFF]/5"
+              ? "border-brand-green/25 bg-gradient-to-br from-brand-green/10 via-surface-card to-z-primary/5"
               : "border-brand-red/25 bg-gradient-to-br from-brand-red/10 via-surface-card to-surface-card",
         )}
       >
@@ -188,8 +188,8 @@ export function DashboardDayView({
       </motion.div>
 
       {pendingLoss > 0 && (
-        <div className="flex items-start gap-2 rounded-2xl border border-[#7C3CFF]/30 bg-[#7C3CFF]/10 px-4 py-3 text-sm text-[#F5F6FA]/90">
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[#0CD4FF]" />
+        <div className="flex items-start gap-2 rounded-2xl border border-z-primary/30 bg-z-primary/10 px-4 py-3 text-sm text-[#F5F6FA]/90">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-z-emerald" />
           <p>
             {daySummary.pendingCount > 0 && (
               <span>
@@ -243,14 +243,14 @@ function KpiMini({
     <div
       className={cn(
         "rounded-2xl border px-3 py-2.5",
-        warn ? "border-[#7C3CFF]/30 bg-[#7C3CFF]/8" : "border-surface-border bg-surface-base/40",
+        warn ? "border-z-primary/30 bg-z-primary/8" : "border-surface-border bg-surface-base/40",
       )}
     >
       <p className="mb-1 flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-text-muted">
         {icon}
         {label}
       </p>
-      <p className={cn("text-base font-bold tabular-nums sm:text-lg", warn && "text-[#0CD4FF]")}>
+      <p className={cn("text-base font-bold tabular-nums sm:text-lg", warn && "text-z-emerald")}>
         {value}
       </p>
       {subtext && <p className="mt-0.5 text-[10px] text-text-muted">{subtext}</p>}

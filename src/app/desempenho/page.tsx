@@ -131,18 +131,18 @@ export default function DesempenhoPage() {
 
         {data.goals.profitTarget > 0 && !isEmptyPeriod && (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="rounded-xl border border-[#7C3CFF]/20 bg-gradient-to-br from-[#7C3CFF]/10 to-surface-card px-4 py-3">
+            <div className="rounded-xl border border-z-primary/20 bg-gradient-to-br from-z-primary/10 to-surface-card px-4 py-3">
               <p className="text-xs text-text-muted">Meta lucro da semana</p>
-              <p className="text-lg font-bold text-[#7C3CFF]">
+              <p className="text-lg font-bold text-z-primary">
                 {Math.round(data.goals.profitProgress)}%
               </p>
               <p className="text-xs text-text-secondary">
                 {formatCurrency(data.metrics.profit)} / {formatCurrency(data.goals.profitTarget)}
               </p>
             </div>
-            <div className="rounded-xl border border-[#0CD4FF]/20 bg-gradient-to-br from-[#0CD4FF]/10 to-surface-card px-4 py-3">
+            <div className="rounded-xl border border-z-emerald/20 bg-gradient-to-br from-z-emerald/10 to-surface-card px-4 py-3">
               <p className="text-xs text-text-muted">Meta unidades da semana</p>
-              <p className="text-lg font-bold text-[#0CD4FF]">
+              <p className="text-lg font-bold text-z-emerald">
                 {Math.round(data.goals.unitsProgress)}%
               </p>
               <p className="text-xs text-text-secondary">
@@ -171,13 +171,13 @@ export default function DesempenhoPage() {
 
         {!isEmptyPeriod && (
           <div className="grid grid-cols-2 gap-3 text-sm">
-            <div className="rounded-xl border border-[#7C3CFF]/15 bg-gradient-to-br from-[#7C3CFF]/8 to-surface-card px-4 py-3">
+            <div className="rounded-xl border border-z-primary/15 bg-gradient-to-br from-z-primary/8 to-surface-card px-4 py-3">
               <p className="text-xs text-text-muted">Lucro semana anterior</p>
               <p className="font-bold text-brand-green">
                 {formatCurrency(data.comparison.previousProfit)}
               </p>
             </div>
-            <div className="rounded-xl border border-[#0CD4FF]/15 bg-gradient-to-br from-[#0CD4FF]/8 to-surface-card px-4 py-3">
+            <div className="rounded-xl border border-z-emerald/15 bg-gradient-to-br from-z-emerald/8 to-surface-card px-4 py-3">
               <p className="text-xs text-text-muted">Fat. semana anterior</p>
               <p className="font-bold">{formatCurrency(data.comparison.previousRevenue)}</p>
             </div>

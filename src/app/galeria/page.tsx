@@ -306,7 +306,7 @@ export default function GaleriaPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Buscar por título, nota ou arquivo…"
-              className="w-full rounded-xl border border-surface-border bg-surface-card py-2.5 pl-9 pr-3 text-sm text-text-primary outline-none focus:border-[#7C3CFF]/50"
+              className="w-full rounded-xl border border-surface-border bg-surface-card py-2.5 pl-9 pr-3 text-sm text-text-primary outline-none focus:border-z-primary/50"
             />
           </div>
           <select
@@ -327,7 +327,7 @@ export default function GaleriaPage() {
       {showForm && canWrite && (
         <form
           onSubmit={handleCreate}
-          className="mb-5 rounded-2xl border border-[#7C3CFF]/25 bg-surface-card p-4 sm:p-5"
+          className="mb-5 rounded-2xl border border-z-primary/25 bg-surface-card p-4 sm:p-5"
         >
           <h3 className="mb-3 text-sm font-semibold text-text-primary">Nova pasta</h3>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -365,7 +365,7 @@ export default function GaleriaPage() {
                 multiple
                 accept="image/*,.pdf,.zip,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.csv"
                 onChange={(e) => setFiles(e.target.files ? Array.from(e.target.files) : [])}
-                className="w-full text-sm text-text-secondary file:mr-3 file:rounded-lg file:border-0 file:bg-[#7C3CFF]/20 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-[#C4B5FD]"
+                className="w-full text-sm text-text-secondary file:mr-3 file:rounded-lg file:border-0 file:bg-z-primary/20 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-z-lime-300"
               />
               {files.length > 0 ? (
                 <span className="text-[11px] text-text-muted">
@@ -566,11 +566,11 @@ function GalleryLightbox({
             />
           ) : (
             <div className="flex flex-col items-center gap-3 py-10 text-center">
-              <FileText className="h-12 w-12 text-[#7C3CFF]" />
+              <FileText className="h-12 w-12 text-z-primary" />
               <p className="text-sm text-white/70">Pré-visualização indisponível para este tipo.</p>
               <a
                 href={file.downloadUrl}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-[#7C3CFF]/40 bg-[#7C3CFF]/15 px-3 py-2 text-xs font-medium text-[#C4B5FD]"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-z-primary/40 bg-z-primary/15 px-3 py-2 text-xs font-medium text-z-lime-300"
               >
                 <Download className="h-3.5 w-3.5" />
                 Baixar {file.fileName}
@@ -593,7 +593,7 @@ function GalleryLightbox({
                   className={cn(
                     "relative h-14 w-14 shrink-0 overflow-hidden rounded-lg border transition",
                     f.id === file.id
-                      ? "border-[#7C3CFF] ring-2 ring-[#7C3CFF]/40"
+                      ? "border-z-primary ring-2 ring-z-primary/40"
                       : "border-white/15 hover:border-white/35",
                   )}
                   title={f.fileName}
@@ -603,7 +603,7 @@ function GalleryLightbox({
                     <img src={f.previewUrl} alt="" className="h-full w-full object-cover" />
                   ) : (
                     <span className="flex h-full w-full items-center justify-center bg-[#1A1A28]">
-                      <FileText className="h-5 w-5 text-[#7C3CFF]" />
+                      <FileText className="h-5 w-5 text-z-primary" />
                     </span>
                   )}
                 </button>
@@ -690,7 +690,7 @@ function AssetCard({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={coverUrl} alt="" className="h-full w-full object-cover" />
           ) : item.hasFile ? (
-            <FileText className="h-10 w-10 text-[#7C3CFF]" />
+            <FileText className="h-10 w-10 text-z-primary" />
           ) : (
             <FileImage className="h-10 w-10 text-text-muted" />
           )}
@@ -698,7 +698,7 @@ function AssetCard({
             {GALLERY_CATEGORY_LABELS[item.category]}
           </span>
           {item.fileCount > 0 ? (
-            <span className="absolute right-2 top-2 rounded-full bg-[#7C3CFF]/90 px-2 py-0.5 text-[10px] font-semibold text-white">
+            <span className="absolute right-2 top-2 rounded-full bg-z-primary/90 px-2 py-0.5 text-[10px] font-semibold text-white">
               {item.fileCount} arquivo{item.fileCount === 1 ? "" : "s"}
             </span>
           ) : null}
@@ -742,7 +742,7 @@ function AssetCard({
             <button
               type="button"
               onClick={onPreview}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-[#7C3CFF]/35 bg-[#7C3CFF]/10 px-2.5 py-1.5 text-xs font-medium text-[#C4B5FD] hover:bg-[#7C3CFF]/20"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-z-primary/35 bg-z-primary/10 px-2.5 py-1.5 text-xs font-medium text-z-lime-300 hover:bg-z-primary/20"
             >
               <Eye className="h-3.5 w-3.5" />
               Ver
@@ -752,7 +752,7 @@ function AssetCard({
             <button
               type="button"
               onClick={onAttach}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-surface-border px-2.5 py-1.5 text-xs font-medium text-text-primary hover:border-[#0CD4FF]/40 hover:bg-[#0CD4FF]/10"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-surface-border px-2.5 py-1.5 text-xs font-medium text-text-primary hover:border-z-emerald/40 hover:bg-z-emerald/10"
             >
               <Paperclip className="h-3.5 w-3.5" />
               Adicionar arquivos

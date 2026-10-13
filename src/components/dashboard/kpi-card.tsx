@@ -41,7 +41,7 @@ export function KpiCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: delay * 0.05 }}
       className={cn(
-        "group relative overflow-hidden rounded-2xl border border-surface-border bg-surface-card p-4 shadow-card transition-all duration-300 hover:border-[#7C3CFF]/25 hover:shadow-[0_8px_28px_rgba(124,60,255,0.12)] sm:p-5",
+        "group relative overflow-hidden rounded-2xl border border-surface-border bg-surface-card p-4 shadow-card transition-all duration-300 hover:border-z-primary/25 hover:shadow-[0_8px_28px_rgb(var(--z-primary-rgb)/0.12)] sm:p-5",
         variant === "profit" && "border-brand-green/20",
         variant === "alert" && "border-brand-red/20"
       )}

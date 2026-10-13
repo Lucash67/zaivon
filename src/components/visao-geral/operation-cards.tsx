@@ -47,7 +47,7 @@ function OperationCard({
       onClick={onOpen}
       className={cn(
         "group relative flex w-full flex-col overflow-hidden rounded-2xl border p-4 text-left transition-all sm:p-5",
-        "hover:border-brand-yellow/40 hover:shadow-[0_0_32px_rgba(124, 60, 255,0.08)]",
+        "hover:border-brand-yellow/40 hover:shadow-[0_0_32px_rgb(var(--z-primary-rgb)/0.08)]",
         "active:scale-[0.99]",
         active
           ? "border-brand-yellow/45 bg-gradient-to-br from-brand-yellow/[0.12] via-surface-card to-surface-card"

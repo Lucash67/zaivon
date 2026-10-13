@@ -80,7 +80,7 @@ export default function RetratoPage() {
       temporalFilter={false}
     >
       <div className="space-y-6">
-        <div className="rounded-2xl border border-[#7C3CFF]/25 bg-gradient-to-br from-[#7C3CFF]/10 via-surface-card to-[#0CD4FF]/5 px-4 py-3 text-sm text-text-secondary">
+        <div className="rounded-2xl border border-z-primary/25 bg-gradient-to-br from-z-primary/10 via-surface-card to-z-emerald/5 px-4 py-3 text-sm text-text-secondary">
           Módulo novo: não é Metas, não é gráfico solto. É a{" "}
           <span className="font-medium text-text-primary">leitura interpretativa</span> da semana ou
           do mês — igual ao canvas de análise. No fim do período você pede no Cursor; eu monto e
@@ -88,7 +88,7 @@ export default function RetratoPage() {
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
-          <div className="flex w-full rounded-xl border border-[#7C3CFF]/20 bg-surface-card p-1 sm:w-auto">
+          <div className="flex w-full rounded-xl border border-z-primary/20 bg-surface-card p-1 sm:w-auto">
             {(["weekly", "monthly"] as const).map((p) => (
               <button
                 key={p}
@@ -100,7 +100,7 @@ export default function RetratoPage() {
                 className={cn(
                   "flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition-all sm:flex-none sm:py-2",
                   period === p
-                    ? "bg-brand-gradient text-white shadow-[0_4px_14px_rgba(124,60,255,0.3)]"
+                    ? "bg-brand-gradient text-brand-on shadow-[0_4px_14px_rgb(var(--z-primary-rgb)/0.3)]"
                     : "text-text-secondary hover:text-text-primary",
                 )}
               >

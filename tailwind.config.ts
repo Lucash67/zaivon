@@ -6,9 +6,9 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-sora)", "Sora", "system-ui", "sans-serif"],
+        sans: ["var(--font-inter)", "Inter", "system-ui", "sans-serif"],
         display: ["var(--font-sora)", "Sora", "system-ui", "sans-serif"],
-        omni: ["var(--font-manrope)", "Manrope", "system-ui", "sans-serif"],
+        omni: ["var(--font-inter)", "Inter", "system-ui", "sans-serif"],
       },
       opacity: {
         12: "0.12",
@@ -46,13 +46,31 @@ const config: Config = {
           border: "var(--o-border)",
           input: "var(--o-input)",
         },
+        /* ZAIVON Obsidian Lime — canais por tema em globals.css (--z-*-rgb). */
+        z: {
+          primary: "rgb(var(--z-primary-rgb) / <alpha-value>)",
+          "primary-foreground": "var(--z-primary-foreground)",
+          emerald: "rgb(var(--z-emerald-rgb) / <alpha-value>)",
+          info: "rgb(var(--z-info-rgb) / <alpha-value>)",
+          success: "rgb(var(--z-success-rgb) / <alpha-value>)",
+          warning: "rgb(var(--z-warning-rgb) / <alpha-value>)",
+          danger: "rgb(var(--z-danger-rgb) / <alpha-value>)",
+          "lime-300": "#DCFF98",
+          "lime-400": "#C9FF69",
+          "lime-500": "#B7FF3C",
+          "lime-600": "#9DE51E",
+          "lime-700": "#7EB710",
+          "bg-deep": "var(--z-bg-deep)",
+          "bg-app": "var(--z-bg-app)",
+        },
+        /* Nomes legados (yellow/orange = cor principal) mantidos como aliases dos tokens ZAIVON. */
         brand: {
-          orange: "var(--brand-orange)",
-          yellow: "var(--brand-yellow)",
-          secondary: "var(--brand-secondary)",
+          orange: "rgb(var(--z-primary-rgb) / <alpha-value>)",
+          yellow: "rgb(var(--z-primary-rgb) / <alpha-value>)",
+          secondary: "rgb(var(--z-emerald-rgb) / <alpha-value>)",
           on: "var(--brand-on-accent)",
-          green: "var(--brand-green)",
-          red: "var(--brand-red)",
+          green: "rgb(var(--z-success-rgb) / <alpha-value>)",
+          red: "rgb(var(--z-danger-rgb) / <alpha-value>)",
         },
         surface: {
           base: "var(--surface-base)",

@@ -352,7 +352,7 @@ export function NoteEditor({
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onClick={handleClose}
-            className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-[#7C3CFF]/25 px-3.5 text-sm font-semibold text-[#e8eaed] hover:bg-[#7C3CFF]/35 active:bg-[#7C3CFF]/45 sm:hidden"
+            className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-z-primary/25 px-3.5 text-sm font-semibold text-[#e8eaed] hover:bg-z-primary/35 active:bg-z-primary/45 sm:hidden"
             aria-label="Concluir"
           >
             <Check className="h-4 w-4" />
@@ -361,7 +361,7 @@ export function NoteEditor({
         </div>
 
         {note.noteDate ? (
-          <p className="px-4 pb-1 text-[12px] font-semibold uppercase tracking-wide text-[#0CD4FF] sm:px-7">
+          <p className="px-4 pb-1 text-[12px] font-semibold uppercase tracking-wide text-z-emerald sm:px-7">
             {dayColumnLabel(note.noteDate)}/{note.noteDate.slice(0, 4)}
           </p>
         ) : (
@@ -460,7 +460,7 @@ export function NoteEditor({
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => setShowDate(false)}
-                  className="ml-auto rounded-md px-2.5 py-1.5 text-xs font-medium text-[#0CD4FF] hover:bg-[#7C3CFF]/10"
+                  className="ml-auto rounded-md px-2.5 py-1.5 text-xs font-medium text-z-emerald hover:bg-z-primary/10"
                 >
                   Salvar
                 </button>

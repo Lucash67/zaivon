@@ -23,9 +23,9 @@ interface Insight {
 
 const typeConfig = {
   positive: { icon: TrendingUp, badge: "success" as const, accent: "border-brand-green/25 bg-brand-green/5", iconColor: "text-brand-green" },
-  warning: { icon: AlertTriangle, badge: "warning" as const, accent: "border-[#7C3CFF]/25 bg-[#7C3CFF]/5", iconColor: "text-[#0CD4FF]" },
-  info: { icon: Info, badge: "info" as const, accent: "border-[#3882F6]/25 bg-[#3882F6]/5", iconColor: "text-[#3882F6]" },
-  opportunity: { icon: Lightbulb, badge: "info" as const, accent: "border-[#7C3CFF]/25 bg-[#7C3CFF]/5", iconColor: "text-[#7C3CFF]" },
+  warning: { icon: AlertTriangle, badge: "warning" as const, accent: "border-z-warning/25 bg-z-warning/5", iconColor: "text-z-warning" },
+  info: { icon: Info, badge: "info" as const, accent: "border-z-info/25 bg-z-info/5", iconColor: "text-z-info" },
+  opportunity: { icon: Lightbulb, badge: "info" as const, accent: "border-z-primary/25 bg-z-primary/5", iconColor: "text-z-primary" },
 };
 
 export default function InsightsPage() {

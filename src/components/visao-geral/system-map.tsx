@@ -14,7 +14,7 @@ export function SystemMap() {
           Mapa do sistema
         </p>
         <h2 className="text-lg font-black tracking-tight text-text-primary sm:text-xl">
-          Principais funções do OMNI Business
+          Principais funções do ZAIVON Business
         </h2>
         <p className="mt-1 text-sm text-text-secondary">
           Tudo o que o sistema faz, organizado por missão — toque para abrir.

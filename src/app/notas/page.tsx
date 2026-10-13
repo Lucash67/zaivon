@@ -138,8 +138,8 @@ export default function NotasPage() {
         ) : (
           <>
             {filtered.length === 0 && (
-              <div className="rounded-xl border border-[#7C3CFF]/25 bg-gradient-to-r from-[#7C3CFF]/10 to-[#0CD4FF]/5 px-4 py-3 text-sm text-text-secondary">
-                <NotebookPen className="mr-2 inline h-4 w-4 align-text-bottom text-[#7C3CFF]" />
+              <div className="rounded-xl border border-z-primary/25 bg-gradient-to-r from-z-primary/10 to-z-emerald/5 px-4 py-3 text-sm text-text-secondary">
+                <NotebookPen className="mr-2 inline h-4 w-4 align-text-bottom text-z-primary" />
                 Nenhuma nota neste filtro — você ainda pode trocar a semana ou criar uma nota nova.
               </div>
             )}
@@ -158,12 +158,12 @@ export default function NotasPage() {
               }}
               toolbarStart={
                 <div className="relative min-w-0 flex-1">
-                  <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7C3CFF]/70" />
+                  <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-z-primary/70" />
                   <input
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder="Pesquisar notas"
-                    className="h-11 w-full rounded-xl border border-[#7C3CFF]/20 bg-[#1a1c24] pl-10 pr-3 text-sm text-[#e8eaed] placeholder:text-[#e8eaed]/40 focus:border-[#7C3CFF]/50 focus:outline-none focus:ring-2 focus:ring-[#7C3CFF]/15"
+                    className="h-11 w-full rounded-xl border border-z-primary/20 bg-[#1a1c24] pl-10 pr-3 text-sm text-[#e8eaed] placeholder:text-[#e8eaed]/40 focus:border-z-primary/50 focus:outline-none focus:ring-2 focus:ring-z-primary/15"
                   />
                 </div>
               }
@@ -175,9 +175,9 @@ export default function NotasPage() {
                     size="sm"
                     disabled={generatingWeek}
                     onClick={() => void generateWeekdayDrafts()}
-                    className="shrink-0 border-[#7C3CFF]/30 bg-[#1a1c24] text-[#e8eaed] hover:bg-[#7C3CFF]/15"
+                    className="shrink-0 border-z-primary/30 bg-[#1a1c24] text-[#e8eaed] hover:bg-z-primary/15"
                   >
-                    <CalendarPlus className="mr-1.5 h-3.5 w-3.5 text-[#7C3CFF]" />
+                    <CalendarPlus className="mr-1.5 h-3.5 w-3.5 text-z-primary" />
                     {generatingWeek ? "Gerando…" : "Gerar semana"}
                   </Button>
                   <NotesFilters

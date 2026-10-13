@@ -163,7 +163,7 @@ export default function RankingsPage() {
               renderItem={(item, i) => (
                 <div className="flex items-center justify-between rounded-xl bg-surface-elevated p-3">
                   <div className="flex items-center gap-3">
-                    <Trophy className={`h-4 w-4 ${i === 0 ? "text-[#0CD4FF]" : "text-text-muted"}`} />
+                    <Trophy className={`h-4 w-4 ${i === 0 ? "text-z-emerald" : "text-text-muted"}`} />
                     <span>{formatDate(item.date as string)}</span>
                   </div>
                   <span className="font-semibold">{formatCurrency(item.revenue as number)}</span>

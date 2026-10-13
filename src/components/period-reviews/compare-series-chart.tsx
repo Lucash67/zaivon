@@ -45,7 +45,7 @@ export function CompareSeriesChart({
   const fmt = (v: number) => (currency ? formatCurrency(v) : String(v));
 
   return (
-    <div className="rounded-2xl border border-[#7C3CFF]/15 bg-surface-card p-4 sm:p-5">
+    <div className="rounded-2xl border border-z-primary/15 bg-surface-card p-4 sm:p-5">
       <div className="mb-4">
         <h3 className="text-sm font-semibold text-text-primary">{title}</h3>
         {subtitle ? <p className="mt-0.5 text-xs text-text-muted">{subtitle}</p> : null}

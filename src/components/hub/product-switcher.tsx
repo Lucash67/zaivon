@@ -29,10 +29,10 @@ export function ProductSwitcher({
       <Link
         href={OMNI_HUB_PATH}
         className={cn(
-          "inline-flex items-center gap-1.5 rounded-lg border border-[#7C3CFF]/25 bg-[#7C3CFF]/10 px-2 py-1.5 text-[11px] font-semibold text-[#C4B5FD] transition hover:border-[#7C3CFF]/45 hover:bg-[#7C3CFF]/15 hover:text-white",
+          "inline-flex items-center gap-1.5 rounded-lg border border-z-primary/25 bg-z-primary/10 px-2 py-1.5 text-[11px] font-semibold text-z-lime-300 transition hover:border-z-primary/45 hover:bg-z-primary/15 hover:text-white",
           compact && "px-2 py-1",
         )}
-        title="Voltar ao OMNI Hub"
+        title="Voltar ao ZAIVON Hub"
       >
         <LayoutGrid className="h-3 w-3 shrink-0" />
         {!compact && <span>Hub</span>}

@@ -103,11 +103,11 @@ export function ChartCard({
         {type === "area" && showLegend && (
           <div className="flex items-center gap-3 text-xs text-text-muted sm:gap-4">
             <span className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-[#7C3CFF]" />
+              <span className="h-2 w-2 rounded-full bg-z-primary" />
               Receita
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-[#0CD4FF]" />
+              <span className="h-2 w-2 rounded-full bg-z-emerald" />
               Lucro
             </span>
           </div>

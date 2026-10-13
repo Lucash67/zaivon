@@ -24,14 +24,14 @@ export interface OmniProduct {
 }
 
 /**
- * Catálogo de produtos do ecossistema OMNI.
+ * Catálogo de produtos do ecossistema ZAIVON.
  * Expandível — Hub renderiza a partir desta lista.
  * `available` hoje = todos os usuários autenticados (sem planos).
  */
 export const OMNI_PRODUCTS: OmniProduct[] = [
   {
     id: "business",
-    name: "OMNI Business",
+    name: "ZAIVON Business",
     shortName: "Business",
     description: "Gestão, operação e resultados do negócio.",
     highlights: ["Vendas", "Financeiro", "Estoque", "Clientes", "Indicadores"],

@@ -6,7 +6,7 @@ export function LoadingScreen() {
       <div className="flex flex-col items-center gap-4">
         <div className="relative h-12 w-12">
           <div className="absolute inset-0 rounded-full border-2 border-surface-border" />
-          <div className="absolute inset-0 animate-spin rounded-full border-2 border-transparent border-t-[#7C3CFF] border-r-[#0CD4FF]" />
+          <div className="absolute inset-0 animate-spin rounded-full border-2 border-transparent border-t-z-primary border-r-z-emerald" />
         </div>
         <p className="text-sm text-text-secondary animate-pulse">Carregando dados...</p>
       </div>

@@ -52,28 +52,28 @@ export function NotesFilters({ open, onOpenChange, filters, onChange }: NotesFil
         className={cn(
           "inline-flex h-11 items-center gap-2 rounded-lg border px-3 text-sm font-medium transition",
           open || activeCount > 0
-            ? "border-[#7C3CFF]/40 bg-[#7C3CFF]/10 text-[#7C3CFF]"
-            : "border-[#7C3CFF]/20 bg-[#1a1c24] text-[#e8eaed]/80 hover:bg-[#1f2230]",
+            ? "border-z-primary/40 bg-z-primary/10 text-z-primary"
+            : "border-z-primary/20 bg-[#1a1c24] text-[#e8eaed]/80 hover:bg-[#1f2230]",
         )}
       >
         <Filter className="h-4 w-4" />
         Filtrar
         {activeCount > 0 && (
-          <span className="rounded-full bg-[#7C3CFF]/20 px-1.5 text-[11px] font-bold text-[#0CD4FF]">
+          <span className="rounded-full bg-z-primary/20 px-1.5 text-[11px] font-bold text-z-emerald">
             {activeCount}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute left-0 right-auto z-30 mt-2 w-[min(280px,calc(100vw-1.5rem))] rounded-xl border border-[#7C3CFF]/25 bg-[#1F2430] p-3 shadow-2xl sm:left-auto sm:right-0">
+        <div className="absolute left-0 right-auto z-30 mt-2 w-[min(280px,calc(100vw-1.5rem))] rounded-xl border border-z-primary/25 bg-[#1F2430] p-3 shadow-2xl sm:left-auto sm:right-0">
           <div className="mb-2 flex items-center justify-between">
             <p className="text-xs font-bold uppercase tracking-wider text-[#e8eaed]/50">Filtros</p>
             <button
               type="button"
               title="Limpar"
               onClick={() => onChange(DEFAULT_NOTES_FILTERS)}
-              className="text-xs text-[#0CD4FF] hover:text-[#e8eaed]"
+              className="text-xs text-z-emerald hover:text-[#e8eaed]"
             >
               Limpar
             </button>
@@ -89,7 +89,7 @@ export function NotesFilters({ open, onOpenChange, filters, onChange }: NotesFil
                 className={cn(
                   "flex w-full rounded-lg px-2.5 py-1.5 text-left text-sm",
                   filters.date === opt.id
-                    ? "bg-[#7C3CFF]/15 text-[#7C3CFF]"
+                    ? "bg-z-primary/15 text-z-primary"
                     : "text-[#e8eaed]/80 hover:bg-white/5",
                 )}
               >

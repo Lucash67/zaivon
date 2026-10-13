@@ -92,8 +92,8 @@ export function WeekPulsePanel({
                 className={cn(
                   "w-full rounded-[4px]",
                   day.isFocus
-                    ? "bg-gradient-to-t from-[#7C3CFF] to-[#0CD4FF]"
-                    : "bg-[#7C3CFF]/35",
+                    ? "bg-gradient-to-t from-z-primary to-z-emerald"
+                    : "bg-z-primary/35",
                 )}
               />
             </div>
@@ -143,7 +143,7 @@ export function WeekPulsePanel({
                   transition={{ duration: 0.7, delay: 0.28, ease: "easeOut" }}
                   className={cn(
                     "h-full rounded-full",
-                    pulse.unitsGoalProgress >= 100 ? "bg-emerald-400" : "bg-[#0CD4FF]",
+                    pulse.unitsGoalProgress >= 100 ? "bg-emerald-400" : "bg-z-emerald",
                   )}
                 />
               </div>

@@ -1,32 +1,44 @@
 import { BRIGADEIROS_BUSINESS_ID, SALGADOS_BUSINESS_ID } from "@/lib/business-units";
 
-/** Assets de marca OMNI. */
+/**
+ * Assets de marca ZAIVON Vertex. PNG transparente oficial (arte de referência);
+ * trocar pelo SVG vetorial quando o arquivo definitivo existir.
+ */
 export const HUB_BRAND_ASSETS = {
-  favicon: "/icons/hub-favicon.svg",
+  favicon: "/brand/zaivon-icon-64.png",
+  favicon32: "/brand/zaivon-icon-32.png",
+  appleTouch: "/brand/zaivon-icon-180.png",
+  monogram: "/brand/zaivon-monogram.png",
+  /** Monograma + "ZAIVON" em branco — somente sobre fundo escuro. */
+  wordmarkOnDark: "/brand/zaivon-wordmark.png",
+  /** Só o lettering "ZAIVON" (recortado do wordmark oficial). */
+  wordtypeLight: "/brand/zaivon-wordtype-light.png",
+  wordtypeDark: "/brand/zaivon-wordtype-dark.png",
 } as const;
 
 /**
- * Tokens visuais OMNI — paleta oficial.
- * `yellow` / `secondary` mantêm nomes legacy usados em charts/componentes.
+ * Paleta ZAIVON Obsidian Lime (hex) para lugares que não aceitam variável CSS
+ * (atributos SVG, gráficos). Em CSS/classes use os tokens --z-* / z-*.
+ * `yellow` / `purple` / `secondary` / `cyan` são nomes legados = papéis da marca antiga.
  */
 export const HUB_COLORS = {
-  black: "#0D0F17",
-  /** Accent principal (roxo OMNI) — alias legacy `yellow`. */
-  yellow: "#7C3CFF",
-  secondary: "#0CD4FF",
-  purple: "#7C3CFF",
-  blue: "#3882F6",
-  cyan: "#0CD4FF",
-  mintLight: "#0CD4FF",
-  white: "#F5F6FA",
-  surface: "#1F2430",
+  black: "#05070B",
+  /** Cor principal (Lime 500) — alias legado `yellow`. */
+  yellow: "#B7FF3C",
+  secondary: "#2ED3A7",
+  purple: "#B7FF3C",
+  blue: "#3DA5FF",
+  cyan: "#2ED3A7",
+  mintLight: "#DCFF98",
+  white: "#F7F9FC",
+  surface: "#10141B",
   gray: {
-    400: "#A0A0A0",
-    500: "#8E8E93",
-    600: "#525252",
-    700: "#2A2A2A",
-    800: "#1F2430",
-    900: "#0D0F17",
+    400: "#C8D0DB",
+    500: "#93A0B1",
+    600: "#6F7B8C",
+    700: "#202734",
+    800: "#151A22",
+    900: "#0A0D12",
   },
 } as const;
 
@@ -80,27 +92,28 @@ export const HUB_VALUE_PROPS = [
 /**
  * Arquitetura de marca (oficial):
  *
- *   OMNI              = marca-mãe / ecossistema / plataforma
- *   OMNI Business     = produto de gestão (este app em produção)
- *   OMNI Schedule     = produto de agenda (`/schedule`, schema `schedule.*`)
+ *   ZAIVON            = marca-mãe / ecossistema / plataforma
+ *   ZAIVON Business   = produto de gestão (este app em produção)
+ *   Schedule / CRM    = produtos independentes, ainda não migrados para a marca ZAIVON
  *
- * Telas globais (login, auth, conta) priorizam a marca OMNI.
- * O chrome interno do app identifica o produto OMNI Business.
+ * Telas globais (login, auth, conta) priorizam a marca ZAIVON.
+ * O chrome interno do app identifica o produto ZAIVON Business.
+ * Identificadores técnicos (rotas, cookies, chaves "omni") não mudam.
  */
 export const HUB_COPY = {
-  holdingName: "OMNI",
-  holdingTagline: "Ecossistema de soluções para o seu negócio",
-  productName: "OMNI Business",
+  holdingName: "ZAIVON",
+  holdingTagline: "Intelligence moves forward.",
+  productName: "ZAIVON Business",
   productTagline: "Gestão da operação",
-  brandName: "OMNI",
+  brandName: "ZAIVON",
   heroTitle: "Conecte. Organize.",
   heroHighlight: "Evolua.",
-  heroTagline: "OMNI · Ecossistema",
+  heroTagline: "ZAIVON · Ecossistema",
   heroDescription:
-    "A OMNI é a plataforma. OMNI Business cuida da gestão da operação — e o ecossistema cresce com novas soluções.",
+    "A ZAIVON é a plataforma. ZAIVON Business cuida da gestão da operação — e o ecossistema cresce com novas soluções.",
   enterprisesHeading: "Operações ativas",
   footerSlogan: "Uma marca. Várias soluções. Seu negócio no centro.",
-  footerLegacy: "Conexão, organização e inteligência para o seu negócio evoluir.",
+  footerLegacy: "Inteligência, controle e evolução para o seu negócio.",
   authWelcome: "Bem-vindo de volta",
-  authSubtitle: "Entre na OMNI — seu ecossistema de produtos.",
+  authSubtitle: "Entre na ZAIVON — seu ecossistema de produtos.",
 } as const;

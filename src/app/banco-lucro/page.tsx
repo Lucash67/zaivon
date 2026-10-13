@@ -148,7 +148,7 @@ export default function BancoLucroPage() {
         ) : null}
 
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          <div className="relative overflow-hidden rounded-2xl border border-brand-green/25 bg-gradient-to-br from-brand-green/10 via-surface-card to-[#7C3CFF]/5 p-5">
+          <div className="relative overflow-hidden rounded-2xl border border-brand-green/25 bg-gradient-to-br from-brand-green/10 via-surface-card to-z-primary/5 p-5">
             <div className="mb-1 flex items-center gap-2">
               <Wallet className="h-4 w-4 text-brand-green" />
               <p className="text-xs font-medium uppercase tracking-wide text-text-muted">
@@ -189,7 +189,7 @@ export default function BancoLucroPage() {
                 {general && (
                   <button
                     type="button"
-                    className="mt-2 text-xs font-medium text-[#0CD4FF] hover:underline"
+                    className="mt-2 text-xs font-medium text-z-emerald hover:underline"
                     onClick={() => {
                       setPracticalDraft(String(data.practicalBalance));
                       setEditingPractical(true);
@@ -209,9 +209,9 @@ export default function BancoLucroPage() {
             )}
           </div>
 
-          <div className="relative overflow-hidden rounded-2xl border border-[#7C3CFF]/20 bg-gradient-to-br from-[#7C3CFF]/8 via-surface-card to-surface-card p-5">
+          <div className="relative overflow-hidden rounded-2xl border border-z-primary/20 bg-gradient-to-br from-z-primary/8 via-surface-card to-surface-card p-5">
             <div className="mb-1 flex items-center gap-2">
-              <PiggyBank className="h-4 w-4 text-[#7C3CFF]" />
+              <PiggyBank className="h-4 w-4 text-z-primary" />
               <p className="text-xs font-medium uppercase tracking-wide text-text-muted">
                 Saldo operacional
               </p>
@@ -226,23 +226,23 @@ export default function BancoLucroPage() {
             </p>
           </div>
 
-          <div className="relative overflow-hidden rounded-2xl border border-[#0CD4FF]/30 bg-gradient-to-br from-[#0CD4FF]/10 via-surface-card to-[#7C3CFF]/5 p-5 sm:col-span-2 xl:col-span-1">
+          <div className="relative overflow-hidden rounded-2xl border border-z-emerald/30 bg-gradient-to-br from-z-emerald/10 via-surface-card to-z-primary/5 p-5 sm:col-span-2 xl:col-span-1">
             <div className="mb-1 flex items-center gap-2">
-              <Target className="h-4 w-4 text-[#0CD4FF]" />
+              <Target className="h-4 w-4 text-z-emerald" />
               <p className="text-xs font-medium uppercase tracking-wide text-text-muted">
                 Saldo teórico pleno
               </p>
             </div>
-            <p className="mt-1 text-3xl font-black text-[#0CD4FF]">{formatCurrency(theoreticalBalance)}</p>
+            <p className="mt-1 text-3xl font-black text-z-emerald">{formatCurrency(theoreticalBalance)}</p>
             <p className="mt-1 text-xs text-text-muted">
               Se pendências quitassem e não houvesse perdas
             </p>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-[#7C3CFF]/20 bg-surface-card/80 p-4 sm:p-5">
+        <div className="rounded-2xl border border-z-primary/20 bg-surface-card/80 p-4 sm:p-5">
           <div className="mb-3 flex items-start gap-2">
-            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[#0CD4FF]" />
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-z-emerald" />
             <div>
               <p className="text-sm font-semibold text-text-primary">Atrito da operação</p>
               <p className="text-xs text-text-muted">
@@ -255,7 +255,7 @@ export default function BancoLucroPage() {
               <p className="text-[10px] font-semibold uppercase tracking-wide text-text-muted">
                 Pendências abertas
               </p>
-              <p className="mt-1 text-xl font-bold text-[#0CD4FF]">{formatCurrency(openPendings)}</p>
+              <p className="mt-1 text-xl font-bold text-z-emerald">{formatCurrency(openPendings)}</p>
               <p className="mt-0.5 text-[11px] text-text-muted">
                 {general ? data.pendingCount : "no período"} fiado(s) esperados
               </p>
@@ -292,7 +292,7 @@ export default function BancoLucroPage() {
                     <span className="font-medium text-text-primary">{item.clientName}</span>
                     <span className="text-text-muted"> · {item.date}</span>
                   </span>
-                  <span className="font-semibold tabular-nums text-[#0CD4FF]">
+                  <span className="font-semibold tabular-nums text-z-emerald">
                     {formatCurrency(item.amount)}
                   </span>
                 </div>
@@ -342,11 +342,11 @@ export default function BancoLucroPage() {
               </p>
               <p className="mt-0.5 text-[11px] text-text-muted">Henrique / colegas — não é seu PIX</p>
             </div>
-            <div className="rounded-xl border border-[#0CD4FF]/25 bg-[#0CD4FF]/5 px-3 py-3">
+            <div className="rounded-xl border border-z-emerald/25 bg-z-emerald/5 px-3 py-3">
               <p className="text-[10px] font-semibold uppercase tracking-wide text-text-muted">
                 Quits recebidos
               </p>
-              <p className="mt-1 text-xl font-bold text-[#0CD4FF]">
+              <p className="mt-1 text-xl font-bold text-z-emerald">
                 {formatCurrency(cashFlow.quitsReceived)}
               </p>
               <p className="mt-0.5 text-[11px] text-text-muted">fiados de dias anteriores</p>

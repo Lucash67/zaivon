@@ -9,9 +9,9 @@ interface BadgeProps {
 const variants = {
   default: "bg-surface-elevated text-text-secondary border-surface-border",
   success: "bg-brand-green/10 text-brand-green border-brand-green/20",
-  warning: "bg-[#7C3CFF]/10 text-[#0CD4FF] border-[#7C3CFF]/25",
+  warning: "bg-z-warning/10 text-z-warning border-z-warning/25",
   error: "bg-brand-red/10 text-brand-red border-brand-red/20",
-  info: "bg-[#3882F6]/10 text-[#3882F6] border-[#3882F6]/20",
+  info: "bg-z-info/10 text-z-info border-z-info/20",
 };
 
 export function Badge({ children, variant = "default", className }: BadgeProps) {

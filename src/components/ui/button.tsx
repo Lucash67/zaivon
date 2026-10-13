@@ -7,7 +7,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-brand-gradient text-white hover:brightness-110 rounded-lg shadow-[0_2px_16px_rgba(124,60,255,0.35)]",
+        default: "bg-brand-gradient text-brand-on hover:brightness-110 rounded-lg shadow-[0_2px_16px_rgb(var(--z-primary-rgb)/0.35)]",
         secondary: "bg-surface-elevated text-text-primary border border-surface-border hover:bg-surface-hover rounded-lg",
         ghost: "text-text-secondary hover:bg-surface-hover hover:text-text-primary rounded-lg",
         destructive: "bg-brand-red/10 text-brand-red hover:bg-brand-red/20 rounded-lg",

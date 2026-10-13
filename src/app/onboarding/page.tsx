@@ -11,12 +11,12 @@ import { OMNI_ONBOARDING_PATH } from "@/lib/omni-onboarding";
 
 const STEPS = [
   {
-    title: "Conheça a OMNI",
+    title: "Conheça a ZAIVON",
     body: "Ecossistema de produtos para organizar e fazer o negócio evoluir.",
   },
   {
     title: "Crie ou entre na sua conta",
-    body: "Uma conta OMNI dá acesso aos produtos autorizados do ecossistema.",
+    body: "Uma conta ZAIVON dá acesso aos produtos autorizados do ecossistema.",
   },
   {
     title: "Escolha o sistema",
@@ -42,12 +42,12 @@ export default function PublicOnboardingPage() {
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#05060c] text-[#F5F6FA]">
       <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(124,60,255,0.22),_transparent_50%),radial-gradient(ellipse_at_bottom_left,_rgba(12,212,255,0.12),_transparent_45%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgb(var(--z-primary-rgb)/0.22),_transparent_50%),radial-gradient(ellipse_at_bottom_left,_rgb(var(--z-emerald-rgb)/0.12),_transparent_45%)]"
         aria-hidden
       />
 
       <header className="relative z-10 mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-5 sm:px-6">
-        <Link href={OMNI_ONBOARDING_PATH} aria-label="OMNI">
+        <Link href={OMNI_ONBOARDING_PATH} aria-label="ZAIVON">
           <LhHoldingLogo height={44} className="max-w-[160px] sm:max-w-[200px]" />
         </Link>
         <div className="flex items-center gap-2 sm:gap-3">
@@ -59,7 +59,7 @@ export default function PublicOnboardingPage() {
           </Link>
           <Link
             href="/login?mode=register"
-            className="rounded-xl bg-gradient-to-r from-[#7C3CFF] to-[#3882F6] px-3 py-2 text-sm font-semibold text-white shadow-[0_8px_24px_rgba(124,60,255,0.35)] transition hover:brightness-110 sm:px-4"
+            className="rounded-xl bg-gradient-to-r from-z-primary to-z-emerald px-3 py-2 text-sm font-semibold text-brand-on shadow-[0_8px_24px_rgb(var(--z-primary-rgb)/0.35)] transition hover:brightness-110 sm:px-4"
           >
             Criar conta
           </Link>
@@ -67,11 +67,11 @@ export default function PublicOnboardingPage() {
       </header>
 
       <main className="relative z-10 mx-auto flex max-w-lg flex-col px-4 pb-16 pt-6 sm:px-6 sm:pt-10">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#7C3CFF]">
-          OMNI · Ecossistema
+        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-z-primary">
+          ZAIVON · Ecossistema
         </p>
         <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-          Bem-vindo à OMNI
+          Bem-vindo à ZAIVON
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-[#A3A3A3] sm:text-[15px]">
           Porta de entrada para quem chega de qualquer canal. Conheça o ecossistema,
@@ -84,7 +84,7 @@ export default function PublicOnboardingPage() {
               key={step.title}
               className="flex gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4"
             >
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#7C3CFF]/15 text-sm font-bold text-[#C4B5FD]">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-z-primary/15 text-sm font-bold text-z-lime-300">
                 {i + 1}
               </span>
               <div>
@@ -96,15 +96,15 @@ export default function PublicOnboardingPage() {
         </ul>
 
         <div className="mt-6 flex flex-wrap gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-[#7C3CFF]/25 bg-[#7C3CFF]/10 px-3 py-1 text-[11px] font-medium text-[#C4B5FD]">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-z-primary/25 bg-z-primary/10 px-3 py-1 text-[11px] font-medium text-z-lime-300">
             <LayoutGrid className="h-3 w-3" />
             Hub
           </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-[#7C3CFF]/25 bg-[#7C3CFF]/10 px-3 py-1 text-[11px] font-medium text-[#C4B5FD]">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-z-primary/25 bg-z-primary/10 px-3 py-1 text-[11px] font-medium text-z-lime-300">
             <Sparkles className="h-3 w-3" />
             Business
           </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-[#0CD4FF]/25 bg-[#0CD4FF]/10 px-3 py-1 text-[11px] font-medium text-[#67E8F9]">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-z-emerald/25 bg-z-emerald/10 px-3 py-1 text-[11px] font-medium text-[#7FE6C8]">
             <CalendarDays className="h-3 w-3" />
             Schedule
           </span>
@@ -113,14 +113,14 @@ export default function PublicOnboardingPage() {
         <div className="mt-10 flex flex-col gap-3 sm:flex-row">
           <Link
             href="/login?mode=register"
-            className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#7C3CFF] to-[#3882F6] px-5 py-4 text-sm font-semibold text-white shadow-[0_12px_40px_rgba(124,60,255,0.35)] transition hover:brightness-110"
+            className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-z-primary to-z-emerald px-5 py-4 text-sm font-semibold text-brand-on shadow-[0_12px_40px_rgb(var(--z-primary-rgb)/0.35)] transition hover:brightness-110"
           >
             Criar conta
             <ArrowRight className="h-4 w-4" />
           </Link>
           <Link
             href="/login"
-            className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/5 px-5 py-4 text-sm font-semibold text-white transition hover:border-[#7C3CFF]/40 hover:bg-[#7C3CFF]/10"
+            className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/5 px-5 py-4 text-sm font-semibold text-white transition hover:border-z-primary/40 hover:bg-z-primary/10"
           >
             Já tenho conta — Entrar
           </Link>

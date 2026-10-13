@@ -15,6 +15,7 @@ import {
 } from "@/constants/navigation";
 import { BusinessContextSelector } from "@/components/dashboard/business-context-selector";
 import { LhHoldingIcon } from "@/components/hub/lh-hub-logo";
+import { ZaivonWordtype } from "@/components/hub/lh-monogram";
 import { ProductSwitcher } from "@/components/hub/product-switcher";
 import { resolveTheme, THEME_META } from "@/lib/theme-config";
 import { clearHubSession } from "@/lib/hub-session";
@@ -74,14 +75,14 @@ function NavLink({
         "group flex min-h-[44px] items-center gap-3 rounded-lg py-2.5 text-sm font-medium transition-all duration-150 lg:min-h-0 lg:text-[13px]",
         nested ? "px-2.5 pl-3" : "px-3",
         active &&
-          "bg-brand-yellow/10 text-brand-yellow shadow-[inset_0_0_0_1px_rgba(124,60,255,0.22),0_0_20px_rgba(124,60,255,0.08)]",
+          "bg-brand-yellow/10 text-brand-yellow shadow-[inset_0_0_0_1px_rgb(var(--z-primary-rgb)/0.22),0_0_20px_rgb(var(--z-primary-rgb)/0.08)]",
         !active && "text-text-secondary hover:bg-surface-hover hover:text-text-primary",
       )}
     >
       <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.75} />
       <span className="flex-1 truncate">{item.label}</span>
       {active && (
-        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-yellow shadow-[0_0_8px_rgba(124,60,255,0.75)]" />
+        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-yellow shadow-[0_0_8px_rgb(var(--z-primary-rgb)/0.75)]" />
       )}
     </Link>
   );
@@ -170,8 +171,9 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
       <div className="flex items-center gap-3 px-4 py-4">
         <LhHoldingIcon height={36} className="shrink-0" />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-bold leading-tight tracking-[0.1em] text-text-primary">
-            OMNI <span className="font-semibold tracking-normal text-text-secondary">Business</span>
+          <p className="flex items-center gap-1.5 truncate text-sm font-semibold leading-tight text-text-secondary">
+            <ZaivonWordtype height={11} />
+            Business
           </p>
           <p className="truncate text-[10px] uppercase tracking-wider text-text-muted">{APP_TAGLINE}</p>
           <div className="mt-2">

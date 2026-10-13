@@ -37,10 +37,10 @@ function PreviewSection({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-[#7C3CFF]/15 bg-gradient-to-br from-[#7C3CFF]/5 via-surface-card to-surface-card p-4">
+    <div className="rounded-xl border border-z-primary/15 bg-gradient-to-br from-z-primary/5 via-surface-card to-surface-card p-4">
       <div className="mb-3 flex items-center gap-2">
-        <Icon className="h-4 w-4 text-[#7C3CFF]" />
-        <h3 className="label-upper text-[#7C3CFF]">{title}</h3>
+        <Icon className="h-4 w-4 text-z-primary" />
+        <h3 className="label-upper text-z-primary">{title}</h3>
       </div>
       {children}
     </div>
@@ -140,7 +140,7 @@ export default function RegistroDiaPage() {
         <Card>
           <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
             <CardTitle className="flex items-center gap-2 text-base">
-              <ClipboardPaste className="h-4 w-4 text-[#7C3CFF]" />
+              <ClipboardPaste className="h-4 w-4 text-z-primary" />
               Rascunho do dia
             </CardTitle>
             <Button
@@ -161,13 +161,13 @@ export default function RegistroDiaPage() {
               className="min-h-[240px] font-mono text-base leading-relaxed sm:min-h-[340px] sm:text-xs xl:min-h-[480px]"
             />
 
-            <div className="rounded-lg border border-[#7C3CFF]/20 bg-[#7C3CFF]/5 p-3 text-xs text-text-muted">
-              <p className="mb-2 font-medium text-[#0CD4FF]">Seu formato:</p>
+            <div className="rounded-lg border border-z-primary/20 bg-z-primary/5 p-3 text-xs text-text-muted">
+              <p className="mb-2 font-medium text-z-emerald">Seu formato:</p>
               <p>
                 A data é a da coluna em Notas (não escreva no texto) · Encomendados · Henrique · Unifor & Acal · Lista de vendas ·
                 Pendências/Espécie/Fiados/Perdas · OBS · Custo/Faturamento/Lucro/Cofrinho
               </p>
-              <p className="mt-2 font-medium text-[#0CD4FF]">Linha de venda:</p>
+              <p className="mt-2 font-medium text-z-emerald">Linha de venda:</p>
               <code className="text-text-secondary">1 - Nome: 1 salgado | Pix | R$5</code>
             </div>
 
@@ -195,7 +195,7 @@ export default function RegistroDiaPage() {
           {!preview ? (
             <Card>
               <CardContent className="py-12 text-center text-sm text-text-muted">
-                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#7C3CFF]/20 to-[#0CD4FF]/15 text-[#7C3CFF]">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-z-primary/20 to-z-emerald/15 text-z-primary">
                   <Play className="h-5 w-5" />
                 </div>
                 Interprete um rascunho para ver o preview antes de registrar.
@@ -230,7 +230,7 @@ export default function RegistroDiaPage() {
                   {preview.warnings.map((msg) => (
                     <div
                       key={msg}
-                      className="flex items-start gap-2 rounded-lg border border-[#7C3CFF]/30 bg-[#7C3CFF]/10 p-3 text-sm text-[#F5F6FA]/90"
+                      className="flex items-start gap-2 rounded-lg border border-z-primary/30 bg-z-primary/10 p-3 text-sm text-[#F5F6FA]/90"
                     >
                       <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
                       {msg}
@@ -241,8 +241,8 @@ export default function RegistroDiaPage() {
 
               <PreviewSection title="Resumo" icon={BookOpen}>
                 <div className="grid gap-2 sm:grid-cols-2 text-sm">
-                  <p className="rounded-lg border border-[#3882F6]/15 bg-[#3882F6]/5 px-3 py-2">
-                    Receita: <strong className="text-[#3882F6]">{formatCurrency(preview.summary.revenue)}</strong>
+                  <p className="rounded-lg border border-z-info/15 bg-z-info/5 px-3 py-2">
+                    Receita: <strong className="text-z-info">{formatCurrency(preview.summary.revenue)}</strong>
                   </p>
                   <p className="rounded-lg border border-brand-green/20 bg-brand-green/5 px-3 py-2">
                     Lucro: <strong className="text-brand-green">{formatCurrency(preview.summary.profit)}</strong>
@@ -281,7 +281,7 @@ export default function RegistroDiaPage() {
                       {sale.productName}
                       {sale.quantity > 1 ? ` x${sale.quantity}` : ""} · {sale.paymentMethod}
                       {sale.paymentStatus === "pending" && (
-                        <Badge className="ml-2 bg-[#7C3CFF]/15 text-[#0CD4FF]">pendente</Badge>
+                        <Badge className="ml-2 bg-z-warning/15 text-z-warning">pendente</Badge>
                       )}
                     </li>
                   ))}
@@ -294,7 +294,7 @@ export default function RegistroDiaPage() {
                     <li key={c.clientName}>
                       {c.clientName}
                       {c.willCreate && (
-                        <Badge className="ml-2 bg-[#0CD4FF]/15 text-[#0CD4FF]">novo</Badge>
+                        <Badge className="ml-2 bg-z-emerald/15 text-z-emerald">novo</Badge>
                       )}
                       {c.existingClientName && !c.willCreate && (
                         <span className="ml-2 text-text-muted">({c.existingClientName})</span>
@@ -305,7 +305,7 @@ export default function RegistroDiaPage() {
               </PreviewSection>
 
               {/* CTA colado no rodapé no celular: registrar sem rolar tudo de volta. */}
-              <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] z-20 rounded-2xl border border-[#7C3CFF]/25 bg-surface-base/95 p-2 shadow-[0_8px_32px_rgba(124,60,255,0.15)] backdrop-blur xl:static xl:border-0 xl:bg-transparent xl:p-0 xl:shadow-none xl:backdrop-blur-none">
+              <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] z-20 rounded-2xl border border-z-primary/25 bg-surface-base/95 p-2 shadow-[0_8px_32px_rgb(var(--z-primary-rgb)/0.15)] backdrop-blur xl:static xl:border-0 xl:bg-transparent xl:p-0 xl:shadow-none xl:backdrop-blur-none">
                 <Button
                   size="lg"
                   className="w-full"
@@ -318,7 +318,7 @@ export default function RegistroDiaPage() {
               </div>
 
               {commitBlockReason && (
-                <p className="text-sm text-[#0CD4FF]">{commitBlockReason}</p>
+                <p className="text-sm text-z-warning">{commitBlockReason}</p>
               )}
 
               {commitMutation.isError && (

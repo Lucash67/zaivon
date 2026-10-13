@@ -19,12 +19,12 @@ export function Header({ title, subtitle, actions, brandHeader, onOpenMenu }: He
   return (
     <header
       className={cn(
-        "relative sticky top-0 z-30 border-b border-[#7C3CFF]/12 bg-surface-base/95 backdrop-blur-sm",
+        "relative sticky top-0 z-30 border-b border-z-primary/12 bg-surface-base/95 backdrop-blur-sm",
         brandHeader && "brand-header",
       )}
     >
       <div
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[#7C3CFF]/40 to-transparent"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-z-primary/40 to-transparent"
         aria-hidden
       />
       <div className="relative flex min-h-[56px] flex-wrap items-center gap-x-2 gap-y-2 px-3 py-2 sm:px-5 lg:min-h-[64px] lg:px-6 lg:py-3">

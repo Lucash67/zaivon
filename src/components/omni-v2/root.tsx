@@ -17,7 +17,7 @@ export function OmniRoot({ children }: { children: ReactNode }) {
   const page = OMNI_V2_NAV.find((n) => n.href === path)?.label ?? "Hoje";
 
   return (
-    <AppShell title={`OMNI v2 · ${page}`} subtitle="Operação diária: lucro, cofrinho, pendências e meta">
+    <AppShell title={`ZAIVON v2 · ${page}`} subtitle="Operação diária: lucro, cofrinho, pendências e meta">
       <div
         className={cn(
           "omni2 -m-3 min-h-[calc(100dvh-56px)] bg-o-background font-omni text-o-foreground sm:-m-5 lg:-m-6 lg:min-h-[calc(100dvh-64px)]",

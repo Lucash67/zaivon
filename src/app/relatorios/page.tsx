@@ -80,7 +80,7 @@ function exportPDF(data: ReportData) {
     import("jspdf-autotable").then(() => {
       const doc = new jsPDF();
       doc.setFontSize(18);
-      doc.text("OMNI Business — Relatório", 14, 22);
+      doc.text("ZAIVON Business — Relatório", 14, 22);
       doc.setFontSize(11);
       doc.text(`Tipo: ${data.type} | Período: ${data.period.start} a ${data.period.end}`, 14, 32);
       // @ts-expect-error autotable plugin

@@ -94,7 +94,7 @@ const NAV_BY_HREF = {
 /** Sem hub de holding — Dashboard é a home. */
 export const NAV_PINNED_TOP: NavItem[] = [];
 
-/** Telas do módulo OMNI v2 (operação diária). */
+/** Telas do módulo ZAIVON v2 (operação diária; rotas /v2). */
 export const OMNI_V2_NAV: NavItem[] = [
   NAV_BY_HREF.omniHoje,
   NAV_BY_HREF.omniRegistrar,
@@ -114,7 +114,7 @@ export const NAV_PINNED_BOTTOM: NavItem[] = [NAV_BY_HREF.configuracoes];
 export const NAV_SECTORS: NavSector[] = [
   {
     id: "omni",
-    label: "OMNI v2",
+    label: "ZAIVON v2",
     items: OMNI_V2_NAV,
   },
   {
@@ -176,5 +176,5 @@ export const MOBILE_NAV_ITEMS: NavItem[] = [
   NAV_BY_HREF.omniDesempenho,
 ];
 
-export const APP_NAME = "OMNI Business";
+export const APP_NAME = "ZAIVON Business";
 export const APP_TAGLINE = "Gestão da operação";

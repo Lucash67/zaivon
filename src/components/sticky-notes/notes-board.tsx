@@ -138,10 +138,10 @@ function WeekLane({
       ref={setNodeRef}
       className={cn(
         "flex h-full w-[min(78vw,240px)] shrink-0 snap-start flex-col rounded-xl border bg-[#14161e]/95 sm:w-[220px]",
-        isOver ? "border-[#7C3CFF]/55 bg-[#1a1c24] shadow-[0_0_24px_rgba(124,60,255,0.15)]" : "border-[#7C3CFF]/15",
+        isOver ? "border-z-primary/55 bg-[#1a1c24] shadow-[0_0_24px_rgb(var(--z-primary-rgb)/0.15)]" : "border-z-primary/15",
       )}
     >
-      <header className="border-b border-[#7C3CFF]/15 px-3 py-3">
+      <header className="border-b border-z-primary/15 px-3 py-3">
         <p className="text-[15px] font-semibold capitalize leading-tight tracking-tight text-white sm:text-[17px]">
           {column.label}
         </p>
@@ -152,7 +152,7 @@ function WeekLane({
           <button
             type="button"
             onClick={() => onCreateForDay?.(column.id)}
-            className="mt-2.5 inline-flex min-h-10 w-full items-center justify-center gap-1 rounded-lg border border-[#7C3CFF]/25 bg-[#1a1c24]/80 px-2 py-2 text-[12px] font-medium text-[#e8eaed]/80 transition hover:border-[#7C3CFF]/50 hover:bg-[#1f2230] hover:text-[#e8eaed] active:bg-[#252836]"
+            className="mt-2.5 inline-flex min-h-10 w-full items-center justify-center gap-1 rounded-lg border border-z-primary/25 bg-[#1a1c24]/80 px-2 py-2 text-[12px] font-medium text-[#e8eaed]/80 transition hover:border-z-primary/50 hover:bg-[#1f2230] hover:text-[#e8eaed] active:bg-[#252836]"
           >
             <Plus className="h-4 w-4" />
             Criar nota
@@ -317,7 +317,7 @@ export function NotesBoard({
       {belowToolbar ? <div className="mb-4 sm:mb-5">{belowToolbar}</div> : null}
 
       {weekDropActive ? (
-        <p className="mb-3 text-xs text-[#0CD4FF]/90">
+        <p className="mb-3 text-xs text-z-emerald/90">
           Solte nas setas ← → da semana para mover a nota (mantém o mesmo dia da semana).
         </p>
       ) : null}

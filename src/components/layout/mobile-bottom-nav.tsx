@@ -15,11 +15,11 @@ export function MobileBottomNav({ onOpenMenu }: { onOpenMenu: () => void }) {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-[#7C3CFF]/15 bg-surface-base/92 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-z-primary/15 bg-surface-base/92 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden"
       aria-label="Navegação principal"
     >
       <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#7C3CFF]/50 to-transparent"
+        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-z-primary/50 to-transparent"
         aria-hidden
       />
       <div className="flex items-stretch">
@@ -33,7 +33,7 @@ export function MobileBottomNav({ onOpenMenu }: { onOpenMenu: () => void }) {
               aria-current={active ? "page" : undefined}
               className={cn(
                 "relative flex min-h-[56px] flex-1 flex-col items-center justify-center gap-1 px-1 py-2 transition-colors",
-                active ? "text-[#7C3CFF]" : "text-text-muted active:bg-surface-hover",
+                active ? "text-z-primary" : "text-text-muted active:bg-surface-hover",
               )}
             >
               {active && (
@@ -43,7 +43,7 @@ export function MobileBottomNav({ onOpenMenu }: { onOpenMenu: () => void }) {
                 />
               )}
               <Icon
-                className={cn("h-5 w-5 shrink-0", active && "drop-shadow-[0_0_8px_rgba(124,60,255,0.55)]")}
+                className={cn("h-5 w-5 shrink-0", active && "drop-shadow-[0_0_8px_rgb(var(--z-primary-rgb)/0.55)]")}
                 strokeWidth={active ? 2.25 : 1.75}
               />
               <span className="text-[10px] font-semibold leading-none">{item.label}</span>

@@ -101,7 +101,7 @@ export function DateContextSelector({ compact }: { compact?: boolean }) {
         type="button"
         variant="outline"
         size="sm"
-        className="gap-1.5 border-[#7C3CFF]/20 bg-surface-elevated/50 font-normal sm:h-8"
+        className="gap-1.5 border-z-primary/20 bg-surface-elevated/50 font-normal sm:h-8"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-haspopup="listbox"
@@ -258,7 +258,7 @@ function MenuItem({
         "flex min-h-[44px] w-full items-center px-3 py-2 text-left text-sm transition-colors sm:min-h-0",
         disabled && "cursor-not-allowed opacity-40",
         !disabled && "hover:bg-surface-hover text-text-secondary hover:text-text-primary",
-        active && !disabled && "bg-[#7C3CFF]/10 font-medium text-[#7C3CFF]",
+        active && !disabled && "bg-z-primary/10 font-medium text-z-primary",
       )}
     >
       {children}

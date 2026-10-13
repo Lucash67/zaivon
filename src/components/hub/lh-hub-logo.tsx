@@ -1,6 +1,6 @@
 import { cn } from "@/components/ui/utils";
-import { OmniRing } from "@/components/hub/lh-monogram";
-import { HUB_COPY } from "@/constants/hub-brand";
+import { OmniRing, ZaivonWordtype } from "@/components/hub/lh-monogram";
+import { HUB_BRAND_ASSETS, HUB_COPY } from "@/constants/hub-brand";
 
 type HubLogoVariant = "horizontal" | "horizontal-compact" | "stacked" | "icon";
 
@@ -14,7 +14,7 @@ function resolveHeight(height?: number, iconSize?: number, fallback = 40): numbe
   return height ?? iconSize ?? fallback;
 }
 
-/** Logo do produto OMNI Business. */
+/** Logo do produto ZAIVON Business. */
 export function LhHubLogo({
   variant = "horizontal",
   className,
@@ -30,18 +30,17 @@ export function LhHubLogo({
   return (
     <div className={cn("inline-flex items-center gap-2.5", className)} style={{ height: h }}>
       <OmniRing size={Math.round(h * 0.85)} />
-      <span
-        className="font-bold tracking-[0.08em] text-white"
-        style={{ fontSize: h * 0.38 }}
-      >
-        OMNI{" "}
-        <span className="font-semibold tracking-normal text-text-muted">Business</span>
+      <span className="inline-flex items-center gap-2">
+        <ZaivonWordtype height={Math.round(h * 0.3)} />
+        <span className="font-semibold text-text-muted" style={{ fontSize: h * 0.34 }}>
+          Business
+        </span>
       </span>
     </div>
   );
 }
 
-/** Logo da marca-mãe OMNI. */
+/** Logo da marca-mãe ZAIVON. */
 export function LhHoldingLogo({ className, height, iconSize }: BrandLogoProps) {
   const h = resolveHeight(height, iconSize, 44);
 
@@ -51,10 +50,18 @@ export function LhHoldingLogo({ className, height, iconSize }: BrandLogoProps) {
       style={{ minHeight: h }}
     >
       <div className="inline-flex items-center gap-3">
-        <OmniRing size={Math.min(56, Math.round(h * 0.55))} />
-        <div className="leading-tight">
-          <p className="text-lg font-bold tracking-[0.12em] text-white sm:text-xl">OMNI</p>
-          <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-text-muted">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={HUB_BRAND_ASSETS.monogram}
+          alt=""
+          aria-hidden
+          draggable={false}
+          className="shrink-0"
+          style={{ height: 30, width: "auto" }}
+        />
+        <div className="flex flex-col items-start gap-1.5 leading-tight">
+          <ZaivonWordtype onDark height={18} />
+          <p className="whitespace-nowrap text-[10px] font-medium uppercase tracking-[0.16em] text-text-muted">
             {HUB_COPY.holdingTagline}
           </p>
         </div>

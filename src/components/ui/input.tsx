@@ -6,7 +6,7 @@ import { cn } from "./utils";
  * campo — daí `text-base` até sm. A altura de 44px também é regra de toque.
  */
 const FIELD_BASE =
-  "flex h-11 w-full rounded-xl border border-surface-border bg-surface-elevated px-4 text-base text-text-primary transition-colors focus:border-[#7C3CFF]/50 focus:outline-none focus:ring-2 focus:ring-[#7C3CFF]/20 sm:h-10 sm:text-sm";
+  "flex h-11 w-full rounded-xl border border-surface-border bg-surface-elevated px-4 text-base text-text-primary transition-colors focus:border-z-primary/50 focus:outline-none focus:ring-2 focus:ring-z-primary/20 sm:h-10 sm:text-sm";
 
 /** Teclado numérico correto sem precisar repetir inputMode em cada campo. */
 function numericKeyboard(
@@ -90,7 +90,7 @@ export const Textarea = forwardRef<
       id={id}
       ref={ref}
       className={cn(
-        "flex min-h-[80px] w-full resize-none rounded-xl border border-surface-border bg-surface-elevated px-4 py-3 text-base text-text-primary placeholder:text-text-muted transition-colors focus:border-[#7C3CFF]/50 focus:outline-none focus:ring-2 focus:ring-[#7C3CFF]/20 sm:text-sm",
+        "flex min-h-[80px] w-full resize-none rounded-xl border border-surface-border bg-surface-elevated px-4 py-3 text-base text-text-primary placeholder:text-text-muted transition-colors focus:border-z-primary/50 focus:outline-none focus:ring-2 focus:ring-z-primary/20 sm:text-sm",
         className
       )}
       {...props}

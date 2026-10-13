@@ -89,7 +89,7 @@ export default function IdeiasPage() {
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-5 pb-24">
         <form
           onSubmit={handleCreate}
-          className="rounded-2xl border border-white/10 bg-[#12141F]/80 p-4 shadow-[0_0_0_1px_rgba(124,60,255,0.12)]"
+          className="rounded-2xl border border-white/10 bg-[#12141F]/80 p-4 shadow-[0_0_0_1px_rgb(var(--z-primary-rgb)/0.12)]"
         >
           <div className="mb-3 flex flex-wrap gap-2">
             {IDEA_KINDS.map((k) => (
@@ -100,7 +100,7 @@ export default function IdeiasPage() {
                 className={cn(
                   "rounded-full px-3 py-1 text-xs font-medium transition",
                   draftKind === k
-                    ? "bg-[#7C3CFF]/25 text-[#0CD4FF] ring-1 ring-[#7C3CFF]/50"
+                    ? "bg-z-primary/25 text-z-emerald ring-1 ring-z-primary/50"
                     : "bg-white/5 text-white/60 hover:bg-white/10",
                 )}
               >
@@ -112,19 +112,19 @@ export default function IdeiasPage() {
             value={draftTitle}
             onChange={(e) => setDraftTitle(e.target.value)}
             placeholder="Título (ex.: Novo cardápio)"
-            className="mb-2 w-full rounded-xl border border-white/10 bg-[#0B0D17] px-3 py-2.5 text-sm text-white outline-none placeholder:text-white/30 focus:border-[#7C3CFF]/50"
+            className="mb-2 w-full rounded-xl border border-white/10 bg-[#0B0D17] px-3 py-2.5 text-sm text-white outline-none placeholder:text-white/30 focus:border-z-primary/50"
           />
           <textarea
             value={draftBody}
             onChange={(e) => setDraftBody(e.target.value)}
             placeholder="Detalhes, contexto, por que importa…"
             rows={3}
-            className="mb-3 w-full resize-y rounded-xl border border-white/10 bg-[#0B0D17] px-3 py-2.5 text-sm text-white outline-none placeholder:text-white/30 focus:border-[#7C3CFF]/50"
+            className="mb-3 w-full resize-y rounded-xl border border-white/10 bg-[#0B0D17] px-3 py-2.5 text-sm text-white outline-none placeholder:text-white/30 focus:border-z-primary/50"
           />
           <button
             type="submit"
             disabled={saving || (!draftTitle.trim() && !draftBody.trim())}
-            className="inline-flex h-10 items-center gap-2 rounded-xl bg-gradient-to-r from-[#7C3CFF] to-[#3882F6] px-4 text-sm font-semibold text-white disabled:opacity-40"
+            className="inline-flex h-10 items-center gap-2 rounded-xl bg-gradient-to-r from-z-primary to-z-emerald px-4 text-sm font-semibold text-brand-on disabled:opacity-40"
           >
             <Plus className="h-4 w-4" />
             Adicionar
@@ -138,7 +138,7 @@ export default function IdeiasPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Buscar…"
-              className="h-10 w-full rounded-xl border border-white/10 bg-[#0B0D17] pl-9 pr-3 text-sm text-white outline-none placeholder:text-white/30 focus:border-[#7C3CFF]/50"
+              className="h-10 w-full rounded-xl border border-white/10 bg-[#0B0D17] pl-9 pr-3 text-sm text-white outline-none placeholder:text-white/30 focus:border-z-primary/50"
             />
           </div>
           <select
@@ -159,7 +159,7 @@ export default function IdeiasPage() {
             className={cn(
               "inline-flex h-10 items-center gap-1.5 rounded-xl border px-3 text-xs font-medium",
               showArchived
-                ? "border-[#7C3CFF]/45 bg-[#7C3CFF]/15 text-white"
+                ? "border-z-primary/45 bg-z-primary/15 text-white"
                 : "border-white/10 text-white/60 hover:text-white",
             )}
           >
@@ -261,7 +261,7 @@ function Section({
 function EmptyState() {
   return (
     <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-white/10 px-6 py-14 text-center">
-      <Lightbulb className="h-8 w-8 text-[#7C3CFF]" />
+      <Lightbulb className="h-8 w-8 text-z-primary" />
       <p className="text-sm font-medium text-white">Nada por aqui ainda</p>
       <p className="max-w-sm text-xs leading-relaxed text-white/50">
         Anote cardápio novo, estratégias de venda, melhorias e qualquer demanda futura para não
@@ -316,7 +316,7 @@ function IdeaRow({
     <article
       className={cn(
         "rounded-2xl border border-white/10 bg-[#12141F]/70 transition",
-        item.pinned && "border-[#7C3CFF]/35",
+        item.pinned && "border-z-primary/35",
         item.status === "done" && "opacity-80",
       )}
     >
@@ -333,7 +333,7 @@ function IdeaRow({
               "mt-0.5 inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-2 py-1 text-[11px] font-semibold transition",
               item.status === "done"
                 ? "border-[#22C55E]/35 bg-[#22C55E]/15 text-[#4ADE80]"
-                : "border-white/15 bg-white/5 text-white/70 hover:border-[#7C3CFF]/40 hover:text-white",
+                : "border-white/15 bg-white/5 text-white/70 hover:border-z-primary/40 hover:text-white",
             )}
             aria-label={item.status === "done" ? "Marcar como pendente" : "Marcar como feita"}
             title={item.status === "done" ? "Pendente" : "Feita"}
@@ -360,9 +360,9 @@ function IdeaRow({
           <span
             className={cn(
               "mt-0.5 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
-              item.kind === "ideia" && "bg-[#7C3CFF]/20 text-[#A78BFA]",
-              item.kind === "demanda" && "bg-[#3882F6]/20 text-[#93C5FD]",
-              item.kind === "observacao" && "bg-[#0CD4FF]/15 text-[#67E8F9]",
+              item.kind === "ideia" && "bg-z-primary/20 text-z-lime-300",
+              item.kind === "demanda" && "bg-z-info/20 text-[#93C5FD]",
+              item.kind === "observacao" && "bg-z-emerald/15 text-[#7FE6C8]",
             )}
           >
             {IDEA_KIND_LABELS[item.kind]}
@@ -374,7 +374,7 @@ function IdeaRow({
             )}
             <p className="mt-1 text-[10px] text-white/35">{IDEA_STATUS_LABELS[item.status]}</p>
           </div>
-          {item.pinned && <Pin className="mt-1 h-3.5 w-3.5 shrink-0 text-[#0CD4FF]" />}
+          {item.pinned && <Pin className="mt-1 h-3.5 w-3.5 shrink-0 text-z-emerald" />}
         </button>
       </div>
 
@@ -390,7 +390,7 @@ function IdeaRow({
                 className={cn(
                   "rounded-full px-2.5 py-1 text-[11px]",
                   kind === k
-                    ? "bg-[#7C3CFF]/25 text-[#0CD4FF]"
+                    ? "bg-z-primary/25 text-z-emerald"
                     : "bg-white/5 text-white/50",
                 )}
               >
@@ -401,20 +401,20 @@ function IdeaRow({
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full rounded-xl border border-white/10 bg-[#0B0D17] px-3 py-2 text-sm text-white outline-none focus:border-[#7C3CFF]/50"
+            className="w-full rounded-xl border border-white/10 bg-[#0B0D17] px-3 py-2 text-sm text-white outline-none focus:border-z-primary/50"
           />
           <textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
             rows={4}
-            className="w-full resize-y rounded-xl border border-white/10 bg-[#0B0D17] px-3 py-2 text-sm text-white outline-none focus:border-[#7C3CFF]/50"
+            className="w-full resize-y rounded-xl border border-white/10 bg-[#0B0D17] px-3 py-2 text-sm text-white outline-none focus:border-z-primary/50"
           />
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
               disabled={busy}
               onClick={() => run(() => onSave({ title, body, kind }))}
-              className="rounded-xl bg-[#7C3CFF]/25 px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#7C3CFF]/35"
+              className="rounded-xl bg-z-primary/25 px-3 py-1.5 text-xs font-semibold text-white hover:bg-z-primary/35"
             >
               Salvar
             </button>
@@ -433,7 +433,7 @@ function IdeaRow({
                 type="button"
                 disabled={busy}
                 onClick={() => run(onReopen)}
-                className="inline-flex items-center gap-1 rounded-xl border border-white/10 px-3 py-1.5 text-xs text-[#0CD4FF]"
+                className="inline-flex items-center gap-1 rounded-xl border border-white/10 px-3 py-1.5 text-xs text-z-emerald"
               >
                 <RotateCcw className="h-3.5 w-3.5" /> Reabrir
               </button>

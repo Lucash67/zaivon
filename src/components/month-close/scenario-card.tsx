@@ -15,9 +15,9 @@ interface ScenarioCardProps {
 }
 
 const ACCENT: Record<ForecastScenarioKey, string> = {
-  conservador: "text-[#3882F6]",
-  realista: "text-[#0CD4FF]",
-  ambicioso: "text-[#7C3CFF]",
+  conservador: "text-z-info",
+  realista: "text-z-emerald",
+  ambicioso: "text-z-primary",
 };
 
 export function ScenarioCard({
@@ -38,8 +38,8 @@ export function ScenarioCard({
       className={cn(
         "group relative w-full overflow-hidden rounded-2xl border bg-surface-card p-5 text-left shadow-card transition-all duration-300",
         selected
-          ? "border-[#7C3CFF]/60 shadow-[0_0_28px_rgba(124,60,255,0.18)]"
-          : "border-surface-border hover:border-[#7C3CFF]/25",
+          ? "border-z-primary/60 shadow-[0_0_28px_rgb(var(--z-primary-rgb)/0.18)]"
+          : "border-surface-border hover:border-z-primary/25",
       )}
     >
       <div className="mb-4 flex items-start justify-between gap-3">
@@ -60,7 +60,7 @@ export function ScenarioCard({
           className={cn(
             "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition-colors",
             selected
-              ? "border-transparent bg-brand-gradient text-white"
+              ? "border-transparent bg-brand-gradient text-brand-on"
               : "border-surface-border text-transparent",
           )}
         >

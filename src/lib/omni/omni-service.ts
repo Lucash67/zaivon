@@ -527,7 +527,7 @@ export async function registerPayment(
     await addSettlementToDiary(
       paidDate,
       round2(amount),
-      `Quitação ${person}: R$ ${round2(amount).toFixed(2).replace(".", ",")}${from ? ` (vendas de ${from})` : ""} — registrada na OMNI v2.`,
+      `Quitação ${person}: R$ ${round2(amount).toFixed(2).replace(".", ",")}${from ? ` (vendas de ${from})` : ""} — registrada na ZAIVON v2.`,
     );
   }
   return { settled, extra: left };
@@ -638,7 +638,7 @@ export async function registerQuickSale(input: QuickSaleInput): Promise<{ amount
     date: input.date,
     time: nowShiftTime(),
     department: channelName,
-    notes: "Registrada na OMNI v2",
+    notes: "Registrada na ZAIVON v2",
     unitPrice,
   });
 
@@ -682,8 +682,8 @@ export async function registerPurchase(input: {
   const operationDayId = await ensureOperationDayId(BUSINESS, input.date);
   const db = await getPostgresDb();
   const rows = [
-    own > 0 && { amount: own, sourceType: "own_capital" as const, sourceName: null, description: `Investimento próprio — compra ${input.date} (OMNI v2).` },
-    third > 0 && { amount: third, sourceType: "family" as const, sourceName: thirdName, description: `Investimento ${thirdName} — compra ${input.date} (OMNI v2).` },
+    own > 0 && { amount: own, sourceType: "own_capital" as const, sourceName: null, description: `Investimento próprio — compra ${input.date} (ZAIVON v2).` },
+    third > 0 && { amount: third, sourceType: "family" as const, sourceName: thirdName, description: `Investimento ${thirdName} — compra ${input.date} (ZAIVON v2).` },
   ].filter(Boolean) as { amount: number; sourceType: "own_capital" | "family"; sourceName: string | null; description: string }[];
   for (const r of rows) {
     await queryRun(

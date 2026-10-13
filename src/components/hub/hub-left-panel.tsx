@@ -14,9 +14,9 @@ function StatusStrip({ index, delay }: { index: string; delay: number }) {
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.45, delay, ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ x: 4 }}
-      className="hub-glass-card flex items-center gap-3 rounded-xl border border-[#7C3CFF]/12 px-3.5 py-3"
+      className="hub-glass-card flex items-center gap-3 rounded-xl border border-z-primary/12 px-3.5 py-3"
     >
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#7C3CFF]/10 ring-1 ring-[#7C3CFF]/15">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-z-primary/10 ring-1 ring-z-primary/15">
         <LhHoldingIcon height={22} />
       </div>
 
@@ -36,7 +36,7 @@ function StatusStrip({ index, delay }: { index: string; delay: number }) {
           Online
         </span>
         <span className="inline-flex items-center gap-1 text-[9px] text-[#737373]">
-          <Zap className="h-2.5 w-2.5 text-[#7C3CFF]/80" />
+          <Zap className="h-2.5 w-2.5 text-z-primary/80" />
           Tempo real
         </span>
       </div>
@@ -87,8 +87,8 @@ export function HubLeftPanel() {
             transition={{ delay: 0.28 }}
             className="flex items-center gap-2"
           >
-            <Radio className="h-3 w-3 text-[#7C3CFF]" />
-            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#7C3CFF]/85">
+            <Radio className="h-3 w-3 text-z-primary" />
+            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-z-primary/85">
               {HUB_COPY.enterprisesHeading}
             </p>
           </motion.div>
@@ -105,7 +105,7 @@ export function HubLeftPanel() {
             transition={{ delay: 0.45 }}
             className="flex max-w-md items-start gap-2.5 pt-4 text-[11px] leading-relaxed text-[#525252]"
           >
-            <Shield className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#7C3CFF]/60" />
+            <Shield className="mt-0.5 h-3.5 w-3.5 shrink-0 text-z-primary/60" />
             <p>{HUB_COPY.footerLegacy}</p>
           </motion.footer>
         </div>

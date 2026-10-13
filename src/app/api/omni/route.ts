@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("OMNI GET error:", error);
-    return apiError("Não foi possível carregar a OMNI.");
+    return apiError("Não foi possível carregar a ZAIVON.");
   }
 }
 

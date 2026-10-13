@@ -16,8 +16,8 @@ function pct(n: number) {
 
 const IMPACT_BADGE: Record<string, string> = {
   critical: "border-brand-red/40 bg-brand-red/10 text-brand-red",
-  high: "border-[#7C3CFF]/40 bg-[#7C3CFF]/10 text-[#0CD4FF]",
-  medium: "border-[#3882F6]/25 bg-[#3882F6]/8 text-[#3882F6]",
+  high: "border-z-warning/40 bg-z-warning/10 text-z-warning",
+  medium: "border-z-info/25 bg-z-info/8 text-z-info",
   low: "border-surface-border bg-surface-card text-text-muted",
 };
 
@@ -61,7 +61,7 @@ export function RetratoReader({ review }: RetratoReaderProps) {
               key={p.label}
               className={cn(
                 "border px-3 py-1 text-xs font-medium",
-                p.tone === "warning" && "border-[#7C3CFF]/40 bg-[#7C3CFF]/10 text-[#0CD4FF]",
+                p.tone === "warning" && "border-z-warning/40 bg-z-warning/10 text-z-warning",
                 p.tone === "danger" && "border-brand-red/40 bg-brand-red/10 text-brand-red",
                 p.tone === "success" && "border-brand-green/40 bg-brand-green/10 text-brand-green",
                 p.tone === "neutral" && "border-surface-border bg-surface-elevated text-text-secondary",
@@ -73,7 +73,7 @@ export function RetratoReader({ review }: RetratoReaderProps) {
         </div>
       </header>
 
-      <div className="rounded-2xl border border-[#7C3CFF]/30 bg-gradient-to-br from-[#7C3CFF]/10 via-surface-card to-[#0CD4FF]/5 px-4 py-4 sm:px-5">
+      <div className="rounded-2xl border border-z-primary/30 bg-gradient-to-br from-z-primary/10 via-surface-card to-z-emerald/5 px-4 py-4 sm:px-5">
         <p className="text-xs font-semibold uppercase tracking-wide text-brand-gradient">
           Veredito em uma frase
         </p>
@@ -127,8 +127,8 @@ export function RetratoReader({ review }: RetratoReaderProps) {
 
       <div className="grid gap-4 lg:grid-cols-2">
         {snap.channels && snap.channels.length > 0 && (
-          <div className="overflow-hidden rounded-2xl border border-[#7C3CFF]/15 bg-surface-card">
-            <div className="border-b border-[#7C3CFF]/15 bg-[#7C3CFF]/5 px-4 py-3">
+          <div className="overflow-hidden rounded-2xl border border-z-primary/15 bg-surface-card">
+            <div className="border-b border-z-primary/15 bg-z-primary/5 px-4 py-3">
               <h3 className="text-sm font-semibold text-text-primary">Por canal</h3>
             </div>
             <div className="overflow-x-auto">
@@ -161,8 +161,8 @@ export function RetratoReader({ review }: RetratoReaderProps) {
         )}
 
         {snap.volumeRows && snap.volumeRows.length > 0 && (
-          <div className="overflow-hidden rounded-2xl border border-[#0CD4FF]/15 bg-surface-card">
-            <div className="border-b border-[#0CD4FF]/15 bg-[#0CD4FF]/5 px-4 py-3">
+          <div className="overflow-hidden rounded-2xl border border-z-emerald/15 bg-surface-card">
+            <div className="border-b border-z-emerald/15 bg-z-emerald/5 px-4 py-3">
               <h3 className="text-sm font-semibold text-text-primary">Volume e perdas</h3>
             </div>
             <div className="overflow-x-auto">
@@ -193,7 +193,7 @@ export function RetratoReader({ review }: RetratoReaderProps) {
 
       {review.causes.length > 0 && (
         <section className="space-y-3">
-          <h2 className="border-l-2 border-[#7C3CFF]/50 pl-3 text-lg font-semibold text-text-primary">
+          <h2 className="border-l-2 border-z-primary/50 pl-3 text-lg font-semibold text-text-primary">
             Por que foi assim (ordenado por impacto)
           </h2>
           <div className="space-y-3">
@@ -230,20 +230,20 @@ export function RetratoReader({ review }: RetratoReaderProps) {
 
       {(review.nextGoals || review.actions.length > 0) && (
         <section className="space-y-3">
-          <h2 className="border-l-2 border-[#0CD4FF]/50 pl-3 text-lg font-semibold text-text-primary">
+          <h2 className="border-l-2 border-z-emerald/50 pl-3 text-lg font-semibold text-text-primary">
             O que fazer para voltar à semana boa
           </h2>
           {review.nextGoals ? (
-            <div className="space-y-1 rounded-xl border border-[#7C3CFF]/20 bg-[#7C3CFF]/5 px-4 py-3">
-              <h3 className="text-sm font-medium text-[#7C3CFF]">Meta da próxima semana</h3>
+            <div className="space-y-1 rounded-xl border border-z-primary/20 bg-z-primary/5 px-4 py-3">
+              <h3 className="text-sm font-medium text-z-primary">Meta da próxima semana</h3>
               <p className="text-sm leading-relaxed text-text-secondary">{review.nextGoals}</p>
             </div>
           ) : null}
           {review.actions.length > 0 && (
-            <div className="overflow-hidden rounded-2xl border border-[#7C3CFF]/15 bg-surface-card">
+            <div className="overflow-hidden rounded-2xl border border-z-primary/15 bg-surface-card">
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-[#7C3CFF]/15 bg-[#7C3CFF]/5 text-xs text-text-muted">
+                  <tr className="border-b border-z-primary/15 bg-z-primary/5 text-xs text-text-muted">
                     <th className="px-4 py-3 font-medium">Ação</th>
                     <th className="hidden px-2 py-3 font-medium sm:table-cell">Por quê</th>
                     <th className="px-4 py-3 font-medium">Como medir</th>
@@ -296,9 +296,9 @@ function StatBlock({
       className={cn(
         "rounded-2xl border bg-surface-card p-3 sm:p-4",
         tone === "success" && "border-brand-green/25",
-        tone === "warning" && "border-[#7C3CFF]/30",
+        tone === "warning" && "border-z-warning/30",
         tone === "danger" && "border-brand-red/25",
-        tone === "info" && "border-[#3882F6]/25",
+        tone === "info" && "border-z-info/25",
       )}
     >
       <p className="text-[11px] font-medium uppercase tracking-wide text-text-muted">{label}</p>
@@ -306,9 +306,9 @@ function StatBlock({
         className={cn(
           "mt-1 text-xl font-bold sm:text-2xl",
           tone === "success" && "text-brand-green",
-          tone === "warning" && "text-[#0CD4FF]",
+          tone === "warning" && "text-z-warning",
           tone === "danger" && "text-brand-red",
-          tone === "info" && "text-[#3882F6]",
+          tone === "info" && "text-z-info",
         )}
       >
         {value}

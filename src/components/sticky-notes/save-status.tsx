@@ -6,11 +6,11 @@ import { cn } from "@/lib/utils";
 
 const COPY: Record<SaveStatus, { label: string; className: string; Icon: typeof Check }> = {
   idle: { label: "Pronto", className: "text-text-muted", Icon: Cloud },
-  saving: { label: "Salvando...", className: "text-[#7C3CFF]", Icon: Loader2 },
+  saving: { label: "Salvando...", className: "text-z-primary", Icon: Loader2 },
   saved: { label: "Tudo salvo", className: "text-brand-green", Icon: Check },
   offline: {
     label: "Offline — guardado neste aparelho",
-    className: "text-[#0CD4FF]",
+    className: "text-z-emerald",
     Icon: CloudOff,
   },
   error: { label: "Erro ao sincronizar", className: "text-brand-red", Icon: CloudOff },

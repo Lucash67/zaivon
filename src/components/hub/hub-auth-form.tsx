@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, Cloud, Eye, EyeOff, Loader2, Lock, Mail, Shield, User, Zap } from "lucide-react";
 import { cn } from "@/components/ui/utils";
-import { HUB_COPY } from "@/constants/hub-brand";
+import { HUB_BRAND_ASSETS, HUB_COPY } from "@/constants/hub-brand";
 import { LhHoldingLogo } from "@/components/hub/lh-hub-logo";
 import { markHubSession } from "@/lib/hub-session";
 import { resolvePostLoginPath } from "@/lib/auth/safe-next-path";
@@ -250,17 +250,17 @@ export function HubAuthForm({ compact = false }: { compact?: boolean }) {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
           className={cn(
-            "hub-glass relative overflow-hidden rounded-3xl border border-[#7C3CFF]/10 shadow-[0_0_40px_rgba(124, 60, 255,0.04),0_24px_64px_rgba(0,0,0,0.45)] lg:rounded-2xl",
+            "hub-glass relative overflow-hidden rounded-3xl border border-z-primary/10 shadow-[0_0_40px_rgb(var(--z-primary-rgb)/0.04),0_24px_64px_rgba(0,0,0,0.45)] lg:rounded-2xl",
             compact ? "p-6 lg:p-6" : "p-6 sm:p-8",
           )}
         >
           <motion.div
-            className="pointer-events-none absolute -bottom-24 -right-24 h-48 w-48 rounded-full bg-[#7C3CFF]/6 blur-3xl"
+            className="pointer-events-none absolute -bottom-24 -right-24 h-48 w-48 rounded-full bg-z-primary/6 blur-3xl"
             animate={{ opacity: [0.12, 0.22, 0.12], scale: [1, 1.04, 1] }}
             transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
           />
           <motion.div
-            className="pointer-events-none absolute -left-16 -top-16 h-40 w-40 rounded-full bg-[#0CD4FF]/5 blur-3xl"
+            className="pointer-events-none absolute -left-16 -top-16 h-40 w-40 rounded-full bg-z-emerald/5 blur-3xl"
             animate={{ opacity: [0.08, 0.16, 0.08] }}
             transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
           />
@@ -296,13 +296,19 @@ export function HubAuthForm({ compact = false }: { compact?: boolean }) {
                       compact ? "text-2xl lg:text-[1.75rem]" : "text-2xl sm:text-3xl",
                     )}
                   >
-                    <span className="text-white">OMNI</span>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={HUB_BRAND_ASSETS.wordmarkOnDark}
+                      alt="ZAIVON"
+                      className={cn("w-auto", compact ? "h-7 lg:h-8" : "h-7 sm:h-9")}
+                      draggable={false}
+                    />
                   </h2>
                 )}
               </motion.div>
               <p className="text-xs text-[#737373] lg:line-clamp-2">
                 {tab === "register"
-                  ? "Crie sua conta no OMNI Business"
+                  ? "Crie sua conta no ZAIVON Business"
                   : tab === "forgot"
                     ? "Informe seu e-mail para receber o link de redefinição"
                     : tab === "reset"
@@ -323,7 +329,7 @@ export function HubAuthForm({ compact = false }: { compact?: boolean }) {
             )}
 
             {(tab === "login" || tab === "register") && (
-            <div className="relative flex rounded-xl border border-[#7C3CFF]/15 bg-[#0B0B0B]/80 p-1 backdrop-blur-sm">
+            <div className="relative flex rounded-xl border border-z-primary/15 bg-[#0B0B0B]/80 p-1 backdrop-blur-sm">
               {(["login", "register"] as const).map((t) => (
                 <button
                   key={t}
@@ -331,13 +337,13 @@ export function HubAuthForm({ compact = false }: { compact?: boolean }) {
                   onClick={() => switchTab(t)}
                   className={cn(
                     "relative z-10 flex-1 rounded-lg py-2.5 text-sm font-semibold transition-all duration-300",
-                    tab === t ? "text-white" : "text-[#737373] hover:text-white",
+                    tab === t ? "text-brand-on" : "text-[#737373] hover:text-white",
                   )}
                 >
                   {tab === t && (
                     <motion.div
                       layoutId="hub-auth-tab"
-                      className="absolute inset-0 rounded-lg bg-gradient-to-r from-[#7C3CFF] via-[#3882F6] to-[#0CD4FF] shadow-[0_0_20px_rgba(124,60,255,0.35)]"
+                      className="absolute inset-0 rounded-lg bg-gradient-to-r from-z-primary to-z-emerald shadow-[0_0_20px_rgb(var(--z-primary-rgb)/0.35)]"
                       transition={{ type: "spring", stiffness: 400, damping: 30 }}
                     />
                   )}
@@ -457,13 +463,13 @@ export function HubAuthForm({ compact = false }: { compact?: boolean }) {
                     type="checkbox"
                     checked={remember}
                     onChange={(e) => setRemember(e.target.checked)}
-                    className="h-5 w-5 rounded border-[#333333] bg-[#0B0B0B] accent-[#7C3CFF] sm:h-4 sm:w-4"
+                    className="h-5 w-5 rounded border-[#333333] bg-[#0B0B0B] accent-z-primary sm:h-4 sm:w-4"
                   />
                   Lembrar de mim
                 </label>
                 <button
                   type="button"
-                  className="min-h-[40px] px-1 text-[#7C3CFF] transition-opacity duration-[250ms] hover:opacity-80"
+                  className="min-h-[40px] px-1 text-z-primary transition-opacity duration-[250ms] hover:opacity-80"
                   onClick={() => switchTab("forgot")}
                 >
                   Esqueci minha senha
@@ -472,12 +478,12 @@ export function HubAuthForm({ compact = false }: { compact?: boolean }) {
             )}
 
             {infoMessage && (
-              <p className="rounded-lg border border-[#7C3CFF]/20 bg-[#7C3CFF]/5 px-3 py-2 text-xs text-[#E5E5E5]">
+              <p className="rounded-lg border border-z-primary/20 bg-z-primary/5 px-3 py-2 text-xs text-[#E5E5E5]">
                 {infoMessage}
                 {devResetUrl && (
                   <>
                     {" "}
-                    <a href={devResetUrl} className="font-medium text-[#7C3CFF] underline underline-offset-2">
+                    <a href={devResetUrl} className="font-medium text-z-primary underline underline-offset-2">
                       Abrir link de redefinição (dev)
                     </a>
                   </>
@@ -486,7 +492,7 @@ export function HubAuthForm({ compact = false }: { compact?: boolean }) {
             )}
 
             {errors.form && (
-              <p className="rounded-lg border border-[#7C3CFF]/30 bg-[#7C3CFF]/5 px-3 py-2 text-xs text-[#7C3CFF]">
+              <p className="rounded-lg border border-z-primary/30 bg-z-primary/5 px-3 py-2 text-xs text-z-primary">
                 {errors.form}
               </p>
             )}
@@ -505,7 +511,7 @@ export function HubAuthForm({ compact = false }: { compact?: boolean }) {
               type="submit"
               disabled={loading || success}
               className={cn(
-                "hub-shimmer-btn flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#7C3CFF] via-[#3882F6] to-[#0CD4FF] text-sm font-bold text-white shadow-[0_4px_24px_rgba(124,60,255,0.4)] transition-all duration-300 hover:shadow-[0_6px_32px_rgba(124,60,255,0.55)] hover:brightness-105 disabled:opacity-60",
+                "hub-shimmer-btn flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-z-primary to-z-emerald text-sm font-bold text-brand-on shadow-[0_4px_24px_rgb(var(--z-primary-rgb)/0.4)] transition-all duration-300 hover:shadow-[0_6px_32px_rgb(var(--z-primary-rgb)/0.55)] hover:brightness-105 disabled:opacity-60",
                 compact ? "h-11" : "h-12",
               )}
             >
@@ -527,7 +533,7 @@ export function HubAuthForm({ compact = false }: { compact?: boolean }) {
 
             <div className="relative py-2">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-[#7C3CFF]/10" />
+                <div className="w-full border-t border-z-primary/10" />
               </div>
               <p className="relative mx-auto w-fit bg-[#0a0a0a]/90 px-3 text-[11px] text-[#525252]">ou continuar com</p>
             </div>
@@ -537,7 +543,7 @@ export function HubAuthForm({ compact = false }: { compact?: boolean }) {
               disabled={loading}
               onClick={() => setErrors({ form: "Login com Google em breve." })}
               className={cn(
-                "flex w-full items-center justify-center gap-2 rounded-xl border border-[#7C3CFF]/15 bg-[#0B0B0B]/50 text-sm font-medium text-white backdrop-blur-sm transition-all duration-300 hover:border-[#7C3CFF]/35 hover:bg-[#7C3CFF]/5 disabled:opacity-50",
+                "flex w-full items-center justify-center gap-2 rounded-xl border border-z-primary/15 bg-[#0B0B0B]/50 text-sm font-medium text-white backdrop-blur-sm transition-all duration-300 hover:border-z-primary/35 hover:bg-z-primary/5 disabled:opacity-50",
                 compact ? "h-10 text-xs" : "h-11",
               )}
             >
@@ -556,7 +562,7 @@ export function HubAuthForm({ compact = false }: { compact?: boolean }) {
                 key={label}
                 className="hub-trust-badge flex flex-col items-center gap-1.5 rounded-xl px-2 py-2.5 text-center"
               >
-                <Icon className="h-3.5 w-3.5 text-[#7C3CFF]/80" strokeWidth={1.75} />
+                <Icon className="h-3.5 w-3.5 text-z-primary/80" strokeWidth={1.75} />
                 <span className="text-[9px] leading-tight text-[#737373]">{label}</span>
               </div>
             ))}
@@ -613,7 +619,7 @@ function HubField({
             compact && "sm:h-10 sm:text-[13px]",
             error
               ? "border-red-500/50 focus:border-red-500/50 focus:ring-red-500/20"
-              : "border-[#333333]/80 focus:border-[#7C3CFF]/60 focus:ring-[#7C3CFF]/20 focus:shadow-[0_0_16px_rgba(124, 60, 255,0.08)]",
+              : "border-[#333333]/80 focus:border-z-primary/60 focus:ring-z-primary/20 focus:shadow-[0_0_16px_rgb(var(--z-primary-rgb)/0.08)]",
           )}
         />
         {trailing && <div className="absolute right-3 top-1/2 -translate-y-1/2">{trailing}</div>}

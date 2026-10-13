@@ -110,19 +110,19 @@ export default function ConfiguracoesPage() {
 
   if (goalsLoading) {
     return (
-      <AppShell title="Configurações" subtitle="Personalize o OMNI Business">
+      <AppShell title="Configurações" subtitle="Personalize o ZAIVON Business">
         <PageLoader />
       </AppShell>
     );
   }
 
   return (
-    <AppShell title="Configurações" subtitle="Personalize o OMNI Business">
+    <AppShell title="Configurações" subtitle="Personalize o ZAIVON Business">
       <div className="grid max-w-4xl gap-4 sm:gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5 text-[#7C3CFF]" />
+              <Settings className="h-5 w-5 text-z-primary" />
               Metas
             </CardTitle>
           </CardHeader>
@@ -214,7 +214,7 @@ export default function ConfiguracoesPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-[#7C3CFF]" />
+              <Sparkles className="h-5 w-5 text-z-primary" />
               Tema
             </CardTitle>
           </CardHeader>
@@ -231,7 +231,7 @@ export default function ConfiguracoesPage() {
                     onClick={() => setTheme(id as AppTheme)}
                     className={cn(
                       "h-24 flex-col gap-2",
-                      active && id === "brand" && "bg-brand-gradient text-white hover:brightness-110",
+                      active && id === "brand" && "bg-brand-gradient text-brand-on hover:brightness-110",
                     )}
                   >
                     <Icon className="h-6 w-6" />
@@ -246,7 +246,7 @@ export default function ConfiguracoesPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Database className="h-5 w-5 text-[#0CD4FF]" />
+              <Database className="h-5 w-5 text-z-emerald" />
               Backup & Exportação
             </CardTitle>
           </CardHeader>
@@ -271,20 +271,20 @@ export default function ConfiguracoesPage() {
           <CardContent>
             <div className="space-y-2 text-sm text-text-secondary">
               <p>
-                <strong className="text-text-primary">OMNI</strong>
+                <strong className="text-text-primary">ZAIVON</strong>
                 <span className="text-text-muted"> · marca-mãe / ecossistema</span>
               </p>
               <p>
                 Produto atual:{" "}
-                <strong className="text-text-primary">OMNI Business</strong>
+                <strong className="text-text-primary">ZAIVON Business</strong>
               </p>
-              <p className="text-xs text-[#7C3CFF]">
+              <p className="text-xs text-z-primary">
                 Business (produção) ·{" "}
-                <a href="/schedule" className="underline hover:text-[#0CD4FF]">
+                <a href="/schedule" className="underline hover:text-z-emerald">
                   Schedule
                 </a>
                 {" · "}
-                <a href="/hub" className="underline hover:text-[#0CD4FF]">
+                <a href="/hub" className="underline hover:text-z-emerald">
                   Hub
                 </a>
               </p>
