@@ -34,6 +34,8 @@ import {
 } from "@/lib/sticky-notes/week-board";
 import { WeekPicker } from "@/components/sticky-notes/week-picker";
 import { stripLeadingDraftDate } from "@/lib/day-registration/weekday-draft-templates";
+import { noteBodyToPlainText } from "@/lib/sticky-notes/rich-text";
+import { NoteBodyPreview } from "@/components/sticky-notes/note-body-preview";
 
 interface NotesBoardProps {
   notes: StickyNote[];
@@ -103,9 +105,11 @@ function SortableNoteCard({
           {note.title.trim() ? (
             <p className="truncate text-[15px] font-medium text-[#e8eaed] sm:text-sm">{note.title}</p>
           ) : null}
-          <p className="mt-0.5 line-clamp-4 whitespace-pre-wrap text-[14px] leading-snug text-[#e8eaed]/75 sm:text-[13px]">
-            {stripLeadingDraftDate(note.body).trim() || "Nota vazia"}
-          </p>
+          <NoteBodyPreview
+            body={stripLeadingDraftDate(note.body)}
+            fallback="Nota vazia"
+            className="mt-0.5 line-clamp-4 text-[14px] leading-snug text-[#e8eaed]/75 sm:text-[13px]"
+          />
           <p className="mt-2 text-[10px] font-medium uppercase tracking-wide text-[#e8eaed]/40">
             {formatNoteDateLabel(note.noteDate)}
           </p>
@@ -345,7 +349,7 @@ export function NotesBoard({
             <p className="text-sm font-medium text-[#e8eaed]">
               {activeNote.title.trim() || "Nota"}
             </p>
-            <p className="mt-1 line-clamp-3 text-xs text-[#e8eaed]/70">{activeNote.body}</p>
+            <p className="mt-1 line-clamp-3 text-xs text-[#e8eaed]/70">{noteBodyToPlainText(activeNote.body)}</p>
           </div>
         ) : null}
       </DragOverlay>

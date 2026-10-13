@@ -17,6 +17,7 @@ import {
 import { StickySaveStatus } from "@/components/sticky-notes/save-status";
 import { useStickyNotes } from "@/hooks/use-sticky-notes";
 import type { StickyNote } from "@/lib/sticky-notes/types";
+import { noteBodyToPlainText } from "@/lib/sticky-notes/rich-text";
 import { currentWeekStart, weekKeyFromDate } from "@/lib/sticky-notes/week-board";
 import {
   buildWeekdayDraftTemplate,
@@ -30,7 +31,7 @@ function applyFilters(notes: StickyNote[], filters: NotesFilterState, query: str
   const lastWeek = weekKeyFromDate(format(subWeeks(new Date(), 1), "yyyy-MM-dd"));
 
   return notes.filter((n) => {
-    if (q && !n.title.toLowerCase().includes(q) && !n.body.toLowerCase().includes(q)) {
+    if (q && !n.title.toLowerCase().includes(q) && !noteBodyToPlainText(n.body).toLowerCase().includes(q)) {
       return false;
     }
     if (filters.pinnedOnly && !n.pinned) return false;

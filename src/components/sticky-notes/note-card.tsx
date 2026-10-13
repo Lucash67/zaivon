@@ -6,6 +6,8 @@ import {
   STICKY_NOTE_COLOR_STYLES,
   type StickyNote,
 } from "@/lib/sticky-notes/types";
+import { noteBodyToPlainText } from "@/lib/sticky-notes/rich-text";
+import { NoteBodyPreview } from "@/components/sticky-notes/note-body-preview";
 
 interface NoteCardProps {
   note: StickyNote;
@@ -22,7 +24,7 @@ export function NoteCard({
 }: NoteCardProps) {
   const colors = STICKY_NOTE_COLOR_STYLES[note.color] ?? STICKY_NOTE_COLOR_STYLES.default;
   const hasTitle = Boolean(note.title.trim());
-  const preview = note.body.trim() || (hasTitle ? "" : "Nota vazia");
+  const preview = noteBodyToPlainText(note.body).trim() || (hasTitle ? "" : "Nota vazia");
 
   return (
     <article
@@ -55,14 +57,14 @@ export function NoteCard({
           </h3>
         )}
         {preview ? (
-          <p
+          <NoteBodyPreview
+            body={note.body}
+            fallback={preview}
             className={cn(
-              "whitespace-pre-wrap text-sm leading-[1.5] text-[#e8eaed]/80 line-clamp-[12]",
+              "text-sm leading-[1.5] text-[#e8eaed]/80 line-clamp-[12]",
               !hasTitle && "pr-8",
             )}
-          >
-            {preview}
-          </p>
+          />
         ) : null}
       </button>
 

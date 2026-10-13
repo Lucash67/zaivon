@@ -11,9 +11,11 @@ import {
   Pin,
   Redo2,
   Trash2,
+  Type,
   Undo2,
   UserPlus,
 } from "lucide-react";
+import { RichFormatToolbar, RichNoteBody } from "@/components/sticky-notes/rich-note-editor";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import {
@@ -93,7 +95,8 @@ export function NoteEditor({
   onDelete,
   onSetColor,
 }: NoteEditorProps) {
-  const bodyRef = useRef<HTMLTextAreaElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const [showFormat, setShowFormat] = useState(true);
   const titleRef = useRef<HTMLInputElement>(null);
   const dateInputRef = useRef<HTMLInputElement>(null);
   const [showPalette, setShowPalette] = useState(false);
@@ -371,17 +374,23 @@ export function NoteEditor({
         )}
 
         <div className="min-h-0 flex-1 overflow-hidden px-4 pb-2 pt-1 sm:px-7 sm:pb-3 sm:pt-2">
-          <textarea
-            ref={bodyRef}
+          <RichNoteBody
+            editorRef={bodyRef}
             value={draftBody}
-            onChange={(e) => commitBody(e.target.value)}
-            onKeyDown={(e) => {
-              e.stopPropagation();
-            }}
+            onChange={commitBody}
             placeholder="Anotar..."
-            className="h-full w-full resize-none overflow-y-auto bg-transparent text-[16px] leading-[1.6] text-[#e8eaed]/92 placeholder:text-[#e8eaed]/35 focus:outline-none [scrollbar-width:thin] [scrollbar-color:#5f6368_transparent]"
+            className="h-full w-full overflow-y-auto bg-transparent text-[16px] leading-[1.6] text-[#e8eaed]/92 focus:outline-none [scrollbar-width:thin] [scrollbar-color:#5f6368_transparent]"
           />
         </div>
+
+        {showFormat && (
+          <div className="shrink-0 border-t border-white/5">
+            <RichFormatToolbar
+              editorRef={bodyRef}
+              onEdited={() => bodyRef.current?.dispatchEvent(new Event("input", { bubbles: true }))}
+            />
+          </div>
+        )}
 
         {/* Barra inferior: ferramentas + undo/redo (desktop) + concluir */}
         <div
@@ -509,6 +518,12 @@ export function NoteEditor({
 
           <div className="flex items-center gap-0.5 px-1.5 sm:px-3">
             <div className="flex min-w-0 flex-1 items-center gap-0 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <ToolbarButton
+                title={showFormat ? "Ocultar formatação" : "Formatação do texto"}
+                onClick={() => setShowFormat((v) => !v)}
+              >
+                <Type className={cn("h-[18px] w-[18px]", showFormat && "text-[#c9ff69]")} />
+              </ToolbarButton>
               <ToolbarButton
                 title="Cor de fundo"
                 onClick={() => {
