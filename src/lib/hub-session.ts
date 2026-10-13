@@ -1,9 +1,9 @@
 /**
- * Sessão local do OMNI — preparação para auth futura.
+ * Sessão local do ZAIVON — preparação para auth futura.
  * Não altera banco nem autenticação de servidor; apenas sessionStorage no cliente.
  */
 
-const STORAGE_KEY = "lh-hub-session";
+const STORAGE_KEY = "zaivon-session";
 
 export interface HubSession {
   email: string;

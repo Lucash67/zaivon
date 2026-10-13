@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { AUTH_COOKIE, sessionCookieOptions } from "@/lib/auth/session";
+import { AUTH_COOKIE, LEGACY_AUTH_COOKIE, sessionCookieOptions } from "@/lib/auth/session";
 
 export async function POST() {
   const response = NextResponse.json({ ok: true });
   response.cookies.set(AUTH_COOKIE, "", sessionCookieOptions(0));
+  response.cookies.set(LEGACY_AUTH_COOKIE, "", sessionCookieOptions(0));
   return response;
 }

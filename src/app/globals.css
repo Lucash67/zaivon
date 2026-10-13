@@ -481,12 +481,12 @@
 }
 
 /*
- * Área /v2 (.omni2) — mesmos tokens ZAIVON convertidos para OKLCH (sRGB → OKLab → OKLCH).
+ * Área /v2 (.zaivon2) — mesmos tokens ZAIVON convertidos para OKLCH (sRGB → OKLab → OKLCH).
  * Cores com significado fixo: ok = recebido, pending = a receber, info = parceiro/informação,
  * alert = investigar, third = terceiros/custo. Componentes sem "oklch()" para o Tailwind
  * aplicar opacidade (bg-o-ok/12).
  */
-.omni2 {
+.zaivon2 {
   --o-background: 0.158 0.012 260.6; /* #0A0D12 */
   --o-foreground: 0.981 0.005 258.3; /* #F7F9FC */
   --o-card: 0.216 0.018 259.7; /* #151A22 */
@@ -510,7 +510,7 @@
   color-scheme: dark;
 }
 
-.omni2.omni2-light {
+.zaivon2.zaivon2-light {
   --o-background: 0.976 0.003 264.5; /* #F6F7F9 */
   --o-foreground: 0.158 0.012 260.6; /* #0A0D12 */
   --o-card: 1 0 0;
@@ -535,7 +535,7 @@
 }
 
 /* Cores usadas pelos gráficos (Recharts) dentro da v2. */
-.omni2 {
+.zaivon2 {
   --color-border: var(--o-border);
   --color-foreground: oklch(var(--o-foreground));
   --color-muted-foreground: oklch(var(--o-muted-foreground));
@@ -549,29 +549,29 @@
 }
 
 @layer base {
-  .omni2,
-  .omni2 * {
+  .zaivon2,
+  .zaivon2 * {
     border-color: var(--o-border);
   }
 }
 
-.omni2 h1,
-.omni2 h2,
-.omni2 h3 {
+.zaivon2 h1,
+.zaivon2 h2,
+.zaivon2 h3 {
   font-family: var(--font-sora), ui-sans-serif, system-ui, sans-serif;
   letter-spacing: -0.01em;
 }
 
-.omni2 :focus-visible {
+.zaivon2 :focus-visible {
   outline: 2px solid oklch(var(--o-primary));
   outline-offset: 2px;
 }
 
-.omni2 .num {
+.zaivon2 .num {
   font-variant-numeric: tabular-nums;
 }
 
-.omni2 .eyebrow {
+.zaivon2 .eyebrow {
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
@@ -580,6 +580,6 @@
 }
 
 /* Grades sem colunas definidas não podem crescer além da tela (tabelas rolam por dentro). */
-.omni2 .grid:not([class*="grid-cols"]) {
+.zaivon2 .grid:not([class*="grid-cols"]) {
   grid-template-columns: minmax(0, 1fr);
 }

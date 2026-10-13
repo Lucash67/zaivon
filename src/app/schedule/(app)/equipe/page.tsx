@@ -4,7 +4,7 @@ export default function ScheduleEquipePage() {
   return (
     <SchedulePlaceholder
       title="Equipe"
-      blurb="Profissionais da organização — conta OMNI é opcional."
+      blurb="Profissionais da organização — conta ZAIVON é opcional."
     />
   );
 }

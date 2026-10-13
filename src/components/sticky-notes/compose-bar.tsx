@@ -6,7 +6,7 @@ interface ComposeBarProps {
   onCreate: (seed?: { title?: string; body?: string }) => Promise<unknown> | unknown;
 }
 
-/** Composer central estilo Keep, com chrome OMNI. */
+/** Composer central estilo Keep, com chrome ZAIVON. */
 export function ComposeBar({ onCreate }: ComposeBarProps) {
   const [expanded, setExpanded] = useState(false);
   const [title, setTitle] = useState("");

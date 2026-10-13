@@ -1,7 +1,8 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 
-export const AUTH_COOKIE = "lh_hub_token";
+export const AUTH_COOKIE = "zaivon_token";
+export const LEGACY_AUTH_COOKIE = "lh_hub_token";
 const SESSION_TTL = "7d";
 const SESSION_MAX_AGE = 60 * 60 * 24 * 7;
 
@@ -56,7 +57,8 @@ export function sessionCookieOptions(maxAge = SESSION_MAX_AGE) {
 }
 
 export async function getSessionUser(): Promise<SessionUser | null> {
-  const token = cookies().get(AUTH_COOKIE)?.value;
+  const jar = cookies();
+  const token = jar.get(AUTH_COOKIE)?.value ?? jar.get(LEGACY_AUTH_COOKIE)?.value;
   if (!token) return null;
   return verifySessionToken(token);
 }

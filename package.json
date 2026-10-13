@@ -1,8 +1,8 @@
 {
-  "name": "lucas-business-os",
+  "name": "zaivon-business",
   "version": "1.0.0",
   "private": true,
-  "description": "Lucas Business OS — Painel Inteligente de Gestão e Crescimento",
+  "description": "ZAIVON Business — Painel Inteligente de Gestão e Crescimento",
   "scripts": {
     "dev": "next dev -p 3001",
     "build": "next build",

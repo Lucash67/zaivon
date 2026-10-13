@@ -10,11 +10,11 @@ import {
   Users,
 } from "lucide-react";
 
-/** Copy / nav do produto OMNI Schedule (família OMNI, produto distinto do Business). */
+/** Copy / nav do produto ZAIVON Schedule (família ZAIVON, produto distinto do Business). */
 export const SCHEDULE_COPY = {
-  productName: "OMNI Schedule",
+  productName: "ZAIVON Schedule",
   productTagline: "Agenda e atendimento",
-  holdingName: "OMNI",
+  holdingName: "ZAIVON",
   homeHint: "O que está acontecendo hoje?",
 } as const;
 

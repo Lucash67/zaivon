@@ -38,7 +38,7 @@ export interface NavItem {
 
 /** Setor/departamento do menu — agrupa módulos na sidebar. */
 export type NavSectorId =
-  | "omni"
+  | "zaivon"
   | "operate"
   | "review"
   | "catalog"
@@ -83,25 +83,25 @@ const NAV_BY_HREF = {
   registroDia: { href: "/registro-dia", label: "Registro do Dia", icon: ClipboardPaste },
   calendario: { href: "/calendario", label: "Calendário", icon: Calendar, paused: true },
   configuracoes: { href: "/configuracoes", label: "Configurações", icon: Settings },
-  omniHoje: { href: "/v2", label: "Hoje", icon: Home },
-  omniRegistrar: { href: "/v2/registrar", label: "Registrar", icon: PenLine },
-  omniPendencias: { href: "/v2/pendencias", label: "Pendências", icon: HandCoins },
-  omniDinheiro: { href: "/v2/dinheiro", label: "Dinheiro", icon: Wallet },
-  omniDesempenho: { href: "/v2/desempenho", label: "Desempenho", icon: TrendingUp },
-  omniPlanejamento: { href: "/v2/planejamento", label: "Planejamento", icon: Target },
+  zaivonHoje: { href: "/v2", label: "Hoje", icon: Home },
+  zaivonRegistrar: { href: "/v2/registrar", label: "Registrar", icon: PenLine },
+  zaivonPendencias: { href: "/v2/pendencias", label: "Pendências", icon: HandCoins },
+  zaivonDinheiro: { href: "/v2/dinheiro", label: "Dinheiro", icon: Wallet },
+  zaivonDesempenho: { href: "/v2/desempenho", label: "Desempenho", icon: TrendingUp },
+  zaivonPlanejamento: { href: "/v2/planejamento", label: "Planejamento", icon: Target },
 } as const satisfies Record<string, NavItem>;
 
 /** Sem hub de holding — Dashboard é a home. */
 export const NAV_PINNED_TOP: NavItem[] = [];
 
 /** Telas do módulo ZAIVON v2 (operação diária; rotas /v2). */
-export const OMNI_V2_NAV: NavItem[] = [
-  NAV_BY_HREF.omniHoje,
-  NAV_BY_HREF.omniRegistrar,
-  NAV_BY_HREF.omniPendencias,
-  NAV_BY_HREF.omniDinheiro,
-  NAV_BY_HREF.omniDesempenho,
-  NAV_BY_HREF.omniPlanejamento,
+export const ZAIVON_V2_NAV: NavItem[] = [
+  NAV_BY_HREF.zaivonHoje,
+  NAV_BY_HREF.zaivonRegistrar,
+  NAV_BY_HREF.zaivonPendencias,
+  NAV_BY_HREF.zaivonDinheiro,
+  NAV_BY_HREF.zaivonDesempenho,
+  NAV_BY_HREF.zaivonPlanejamento,
 ];
 
 /** Sistema / ajustes — sempre no fim da lista de módulos. */
@@ -113,9 +113,9 @@ export const NAV_PINNED_BOTTOM: NavItem[] = [NAV_BY_HREF.configuracoes];
  */
 export const NAV_SECTORS: NavSector[] = [
   {
-    id: "omni",
+    id: "zaivon",
     label: "ZAIVON v2",
-    items: OMNI_V2_NAV,
+    items: ZAIVON_V2_NAV,
   },
   {
     id: "operate",
@@ -170,10 +170,10 @@ export const SIDEBAR_WIDTH = 240;
 
 /** Destinos da barra inferior no celular — operação no chão. */
 export const MOBILE_NAV_ITEMS: NavItem[] = [
-  NAV_BY_HREF.omniHoje,
-  NAV_BY_HREF.omniRegistrar,
-  NAV_BY_HREF.omniPendencias,
-  NAV_BY_HREF.omniDesempenho,
+  NAV_BY_HREF.zaivonHoje,
+  NAV_BY_HREF.zaivonRegistrar,
+  NAV_BY_HREF.zaivonPendencias,
+  NAV_BY_HREF.zaivonDesempenho,
 ];
 
 export const APP_NAME = "ZAIVON Business";

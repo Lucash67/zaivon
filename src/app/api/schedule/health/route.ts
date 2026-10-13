@@ -25,7 +25,7 @@ export async function GET() {
     `;
     const ctx = await getScheduleContext(auth.id);
     return NextResponse.json({
-      product: "OMNI Schedule",
+      product: "ZAIVON Schedule",
       schema: "schedule",
       ready: found.length > 0,
       tables: tables[0]?.n ?? 0,
@@ -37,7 +37,7 @@ export async function GET() {
   } catch (error) {
     console.error("Schedule health error:", error);
     return NextResponse.json(
-      { product: "OMNI Schedule", schema: "schedule", ready: false },
+      { product: "ZAIVON Schedule", schema: "schedule", ready: false },
       { status: 503 },
     );
   } finally {

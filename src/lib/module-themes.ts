@@ -1,4 +1,4 @@
-/** Cores de contexto por módulo — DNA visual OMNI. */
+/** Cores de contexto por módulo — DNA visual ZAIVON. */
 export type ModuleTheme = "dashboard" | "finance" | "goals" | "alerts" | "operations" | "clients" | "reports" | "performance";
 
 export const MODULE_THEMES: Record<

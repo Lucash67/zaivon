@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { PageLoader } from "@/components/ui/loading";
 import { Settings, Download, Database, Sparkles } from "lucide-react";
 import { useBusinessScope } from "@/hooks/use-business-scope";
-import { OmniRing } from "@/components/hub/lh-monogram";
+import { ZaivonMark } from "@/components/hub/zaivon-monogram";
 import { THEME_META, resolveTheme } from "@/lib/theme-config";
 import type { AppTheme } from "@/components/providers";
 import { cn } from "@/lib/utils";
@@ -104,7 +104,7 @@ export default function ConfiguracoesPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `omni-business-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `zaivon-business-backup-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
   };
 
@@ -264,7 +264,7 @@ export default function ConfiguracoesPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <OmniRing size={22} />
+              <ZaivonMark size={22} />
               Sobre
             </CardTitle>
           </CardHeader>

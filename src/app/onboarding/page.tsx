@@ -4,10 +4,10 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, CalendarDays, LayoutGrid, Sparkles } from "lucide-react";
-import { LhHoldingLogo } from "@/components/hub/lh-hub-logo";
+import { ZaivonLogo } from "@/components/hub/zaivon-logo";
 import { useSessionUser } from "@/hooks/use-session-user";
-import { OMNI_HUB_PATH } from "@/constants/omni-products";
-import { OMNI_ONBOARDING_PATH } from "@/lib/omni-onboarding";
+import { ZAIVON_HUB_PATH } from "@/constants/zaivon-products";
+import { ZAIVON_ONBOARDING_PATH } from "@/lib/zaivon-onboarding";
 
 const STEPS = [
   {
@@ -35,7 +35,7 @@ export default function PublicOnboardingPage() {
   useEffect(() => {
     if (!isFetched) return;
     if (user?.id && user.id !== "local") {
-      router.replace(OMNI_HUB_PATH);
+      router.replace(ZAIVON_HUB_PATH);
     }
   }, [isFetched, user?.id, router]);
 
@@ -47,8 +47,8 @@ export default function PublicOnboardingPage() {
       />
 
       <header className="relative z-10 mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-5 sm:px-6">
-        <Link href={OMNI_ONBOARDING_PATH} aria-label="ZAIVON">
-          <LhHoldingLogo height={44} className="max-w-[160px] sm:max-w-[200px]" />
+        <Link href={ZAIVON_ONBOARDING_PATH} aria-label="ZAIVON">
+          <ZaivonLogo height={44} className="max-w-[160px] sm:max-w-[200px]" />
         </Link>
         <div className="flex items-center gap-2 sm:gap-3">
           <Link

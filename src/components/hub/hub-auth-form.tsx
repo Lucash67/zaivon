@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, Cloud, Eye, EyeOff, Loader2, Lock, Mail, Shield, User, Zap } from "lucide-react";
 import { cn } from "@/components/ui/utils";
 import { HUB_BRAND_ASSETS, HUB_COPY } from "@/constants/hub-brand";
-import { LhHoldingLogo } from "@/components/hub/lh-hub-logo";
+import { ZaivonLogo } from "@/components/hub/zaivon-logo";
 import { markHubSession } from "@/lib/hub-session";
 import { resolvePostLoginPath } from "@/lib/auth/safe-next-path";
 import { useBusinessContextStore } from "@/stores/business-context-store";
@@ -288,7 +288,7 @@ export function HubAuthForm({ compact = false }: { compact?: boolean }) {
                 className="flex justify-center sm:justify-start"
               >
                 {tab === "register" ? (
-                  <LhHoldingLogo height={compact ? 112 : 120} className="max-w-[340px]" />
+                  <ZaivonLogo height={compact ? 112 : 120} className="max-w-[340px]" />
                 ) : (
                   <h2
                     className={cn(

@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Radio, Shield, Zap } from "lucide-react";
-import { LhHoldingIcon, LhHoldingLogo } from "@/components/hub/lh-hub-logo";
+import { ZaivonIcon, ZaivonLogo } from "@/components/hub/zaivon-logo";
 import { HUB_COPY } from "@/constants/hub-brand";
 
 const LIVE_UNITS = [{ index: "01" }, { index: "02" }] as const;
@@ -17,7 +17,7 @@ function StatusStrip({ index, delay }: { index: string; delay: number }) {
       className="hub-glass-card flex items-center gap-3 rounded-xl border border-z-primary/12 px-3.5 py-3"
     >
       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-z-primary/10 ring-1 ring-z-primary/15">
-        <LhHoldingIcon height={22} />
+        <ZaivonIcon height={22} />
       </div>
 
       <div className="min-w-0 flex-1">
@@ -55,7 +55,7 @@ export function HubLeftPanel() {
             transition={{ duration: 0.5 }}
             className="mb-8 lg:mb-10"
           >
-            <LhHoldingLogo height={110} className="max-w-[320px]" />
+            <ZaivonLogo height={110} className="max-w-[320px]" />
           </motion.div>
 
           <motion.div

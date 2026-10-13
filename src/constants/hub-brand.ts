@@ -98,7 +98,6 @@ export const HUB_VALUE_PROPS = [
  *
  * Telas globais (login, auth, conta) priorizam a marca ZAIVON.
  * O chrome interno do app identifica o produto ZAIVON Business.
- * Identificadores técnicos (rotas, cookies, chaves "omni") não mudam.
  */
 export const HUB_COPY = {
   holdingName: "ZAIVON",

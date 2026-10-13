@@ -8,14 +8,14 @@ const config: Config = {
       fontFamily: {
         sans: ["var(--font-sora)", "Sora", "system-ui", "sans-serif"],
         display: ["var(--font-sora)", "Sora", "system-ui", "sans-serif"],
-        omni: ["var(--font-manrope)", "Manrope", "system-ui", "sans-serif"],
+        zaivon: ["var(--font-manrope)", "Manrope", "system-ui", "sans-serif"],
       },
       opacity: {
         12: "0.12",
         14: "0.14",
       },
       colors: {
-        /* OMNI v2 (/v2): variáveis definidas só dentro de .omni2 em globals.css. */
+        /* ZAIVON v2 (/v2): variáveis definidas só dentro de .zaivon2 em globals.css. */
         o: {
           background: "oklch(var(--o-background) / <alpha-value>)",
           foreground: "oklch(var(--o-foreground) / <alpha-value>)",

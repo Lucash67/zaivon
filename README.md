@@ -1,6 +1,8 @@
-# Lucas Business OS
+# ZAIVON Business
 
 Painel Inteligente de Gestão e Crescimento para negócio de salgados.
+
+Produção: [zaivon.vercel.app](https://zaivon.vercel.app)
 
 Projeto **100% independente** — sem relação com Terus Platform.
 
@@ -143,4 +145,4 @@ Migrations: `drizzle/migrations/`
 
 ## Licença
 
-Projeto privado — Lucas Business OS © 2026
+Projeto privado — ZAIVON Business © 2026

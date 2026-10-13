@@ -1,5 +1,5 @@
 /**
- * Analytics Engine — única fonte oficial de métricas do OMNI Business.
+ * Analytics Engine — única fonte oficial de métricas do ZAIVON Business.
  *
  * Regras:
  * - Sem dependência de React, páginas ou hooks

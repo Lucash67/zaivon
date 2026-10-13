@@ -1,14 +1,22 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { AUTH_COOKIE, verifySessionToken } from "@/lib/auth/session";
-import { OMNI_HUB_PATH } from "@/constants/omni-products";
-import { OMNI_ONBOARDING_PATH } from "@/lib/omni-onboarding";
+import { AUTH_COOKIE, LEGACY_AUTH_COOKIE, verifySessionToken } from "@/lib/auth/session";
+import { ZAIVON_HUB_PATH } from "@/constants/zaivon-products";
+import { ZAIVON_ONBOARDING_PATH } from "@/lib/zaivon-onboarding";
 import { resolvePostLoginPath } from "@/lib/auth/safe-next-path";
+
+const ZAIVON_HOST = "zaivon.vercel.app";
+const LEGACY_HOSTS = new Set([
+  "lh-hub-delta.vercel.app",
+  "lh-hub.vercel.app",
+  "lh-hub-lucash67s-projects.vercel.app",
+  "lh-hub-git-main-lucash67s-projects.vercel.app",
+]);
 
 const PUBLIC_PREFIXES = [
   "/login",
   "/api/auth",
-  OMNI_ONBOARDING_PATH,
+  ZAIVON_ONBOARDING_PATH,
   "/agendar",
   "/agendamento",
   "/api/schedule/public",
@@ -23,12 +31,20 @@ function isPublicPath(pathname: string): boolean {
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const token = request.cookies.get(AUTH_COOKIE)?.value;
+
+  const host = request.headers.get("host")?.toLowerCase() ?? "";
+  if (LEGACY_HOSTS.has(host)) {
+    const target = new URL(request.nextUrl.pathname + request.nextUrl.search, `https://${ZAIVON_HOST}`);
+    return NextResponse.redirect(target, 308);
+  }
+
+  const token =
+    request.cookies.get(AUTH_COOKIE)?.value ?? request.cookies.get(LEGACY_AUTH_COOKIE)?.value;
   const session = token ? await verifySessionToken(token) : null;
 
   // Visitante na raiz → onboarding público (não Business-first).
   if (!session && pathname === "/") {
-    return NextResponse.redirect(new URL(OMNI_ONBOARDING_PATH, request.url));
+    return NextResponse.redirect(new URL(ZAIVON_ONBOARDING_PATH, request.url));
   }
 
   if (pathname.startsWith("/login")) {
@@ -41,8 +57,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // Já logado no onboarding público → Hub.
-  if (session && (pathname === OMNI_ONBOARDING_PATH || pathname.startsWith(`${OMNI_ONBOARDING_PATH}/`))) {
-    return NextResponse.redirect(new URL(OMNI_HUB_PATH, request.url));
+  if (session && (pathname === ZAIVON_ONBOARDING_PATH || pathname.startsWith(`${ZAIVON_ONBOARDING_PATH}/`))) {
+    return NextResponse.redirect(new URL(ZAIVON_HUB_PATH, request.url));
   }
 
   if (isPublicPath(pathname)) {
@@ -54,7 +70,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
     const loginUrl = new URL("/login", request.url);
-    if (pathname !== OMNI_HUB_PATH && pathname !== OMNI_ONBOARDING_PATH) {
+    if (pathname !== ZAIVON_HUB_PATH && pathname !== ZAIVON_ONBOARDING_PATH) {
       loginUrl.searchParams.set("next", pathname + request.nextUrl.search);
     }
     return NextResponse.redirect(loginUrl);

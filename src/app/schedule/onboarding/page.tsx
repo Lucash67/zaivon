@@ -1,6 +1,6 @@
 import { CalendarDays } from "lucide-react";
 import Link from "next/link";
-import { OMNI_HUB_PATH } from "@/constants/omni-products";
+import { ZAIVON_HUB_PATH } from "@/constants/zaivon-products";
 
 /** Gate da Fase 1 — wizard completo entra na Fase 2. Não cria organização. */
 export default function ScheduleOnboardingGatePage() {
@@ -13,7 +13,7 @@ export default function ScheduleOnboardingGatePage() {
         Configuração
       </p>
       <h1 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">
-        Vamos configurar seu OMNI Schedule
+        Vamos configurar seu ZAIVON Schedule
       </h1>
       <p className="mt-3 max-w-md text-sm leading-relaxed text-[#A0A0A0]">
         O estabelecimento ainda não foi configurado. O passo a passo (negócio, serviços,
@@ -22,7 +22,7 @@ export default function ScheduleOnboardingGatePage() {
       </p>
       <div className="mt-8 flex flex-wrap gap-3">
         <Link
-          href={OMNI_HUB_PATH}
+          href={ZAIVON_HUB_PATH}
           className="inline-flex h-11 items-center rounded-xl border border-white/15 px-4 text-sm font-semibold text-white hover:bg-white/5"
         >
           Voltar ao Hub

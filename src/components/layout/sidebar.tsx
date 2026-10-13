@@ -14,12 +14,12 @@ import {
   type NavSectorId,
 } from "@/constants/navigation";
 import { BusinessContextSelector } from "@/components/dashboard/business-context-selector";
-import { LhHoldingIcon } from "@/components/hub/lh-hub-logo";
-import { ZaivonWordtype } from "@/components/hub/lh-monogram";
+import { ZaivonIcon } from "@/components/hub/zaivon-logo";
+import { ZaivonWordtype } from "@/components/hub/zaivon-monogram";
 import { ProductSwitcher } from "@/components/hub/product-switcher";
 import { resolveTheme, THEME_META } from "@/lib/theme-config";
 import { clearHubSession } from "@/lib/hub-session";
-import { OMNI_ONBOARDING_PATH } from "@/lib/omni-onboarding";
+import { ZAIVON_ONBOARDING_PATH } from "@/lib/zaivon-onboarding";
 import { useBusinessContextStore } from "@/stores/business-context-store";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
@@ -111,7 +111,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
     setExpanded(() => {
       const next: Partial<Record<NavSectorId, boolean>> = { ...stored };
       if (Object.keys(stored).length === 0) next.operate = true;
-      if (stored.omni === undefined) next.omni = true;
+      if (stored.zaivon === undefined) next.zaivon = true;
       return next;
     });
   }, []);
@@ -145,7 +145,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
       clearHubSession();
       resetBusinessContext(null);
       queryClient.clear();
-      router.push(OMNI_ONBOARDING_PATH);
+      router.push(ZAIVON_ONBOARDING_PATH);
       router.refresh();
     } finally {
       setLoggingOut(false);
@@ -169,7 +169,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
       )}
     >
       <div className="flex items-center gap-3 px-4 py-4">
-        <LhHoldingIcon height={36} className="shrink-0" />
+        <ZaivonIcon height={36} className="shrink-0" />
         <div className="min-w-0 flex-1">
           <p className="flex items-center gap-1.5 truncate text-sm font-semibold leading-tight text-text-secondary">
             <ZaivonWordtype height={11} />

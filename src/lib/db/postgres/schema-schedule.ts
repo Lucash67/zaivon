@@ -1,7 +1,7 @@
 /**
- * OMNI Schedule — schema isolado (`schedule.*`).
+ * ZAIVON Schedule — schema isolado (`schedule.*`).
  *
- * NÃO misturar com tabelas do OMNI Business (`public.*`).
+ * NÃO misturar com tabelas do ZAIVON Business (`public.*`).
  * Auth compartilha apenas `public.users` (FK por UUID, sem cascade destrutivo no Business).
  *
  * Verticalização via `organizations.business_type` (ex.: barber_shop) —
@@ -75,7 +75,7 @@ export const scheduleOrganizations = scheduleSchema.table(
   }),
 );
 
-/** Membros autenticados (dono/gestor/profissional com conta OMNI). */
+/** Membros autenticados (dono/gestor/profissional com conta ZAIVON). */
 export const scheduleOrganizationMembers = scheduleSchema.table(
   "organization_members",
   {

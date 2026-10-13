@@ -1,1 +1,1 @@
-export { LhHubBackground as HubLoginBackdrop } from "@/components/hub/lh-hub-background";
+export { ZaivonBackground as HubLoginBackdrop } from "@/components/hub/zaivon-background";
