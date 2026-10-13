@@ -3,11 +3,17 @@
  * O HTML só é renderizado depois de passar por `sanitizeNoteHtml` (whitelist).
  */
 
-const RICH_TAG_RE = /<\/?(div|p|br|b|strong|i|em|u|s|strike|span|font|mark|h[1-3]|ul|ol|li|blockquote)\b[^>]*>/i;
+const RICH_TAG_RE =
+  /<\/?(div|p|br|hr|b|strong|i|em|u|s|strike|del|span|font|mark|h[1-6]|ul|ol|li|blockquote|table|thead|tbody|tr|th|td|pre|code)\b[^>]*>/i;
 
 const ALLOWED_TAGS = new Set([
-  "DIV", "P", "BR", "B", "STRONG", "I", "EM", "U", "S", "STRIKE", "SPAN",
-  "MARK", "H1", "H2", "H3", "UL", "OL", "LI", "BLOCKQUOTE",
+  "DIV", "P", "BR", "HR", "B", "STRONG", "I", "EM", "U", "S", "STRIKE", "DEL", "SPAN",
+  "MARK", "H1", "H2", "H3", "H4", "H5", "H6", "UL", "OL", "LI", "BLOCKQUOTE",
+  "TABLE", "THEAD", "TBODY", "TR", "TH", "TD", "PRE", "CODE",
+]);
+
+export const BLOCK_TAGS = new Set([
+  "DIV", "P", "HR", "H1", "H2", "H3", "H4", "H5", "H6", "UL", "OL", "LI", "BLOCKQUOTE", "TABLE", "PRE",
 ]);
 
 /** Removidos com todo o conteúdo. */
@@ -59,8 +65,10 @@ export function noteBodyToPlainText(body: string): string {
   if (!isRichNoteBody(body)) return body;
   return body
     .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<\/(div|p|li|h[1-3]|blockquote)>/gi, "\n")
-    .replace(/<li[^>]*>/gi, "• ")
+    .replace(/<hr[^>]*>/gi, "\n")
+    .replace(/<\/(div|p|li|h[1-6]|blockquote|tr|pre)>/gi, "\n")
+    .replace(/<\/t[hd]>/gi, "  ")
+    .replace(/<li[^>]*>/gi, "\n• ")
     .replace(/<[^>]+>/g, "")
     .replace(/&nbsp;/g, " ")
     .replace(/&lt;/g, "<")
@@ -68,6 +76,7 @@ export function noteBodyToPlainText(body: string): string {
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&amp;/g, "&")
+    .replace(/\n{2,}(?=• )/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
@@ -113,6 +122,11 @@ function sanitizeNode(node: Node, doc: Document, keepColors: boolean): Node | Do
 
   if (!ALLOWED_TAGS.has(tag)) return children;
 
+  // Título/parágrafo com blocos dentro (colagem antiga com "Título" ativo): desembrulha.
+  if (/^(H[1-6]|P)$/.test(tag) && Array.from(children.childNodes).some((c) => c.nodeType === Node.ELEMENT_NODE && BLOCK_TAGS.has((c as Element).tagName))) {
+    return children;
+  }
+
   const out = doc.createElement(tag.toLowerCase());
   const style = cleanStyle(el.style, keepColors);
   if (style) out.setAttribute("style", style);
@@ -148,6 +162,151 @@ export function noteBodyToSafeHtml(body: string): string {
 
 /** Editor vazio (só <br>, divs vazias) → string vazia. */
 export function normalizeEditorHtml(html: string): string {
+  if (/<hr\b/i.test(html)) return html;
   const text = html.replace(/<br\s*\/?>/gi, "").replace(/<\/?(div|p|span)[^>]*>/gi, "").replace(/&nbsp;/g, "").trim();
   return text ? html : "";
+}
+
+/**
+ * Texto copiado pelo botão "Copiar" do ChatGPT vem em Markdown. Só convertemos quando
+ * há sinais claros (títulos #, **negrito**, divisória ---) para não transformar
+ * rascunhos comuns com "- " em lista.
+ */
+export function looksLikeMarkdown(text: string): boolean {
+  return (
+    /^#{1,6}\s+\S/m.test(text) ||
+    /\*\*[^*\n]+\*\*/.test(text) ||
+    /^\s*(-{3,}|\*{3,}|_{3,})\s*$/m.test(text) ||
+    /^```/m.test(text)
+  );
+}
+
+function inlineMarkdown(text: string): string {
+  const codes: string[] = [];
+  let out = escapeHtml(text).replace(/`([^`\n]+)`/g, (_m, code: string) => {
+    codes.push(`<code>${code}</code>`);
+    return `\u0000${codes.length - 1}\u0000`;
+  });
+  out = out
+    .replace(/\*\*([^*\n]+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/__([^_\n]+?)__/g, "<strong>$1</strong>")
+    .replace(/~~([^~\n]+?)~~/g, "<s>$1</s>")
+    .replace(/(^|[^*\w])\*([^*\n]+?)\*(?!\*)/g, "$1<em>$2</em>");
+  return out.replace(/\u0000(\d+)\u0000/g, (_m, i: string) => codes[Number(i)] ?? "");
+}
+
+function tableRowCells(line: string): string[] {
+  return line.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((c) => c.trim());
+}
+
+/** Markdown (subconjunto usado pelo ChatGPT) → HTML da nota. */
+export function markdownToNoteHtml(md: string): string {
+  const lines = md.replace(/\r\n?/g, "\n").split("\n");
+  const out: string[] = [];
+  const lists: { type: "ul" | "ol"; indent: number }[] = [];
+  let para: string[] = [];
+
+  const flushPara = () => {
+    if (para.length) out.push(`<p>${para.map(inlineMarkdown).join("<br>")}</p>`);
+    para = [];
+  };
+  const closeLists = (toIndent = -1) => {
+    while (lists.length && lists[lists.length - 1]!.indent > toIndent) {
+      out.push(`</li></${lists.pop()!.type}>`);
+    }
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const raw = lines[i]!;
+    const line = raw.replace(/\t/g, "    ");
+
+    if (/^\s*```/.test(line)) {
+      flushPara();
+      closeLists();
+      const code: string[] = [];
+      i++;
+      while (i < lines.length && !/^\s*```/.test(lines[i]!)) code.push(lines[i++]!);
+      out.push(`<pre><code>${escapeHtml(code.join("\n"))}</code></pre>`);
+      continue;
+    }
+
+    if (!line.trim()) {
+      flushPara();
+      continue;
+    }
+
+    const heading = /^\s{0,3}(#{1,6})\s+(.*?)\s*#*\s*$/.exec(line);
+    if (heading) {
+      flushPara();
+      closeLists();
+      const level = heading[1]!.length;
+      out.push(`<h${level}>${inlineMarkdown(heading[2]!)}</h${level}>`);
+      continue;
+    }
+
+    if (/^\s*(-{3,}|\*{3,}|_{3,})\s*$/.test(line)) {
+      flushPara();
+      closeLists();
+      out.push("<hr>");
+      continue;
+    }
+
+    const item = /^(\s*)([-*+]|\d+[.)])\s+(.*)$/.exec(line);
+    if (item) {
+      flushPara();
+      const indent = item[1]!.length;
+      const type: "ul" | "ol" = /\d/.test(item[2]!) ? "ol" : "ul";
+      while (lists.length && lists[lists.length - 1]!.indent > indent) {
+        out.push(`</li></${lists.pop()!.type}>`);
+      }
+      const top = lists[lists.length - 1];
+      if (top && top.indent === indent && top.type !== type) {
+        out.push(`</li></${lists.pop()!.type}>`);
+      }
+      const current = lists[lists.length - 1];
+      if (current && current.indent === indent) {
+        out.push(`</li><li>${inlineMarkdown(item[3]!)}`);
+      } else {
+        out.push(`<${type}><li>${inlineMarkdown(item[3]!)}`);
+        lists.push({ type, indent });
+      }
+      continue;
+    }
+
+    if (/^\s*>/.test(line)) {
+      flushPara();
+      closeLists();
+      out.push(`<blockquote>${inlineMarkdown(line.replace(/^\s*>\s?/, ""))}</blockquote>`);
+      continue;
+    }
+
+    if (/^\s*\|.*\|\s*$/.test(line)) {
+      flushPara();
+      closeLists();
+      const rows: string[][] = [];
+      while (i < lines.length && /^\s*\|.*\|\s*$/.test(lines[i]!)) {
+        const cells = tableRowCells(lines[i]!);
+        if (!cells.every((c) => /^:?-{2,}:?$/.test(c))) rows.push(cells);
+        i++;
+      }
+      i--;
+      const [head, ...body] = rows;
+      const th = (head ?? []).map((c) => `<th>${inlineMarkdown(c)}</th>`).join("");
+      const trs = body.map((r) => `<tr>${r.map((c) => `<td>${inlineMarkdown(c)}</td>`).join("")}</tr>`).join("");
+      out.push(`<table><thead><tr>${th}</tr></thead><tbody>${trs}</tbody></table>`);
+      continue;
+    }
+
+    if (lists.length && /^\s+\S/.test(line)) {
+      out.push(`<br>${inlineMarkdown(line.trim())}`);
+      continue;
+    }
+
+    closeLists();
+    para.push(line.trim());
+  }
+
+  flushPara();
+  closeLists();
+  return out.join("");
 }

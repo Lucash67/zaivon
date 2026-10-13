@@ -6,9 +6,9 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-inter)", "Inter", "system-ui", "sans-serif"],
+        sans: ["var(--font-sora)", "Sora", "system-ui", "sans-serif"],
         display: ["var(--font-sora)", "Sora", "system-ui", "sans-serif"],
-        omni: ["var(--font-inter)", "Inter", "system-ui", "sans-serif"],
+        omni: ["var(--font-manrope)", "Manrope", "system-ui", "sans-serif"],
       },
       opacity: {
         12: "0.12",

@@ -21,6 +21,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
+  BLOCK_TAGS,
+  looksLikeMarkdown,
+  markdownToNoteHtml,
   noteBodyToSafeHtml,
   normalizeEditorHtml,
   plainTextToNoteHtml,
@@ -153,9 +156,53 @@ export function RichNoteBody({ editorRef, value, onChange, placeholder, classNam
         const html = e.clipboardData.getData("text/html");
         const text = e.clipboardData.getData("text/plain");
         if (!html && !text) return;
+        const el = editorRef.current;
+        const sel = window.getSelection();
+        if (!el || !sel || sel.rangeCount === 0) return;
+        const range = sel.getRangeAt(0);
+        if (!el.contains(range.commonAncestorContainer)) return;
         e.preventDefault();
-        const clean = html ? sanitizeNoteHtml(html, { keepColors: false }) : plainTextToNoteHtml(text);
-        document.execCommand("insertHTML", false, clean);
+
+        const clean = html
+          ? sanitizeNoteHtml(html, { keepColors: false })
+          : looksLikeMarkdown(text)
+            ? markdownToNoteHtml(text)
+            : plainTextToNoteHtml(text);
+
+        range.deleteContents();
+        const template = document.createElement("template");
+        template.innerHTML = clean;
+        const last = template.content.lastChild;
+
+        // Blocos (títulos, listas…) não podem cair dentro de um título/parágrafo existente.
+        const hasBlocks = Array.from(template.content.childNodes).some(
+          (n) => n.nodeType === Node.ELEMENT_NODE && BLOCK_TAGS.has((n as Element).tagName),
+        );
+        if (hasBlocks) {
+          let node: Node | null = range.startContainer;
+          let host: HTMLElement | null = null;
+          while (node && node !== el) {
+            if (node instanceof HTMLElement && /^(H[1-6]|P|BLOCKQUOTE)$/.test(node.tagName)) host = node;
+            node = node.parentNode;
+          }
+          if (host) {
+            if (!host.textContent?.trim()) {
+              range.selectNode(host);
+              range.deleteContents();
+            } else {
+              range.setStartAfter(host);
+              range.collapse(true);
+            }
+          }
+        }
+        range.insertNode(template.content);
+        if (last) {
+          const caret = document.createRange();
+          caret.setStartAfter(last);
+          caret.collapse(true);
+          sel.removeAllRanges();
+          sel.addRange(caret);
+        }
         emit();
       }}
       className={cn("note-rich", className)}

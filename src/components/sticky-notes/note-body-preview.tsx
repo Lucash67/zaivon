@@ -29,7 +29,7 @@ export function NoteBodyPreview({
     return fallback ? <p className={cn("whitespace-pre-wrap", className)}>{fallback}</p> : null;
   }
   if (rich && html !== null) {
-    return <div className={cn("note-rich", className)} dangerouslySetInnerHTML={{ __html: html }} />;
+    return <div className={cn("note-rich note-rich-preview", className)} dangerouslySetInnerHTML={{ __html: html }} />;
   }
   return <p className={cn("whitespace-pre-wrap", className)}>{plain}</p>;
 }

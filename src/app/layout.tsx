@@ -1,14 +1,8 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Sora } from "next/font/google";
+import { Sora } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { HUB_BRAND_ASSETS } from "@/constants/hub-brand";
 import "./globals.css";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
 
 const sora = Sora({
   subsets: ["latin"],
@@ -40,7 +34,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR" className="dark" suppressHydrationWarning>
-      <body className={`${inter.variable} ${sora.variable} font-sans`}>
+      <body className={`${sora.variable} font-sans`}>
         <Providers>{children}</Providers>
       </body>
     </html>
