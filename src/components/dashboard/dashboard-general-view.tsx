@@ -5,6 +5,7 @@ import { DollarSign, Package, Target, TrendingUp, Users } from "lucide-react";
 import { PulseMetric } from "@/components/dashboard/pulse-metric";
 import { WeekUnitsTableCard } from "@/components/dashboard/week-units-table-card";
 import { TopClientsCard, ChartCard } from "@/components/charts/chart-card";
+import { useHideMoney } from "@/hooks/use-hide-money";
 import { formatCurrency } from "@/lib/utils";
 import type { WeekUnitsPanel } from "@/lib/dashboard-view";
 
@@ -62,6 +63,8 @@ export function DashboardGeneralView({
   weekUnits,
   copy = DEFAULT_COPY,
 }: DashboardGeneralViewProps) {
+  const { maskMoney } = useHideMoney("dashboard");
+  const money = maskMoney(formatCurrency);
   const showUnitsGoal = unitsGoalTarget > 0;
   const clientsSubtitle = copy.topClientsSubtitle ?? copy.chartsSubtitle;
   const clientsSuffix = copy.topClientsValueSuffix ?? "compras";
@@ -84,11 +87,11 @@ export function DashboardGeneralView({
         <div className="relative">
           <p className="mb-1 text-sm text-text-secondary">{copy.heroEyebrow}</p>
           <p className="text-[2rem] font-black tracking-tight text-brand-gradient sm:text-4xl lg:text-5xl">
-            {formatCurrency(revenue)}
+            {money(revenue)}
           </p>
           <p className="mt-2 text-sm text-text-secondary sm:text-base">
             {copy.profitPhrase}{" "}
-            <span className="font-bold text-brand-green">{formatCurrency(profit)}</span>
+            <span className="font-bold text-brand-green">{money(profit)}</span>
             {" · "}
             {itemsSold} unidades · {uniqueBuyers} compradores
           </p>
@@ -113,10 +116,18 @@ export function DashboardGeneralView({
             : "grid grid-cols-2 gap-3 xl:grid-cols-4"
         }
       >
-        <PulseMetric label={copy.revenueLabel} value={revenue} icon={DollarSign} variant="revenue" delay={0} />
+        <PulseMetric
+          label={copy.revenueLabel}
+          value={money(revenue)}
+          format="raw"
+          icon={DollarSign}
+          variant="revenue"
+          delay={0}
+        />
         <PulseMetric
           label={copy.profitLabel}
-          value={profit}
+          value={money(profit)}
+          format="raw"
           icon={TrendingUp}
           variant="gain"
           delay={1}
