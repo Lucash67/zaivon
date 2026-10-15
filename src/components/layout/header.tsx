@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { GlobalHideMoneyButton } from "@/components/ui/hide-money-button";
 
 interface HeaderProps {
   title: string;
@@ -45,6 +46,9 @@ export function Header({ title, subtitle, actions, brandHeader, onOpenMenu }: He
             {subtitle ?? <span>{today}</span>}
           </div>
         </div>
+
+        {/* Sempre visível: oculta/mostra lucro e faturamento em todas as telas. */}
+        <GlobalHideMoneyButton className="shrink-0" />
 
         {actions && (
           // No celular as ações ganham a própria linha e quebram em duas se

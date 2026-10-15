@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 export const MONEY_MASK = "R$ ••••";
 const KEY_PREFIX = "zaivon-hide-money:";
 
-/** Telas v2 — cada uma tem olhinho próprio (localStorage isolado). */
+/** Telas com olhinho próprio (localStorage isolado). */
 export type HideMoneyScreen =
   | "dashboard"
   | "v2-hoje"
@@ -14,6 +14,16 @@ export type HideMoneyScreen =
   | "v2-planejamento"
   | "v2-pendencias"
   | "v2-registrar";
+
+export const HIDE_MONEY_SCREENS: HideMoneyScreen[] = [
+  "dashboard",
+  "v2-hoje",
+  "v2-dinheiro",
+  "v2-desempenho",
+  "v2-planejamento",
+  "v2-pendencias",
+  "v2-registrar",
+];
 
 export function hideMoneyScreenFromPath(pathname: string): HideMoneyScreen | null {
   if (pathname === "/" || pathname.startsWith("/dashboard")) return "dashboard";
@@ -46,6 +56,26 @@ function readHidden(screenId: HideMoneyScreen): boolean {
   }
 }
 
+function writeHidden(screenId: HideMoneyScreen, hidden: boolean) {
+  try {
+    localStorage.setItem(storageKey(screenId), hidden ? "1" : "0");
+  } catch {
+    /* ignore */
+  }
+  window.dispatchEvent(
+    new CustomEvent(CHANGE_EVENT, { detail: { screenId, hidden } }),
+  );
+}
+
+function readAllHidden(): boolean {
+  return HIDE_MONEY_SCREENS.every((id) => readHidden(id));
+}
+
+/** Liga/desliga todas as telas de uma vez (olhinho geral). */
+export function setAllHideMoney(hidden: boolean) {
+  for (const id of HIDE_MONEY_SCREENS) writeHidden(id, hidden);
+}
+
 /**
  * Olhinho por tela: esconder/mostrar valores de lucro e faturamento.
  * Cada `screenId` guarda o estado sozinho — não aciona outras telas.
@@ -67,14 +97,7 @@ export function useHideMoney(screenId: HideMoneyScreen) {
   const toggle = useCallback(() => {
     setHidden((prev) => {
       const next = !prev;
-      try {
-        localStorage.setItem(storageKey(screenId), next ? "1" : "0");
-      } catch {
-        /* ignore */
-      }
-      window.dispatchEvent(
-        new CustomEvent(CHANGE_EVENT, { detail: { screenId, hidden: next } }),
-      );
+      writeHidden(screenId, next);
       return next;
     });
   }, [screenId]);
@@ -90,4 +113,27 @@ export function useHideMoney(screenId: HideMoneyScreen) {
   );
 
   return { hidden, toggle, maskMoney, axisTick, mask: MONEY_MASK };
+}
+
+/**
+ * Olhinho geral: se alguma tela ainda mostra valores → oculta todas;
+ * se todas estão ocultas → mostra todas.
+ */
+export function useGlobalHideMoney() {
+  const [allHidden, setAllHidden] = useState(false);
+
+  useEffect(() => {
+    setAllHidden(readAllHidden());
+    const onChange = () => setAllHidden(readAllHidden());
+    window.addEventListener(CHANGE_EVENT, onChange);
+    return () => window.removeEventListener(CHANGE_EVENT, onChange);
+  }, []);
+
+  const toggle = useCallback(() => {
+    const next = !readAllHidden();
+    setAllHideMoney(next);
+    setAllHidden(next);
+  }, []);
+
+  return { allHidden, toggle };
 }
