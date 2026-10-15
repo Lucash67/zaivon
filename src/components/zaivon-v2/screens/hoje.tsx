@@ -5,10 +5,11 @@ import { ArrowRight } from "lucide-react";
 import { useZaivon } from "@/components/zaivon-v2/store";
 import { dayChecks, dayFinance, daysOpen, recovery } from "@/lib/zaivon/finance/day";
 import { monthSummary } from "@/lib/zaivon/finance/month";
-import { dayLabel, ddmm, money, pctFmt } from "@/lib/zaivon/format";
+import { dayLabel, ddmm, pctFmt } from "@/lib/zaivon/format";
 import { CheckRow, Kpi, PageHeader, Panel, Pill, Progress, RegisteredSalesList } from "@/components/zaivon-v2/ui";
 import { buttonClass } from "@/components/zaivon-v2/primitives";
 import { ZAIVON_BASE } from "@/components/zaivon-v2/app-shell";
+import { HideMoneyScope, ScreenHideMoneyButton, useScreenHideMoney } from "@/components/zaivon-v2/hide-money";
 
 const closureLabel = {
   closed: ["Fechado ✓", "ok"],
@@ -19,7 +20,16 @@ const closureLabel = {
 } as const;
 
 export function Hoje() {
+  return (
+    <HideMoneyScope screenId="v2-hoje">
+      <HojeBody />
+    </HideMoneyScope>
+  );
+}
+
+function HojeBody() {
   const o = useZaivon();
+  const { money } = useScreenHideMoney();
   const day = o.selectedDay;
   const exists = o.days.some((d) => d.date === day.date);
   const f = dayFinance(day, o.settlements);
@@ -46,7 +56,16 @@ export function Hoje() {
 
   return (
     <div className="mx-auto max-w-6xl">
-      <PageHeader title={`Hoje · ${dayLabel(day.date)}`} question="Como está o dia?" right={<Pill tone={tone}>{cl}</Pill>} />
+      <PageHeader
+        title={`Hoje · ${dayLabel(day.date)}`}
+        question="Como está o dia?"
+        right={
+          <div className="flex items-center gap-2">
+            <ScreenHideMoneyButton />
+            <Pill tone={tone}>{cl}</Pill>
+          </div>
+        }
+      />
       {!exists ? (
         <Panel>
           <div className="py-8 text-center">

@@ -4,13 +4,22 @@ import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAx
 import { useZaivon } from "@/components/zaivon-v2/store";
 import { dayFinance } from "@/lib/zaivon/finance/day";
 import { monthDays, salesDays } from "@/lib/zaivon/finance/month";
-import { ddmm, money, pctFmt } from "@/lib/zaivon/format";
+import { ddmm, pctFmt } from "@/lib/zaivon/format";
 import { chartAxis, chartTooltip, Kpi, PageHeader, Panel, Pill, Progress } from "@/components/zaivon-v2/ui";
 import { Table, useTrend } from "@/components/zaivon-v2/trend";
-
+import { HideMoneyScope, ScreenHideMoneyButton, useScreenHideMoney } from "@/components/zaivon-v2/hide-money";
 
 export function Planejamento() {
+  return (
+    <HideMoneyScope screenId="v2-planejamento">
+      <PlanejamentoBody />
+    </HideMoneyScope>
+  );
+}
+
+function PlanejamentoBody() {
   const o = useZaivon();
+  const { money, axisTick } = useScreenHideMoney();
   const { ms, t } = useTrend();
   const md = monthDays(o.days, o.plan);
   const rows = salesDays(o.plan).map((d) => {
@@ -29,7 +38,7 @@ export function Planejamento() {
   const picks = t.scenarios.filter((s) => ["cons", "plan", "amb", "l10"].includes(s.id));
   return (
     <div className="mx-auto max-w-6xl">
-      <PageHeader title="Planejamento" question={`Vou bater a meta? · ${o.plan.label}`} />
+      <PageHeader title="Planejamento" question={`Vou bater a meta? · ${o.plan.label}`} right={<ScreenHideMoneyButton />} />
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr_1fr]">
         <Panel>
           <div className="eyebrow">Meta no banco</div>
@@ -41,7 +50,7 @@ export function Planejamento() {
         <Kpi tone="ok" label="Real × plano" value={pctFmt(ms.vsPlanPct)} explain={`${money(ms.diaryProfit)} vs ${money(ms.planToDate)} planejado`} />
       </div>
       <Panel title="Planejado × realizado por dia" subtitle={`R$ de lucro · dias de venda · ${o.plan.label}`} className="mt-4">
-        <div className="h-64"><ResponsiveContainer><BarChart data={rows}><CartesianGrid stroke="var(--color-border)" vertical={false} /><XAxis dataKey="label" {...chartAxis} interval={2} /><YAxis {...chartAxis} width={50} tickFormatter={(v) => `R$ ${v}`} /><Tooltip {...chartTooltip} formatter={(v: number) => money(v)} /><Legend wrapperStyle={{ fontSize: 12 }} /><Bar dataKey="plano" name="Plano" fill="var(--color-muted-foreground)" fillOpacity={0.35} /><Bar dataKey="real" name="Realizado" fill="var(--color-ok)" /></BarChart></ResponsiveContainer></div>
+        <div className="h-64"><ResponsiveContainer><BarChart data={rows}><CartesianGrid stroke="var(--color-border)" vertical={false} /><XAxis dataKey="label" {...chartAxis} interval={2} /><YAxis {...chartAxis} width={50} tickFormatter={axisTick} /><Tooltip {...chartTooltip} formatter={(v: number) => money(v)} /><Legend wrapperStyle={{ fontSize: 12 }} /><Bar dataKey="plano" name="Plano" fill="var(--color-muted-foreground)" fillOpacity={0.35} /><Bar dataKey="real" name="Realizado" fill="var(--color-ok)" /></BarChart></ResponsiveContainer></div>
       </Panel>
       <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Panel title="Cenários do plano" subtitle={`${ms.remainingDays} dias restantes`}>

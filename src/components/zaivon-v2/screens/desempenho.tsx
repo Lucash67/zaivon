@@ -5,30 +5,34 @@ import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ReferenceLine, R
 import { useZaivon } from "@/components/zaivon-v2/store";
 import { dayFinance } from "@/lib/zaivon/finance/day";
 import { weekStart, weekSummary } from "@/lib/zaivon/finance/month";
-import { dayLabel, ddmm, money, pctFmt } from "@/lib/zaivon/format";
+import { dayLabel, ddmm, pctFmt } from "@/lib/zaivon/format";
 import { chartAxis, chartTooltip, Kpi, PageHeader, Panel, Pill } from "@/components/zaivon-v2/ui";
 import { Table, useTrend } from "@/components/zaivon-v2/trend";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/zaivon-v2/primitives";
 import { Button } from "@/components/zaivon-v2/primitives";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { HideMoneyScope, ScreenHideMoneyButton, useScreenHideMoney } from "@/components/zaivon-v2/hide-money";
 
 
 export function Desempenho() {
   return (
-    <div className="mx-auto max-w-6xl">
-      <PageHeader title="Desempenho" question="Estou melhorando?" />
-      <Tabs defaultValue="semana">
-        <TabsList><TabsTrigger value="semana">Semana</TabsTrigger><TabsTrigger value="mes">Mês</TabsTrigger><TabsTrigger value="tendencia">Tendência & Projeções</TabsTrigger></TabsList>
-        <TabsContent value="semana" className="mt-4"><Semana /></TabsContent>
-        <TabsContent value="mes" className="mt-4"><Mes /></TabsContent>
-        <TabsContent value="tendencia" className="mt-4"><Tendencia /></TabsContent>
-      </Tabs>
-    </div>
+    <HideMoneyScope screenId="v2-desempenho">
+      <div className="mx-auto max-w-6xl">
+        <PageHeader title="Desempenho" question="Estou melhorando?" right={<ScreenHideMoneyButton />} />
+        <Tabs defaultValue="semana">
+          <TabsList><TabsTrigger value="semana">Semana</TabsTrigger><TabsTrigger value="mes">Mês</TabsTrigger><TabsTrigger value="tendencia">Tendência & Projeções</TabsTrigger></TabsList>
+          <TabsContent value="semana" className="mt-4"><Semana /></TabsContent>
+          <TabsContent value="mes" className="mt-4"><Mes /></TabsContent>
+          <TabsContent value="tendencia" className="mt-4"><Tendencia /></TabsContent>
+        </Tabs>
+      </div>
+    </HideMoneyScope>
   );
 }
 
 function Semana() {
   const o = useZaivon();
+  const { money, axisTick } = useScreenHideMoney();
   const starts = Array.from(new Set(o.days.map((d) => weekStart(d.date)))).sort();
   const [i, setI] = useState(Math.max(0, starts.indexOf(weekStart(o.selectedDate))));
   const start = starts[i] ?? starts[0]!;
@@ -50,7 +54,7 @@ function Semana() {
         <Kpi tone="info" label="Cofrinho na semana" value={w.cofrinhoDelta != null ? `+${money(w.cofrinhoDelta)}` : "—"} formula="Lucro + rendimentos" />
       </div>
       <Panel title="Lucro por dia" subtitle={`R$ · semana de ${ddmm(w.dates[0] ?? start)}`}>
-        <div className="h-56"><ResponsiveContainer><BarChart data={rows}><CartesianGrid stroke="var(--color-border)" vertical={false} /><XAxis dataKey="date" {...chartAxis} /><YAxis {...chartAxis} width={50} tickFormatter={(v) => `R$ ${v}`} /><Tooltip {...chartTooltip} formatter={(v: number) => money(v)} /><ReferenceLine y={o.plan.dailyTarget} stroke="var(--color-pending)" strokeDasharray="4 4" label={{ value: "alvo", fill: "var(--color-pending)", fontSize: 12 }} /><Bar dataKey="lucro" name="Lucro" fill="var(--color-ok)" radius={[6, 6, 0, 0]} /></BarChart></ResponsiveContainer></div>
+        <div className="h-56"><ResponsiveContainer><BarChart data={rows}><CartesianGrid stroke="var(--color-border)" vertical={false} /><XAxis dataKey="date" {...chartAxis} /><YAxis {...chartAxis} width={50} tickFormatter={axisTick} /><Tooltip {...chartTooltip} formatter={(v: number) => money(v)} /><ReferenceLine y={o.plan.dailyTarget} stroke="var(--color-pending)" strokeDasharray="4 4" label={{ value: "alvo", fill: "var(--color-pending)", fontSize: 12 }} /><Bar dataKey="lucro" name="Lucro" fill="var(--color-ok)" radius={[6, 6, 0, 0]} /></BarChart></ResponsiveContainer></div>
       </Panel>
     </div>
   );
@@ -58,6 +62,7 @@ function Semana() {
 
 function Mes() {
   const o = useZaivon();
+  const { money } = useScreenHideMoney();
   const { ms, t } = useTrend();
   return (
     <div className="grid gap-4">
@@ -80,6 +85,7 @@ function Mes() {
 
 function Tendencia() {
   const o = useZaivon();
+  const { money, axisTick } = useScreenHideMoney();
   const { ms, t } = useTrend();
   const read = [
     `A média do mês é ${money(t.monthAvg)}/dia, ${pctFmt(t.monthVsPrev)} sobre ${o.previousMonth.label} (${money(t.prevMonthAvg)}).`,
@@ -103,10 +109,10 @@ function Tendencia() {
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Panel title="Média por semana" subtitle="R$/dia · últimas 6 semanas · linha = alvo diário">
-          <div className="h-60"><ResponsiveContainer><BarChart data={t.weeks.map((w) => ({ ...w, label: ddmm(w.start) }))}><CartesianGrid stroke="var(--color-border)" vertical={false} /><XAxis dataKey="label" {...chartAxis} /><YAxis {...chartAxis} width={50} tickFormatter={(v) => `R$ ${v}`} /><Tooltip {...chartTooltip} formatter={(v: number) => money(v)} /><ReferenceLine y={o.plan.dailyTarget} stroke="var(--color-pending)" strokeDasharray="4 4" /><Bar dataKey="avg" name="Média/dia" fill="var(--color-info)" radius={[6, 6, 0, 0]} /></BarChart></ResponsiveContainer></div>
+          <div className="h-60"><ResponsiveContainer><BarChart data={t.weeks.map((w) => ({ ...w, label: ddmm(w.start) }))}><CartesianGrid stroke="var(--color-border)" vertical={false} /><XAxis dataKey="label" {...chartAxis} /><YAxis {...chartAxis} width={50} tickFormatter={axisTick} /><Tooltip {...chartTooltip} formatter={(v: number) => money(v)} /><ReferenceLine y={o.plan.dailyTarget} stroke="var(--color-pending)" strokeDasharray="4 4" /><Bar dataKey="avg" name="Média/dia" fill="var(--color-info)" radius={[6, 6, 0, 0]} /></BarChart></ResponsiveContainer></div>
         </Panel>
         <Panel title="Curva acumulada do mês" subtitle="R$ de lucro acumulado · plano × realizado × projeções">
-          <div className="h-60"><ResponsiveContainer><LineChart data={t.curve.map((c) => ({ ...c, label: ddmm(c.date) }))}><CartesianGrid stroke="var(--color-border)" vertical={false} /><XAxis dataKey="label" {...chartAxis} interval={3} /><YAxis {...chartAxis} width={60} tickFormatter={(v) => `R$ ${v}`} /><Tooltip {...chartTooltip} formatter={(v: number) => money(v)} /><Legend wrapperStyle={{ fontSize: 12 }} /><ReferenceLine y={o.plan.goal} stroke="var(--color-alert)" strokeDasharray="4 4" label={{ value: "meta", fill: "var(--color-alert)", fontSize: 12 }} /><Line dataKey="plan" name="Plano" stroke="var(--color-muted-foreground)" dot={false} strokeDasharray="3 3" /><Line dataKey="real" name="Realizado" stroke="var(--color-ok)" strokeWidth={2.5} /><Line dataKey="prevPace" name="Volta ao mês anterior" stroke="var(--color-third)" dot={false} /><Line dataKey="last10" name="10 dias" stroke="var(--color-info)" dot={false} /><Line dataKey="monthPace" name="Ritmo do mês" stroke="var(--color-pending)" dot={false} /></LineChart></ResponsiveContainer></div>
+          <div className="h-60"><ResponsiveContainer><LineChart data={t.curve.map((c) => ({ ...c, label: ddmm(c.date) }))}><CartesianGrid stroke="var(--color-border)" vertical={false} /><XAxis dataKey="label" {...chartAxis} interval={3} /><YAxis {...chartAxis} width={60} tickFormatter={axisTick} /><Tooltip {...chartTooltip} formatter={(v: number) => money(v)} /><Legend wrapperStyle={{ fontSize: 12 }} /><ReferenceLine y={o.plan.goal} stroke="var(--color-alert)" strokeDasharray="4 4" label={{ value: "meta", fill: "var(--color-alert)", fontSize: 12 }} /><Line dataKey="plan" name="Plano" stroke="var(--color-muted-foreground)" dot={false} strokeDasharray="3 3" /><Line dataKey="real" name="Realizado" stroke="var(--color-ok)" strokeWidth={2.5} /><Line dataKey="prevPace" name="Volta ao mês anterior" stroke="var(--color-third)" dot={false} /><Line dataKey="last10" name="10 dias" stroke="var(--color-info)" dot={false} /><Line dataKey="monthPace" name="Ritmo do mês" stroke="var(--color-pending)" dot={false} /></LineChart></ResponsiveContainer></div>
         </Panel>
       </div>
 

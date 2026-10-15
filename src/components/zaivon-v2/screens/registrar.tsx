@@ -7,10 +7,11 @@ import { previewDraft, useZaivon } from "@/components/zaivon-v2/store";
 import { dayChecks, dayFinance, dayOutflow, impliedYield, previousCofrinho } from "@/lib/zaivon/finance/day";
 import { buildWeekdayDraftTemplate } from "@/lib/day-registration/weekday-draft-templates";
 import type { DraftPreview } from "@/lib/zaivon/zaivon-service";
-import { dayLabel, ddmm, money, parseBrNumber } from "@/lib/zaivon/format";
+import { dayLabel, ddmm, money as formatMoney, parseBrNumber } from "@/lib/zaivon/format";
 import { CheckRow, Kpi, PageHeader, Panel, Pill, RegisteredSalesList } from "@/components/zaivon-v2/ui";
 import { QuickRegisterForm } from "@/components/zaivon-v2/quick-register";
 import { cn } from "@/lib/utils";
+import { HideMoneyScope, ScreenHideMoneyButton, useScreenHideMoney } from "@/components/zaivon-v2/hide-money";
 
 const TABS = ["rapido", "rascunho", "fechamento"] as const;
 type Tab = (typeof TABS)[number];
@@ -23,24 +24,27 @@ export function Registrar() {
   const tab: Tab = TABS.includes(raw as Tab) ? (raw as Tab) : "rapido";
   const o = useZaivon();
   return (
-    <div className="mx-auto max-w-4xl">
-      <PageHeader title="Registrar" question={`Como lanço o dia? · ${dayLabel(o.selectedDate)}`} />
-      <Tabs value={tab} onValueChange={(v) => router.replace(`${pathname}?tab=${v}`, { scroll: false })}>
-        <TabsList className="grid w-full grid-cols-3 sm:w-auto sm:inline-grid">
-          <TabsTrigger value="rapido">Registro rápido</TabsTrigger>
-          <TabsTrigger value="rascunho">Colar rascunho</TabsTrigger>
-          <TabsTrigger value="fechamento">Fechamento</TabsTrigger>
-        </TabsList>
-        <TabsContent value="rapido" className="mt-4"><Panel><QuickRegisterForm /></Panel></TabsContent>
-        <TabsContent value="rascunho" className="mt-4"><Draft /></TabsContent>
-        <TabsContent value="fechamento" className="mt-4"><Closing key={`${o.selectedDate}-${o.selectedDay.cofrinhoEnd ?? ""}`} /></TabsContent>
-      </Tabs>
-    </div>
+    <HideMoneyScope screenId="v2-registrar">
+      <div className="mx-auto max-w-4xl">
+        <PageHeader title="Registrar" question={`Como lanço o dia? · ${dayLabel(o.selectedDate)}`} right={<ScreenHideMoneyButton />} />
+        <Tabs value={tab} onValueChange={(v) => router.replace(`${pathname}?tab=${v}`, { scroll: false })}>
+          <TabsList className="grid w-full grid-cols-3 sm:w-auto sm:inline-grid">
+            <TabsTrigger value="rapido">Registro rápido</TabsTrigger>
+            <TabsTrigger value="rascunho">Colar rascunho</TabsTrigger>
+            <TabsTrigger value="fechamento">Fechamento</TabsTrigger>
+          </TabsList>
+          <TabsContent value="rapido" className="mt-4"><Panel><QuickRegisterForm /></Panel></TabsContent>
+          <TabsContent value="rascunho" className="mt-4"><Draft /></TabsContent>
+          <TabsContent value="fechamento" className="mt-4"><Closing key={`${o.selectedDate}-${o.selectedDay.cofrinhoEnd ?? ""}`} /></TabsContent>
+        </Tabs>
+      </div>
+    </HideMoneyScope>
   );
 }
 
 function Draft() {
   const o = useZaivon();
+  const { money } = useScreenHideMoney();
   const [text, setText] = useState("");
   const [date, setDate] = useState(o.selectedDate <= o.today ? o.selectedDate : o.today);
   const [preview, setPreview] = useState<DraftPreview | null>(null);
@@ -82,7 +86,7 @@ function Draft() {
   const save = async () => {
     try {
       const r = await o.commitDraft(date, text, settlements);
-      toast.success(`Dia ${ddmm(date)} gravado`, { description: `${r.sales} venda(s) · lucro ${money(r.profit)}. Confira no Fechamento.` });
+      toast.success(`Dia ${ddmm(date)} gravado`, { description: `${r.sales} venda(s) · lucro ${formatMoney(r.profit)}. Confira no Fechamento.` });
       setPreview(null);
       setText("");
       setPaid({});
@@ -172,6 +176,7 @@ const STEPS = ["Compra & estoque", "Vendas & saídas", "Recebimentos & quitaçõ
 
 function Closing() {
   const o = useZaivon();
+  const { money } = useScreenHideMoney();
   const day = o.selectedDay;
   const [step, setStep] = useState(0);
   const [cof, setCof] = useState(day.cofrinhoEnd != null ? day.cofrinhoEnd.toFixed(2).replace(".", ",") : "");

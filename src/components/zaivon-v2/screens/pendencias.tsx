@@ -4,10 +4,11 @@ import { useState } from "react";
 import { toast } from "@/components/zaivon-v2/primitives";
 import { useZaivon } from "@/components/zaivon-v2/store";
 import { daysOpen, recovery, round2 } from "@/lib/zaivon/finance/day";
-import { ddmm, money, parseBrNumber } from "@/lib/zaivon/format";
+import { ddmm, money as formatMoney, parseBrNumber } from "@/lib/zaivon/format";
 import { Empty, Kpi, PageHeader, Panel, Pill, type Tone } from "@/components/zaivon-v2/ui";
 import { Button, Input, Tabs, TabsList, TabsTrigger } from "@/components/zaivon-v2/primitives";
 import type { DebtType } from "@/lib/zaivon/types";
+import { HideMoneyScope, ScreenHideMoneyButton, useScreenHideMoney } from "@/components/zaivon-v2/hide-money";
 
 const typeInfo: Record<DebtType, [string, Tone]> = {
   fiado: ["Fiado", "pending"],
@@ -16,7 +17,16 @@ const typeInfo: Record<DebtType, [string, Tone]> = {
 };
 
 export function Pendencias() {
+  return (
+    <HideMoneyScope screenId="v2-pendencias">
+      <PendenciasBody />
+    </HideMoneyScope>
+  );
+}
+
+function PendenciasBody() {
   const o = useZaivon();
+  const { money } = useScreenHideMoney();
   const [filter, setFilter] = useState<"all" | DebtType>("all");
   const [paying, setPaying] = useState<string | null>(null);
   const [amount, setAmount] = useState("");
@@ -36,7 +46,7 @@ export function Pendencias() {
     if (!v || v <= 0) { toast.error("Informe um valor."); return; }
     try {
       await o.pay(person, v, paidDate);
-      toast.success(`${person} pagou ${money(v)}`, { description: `Entrou no caixa de ${ddmm(paidDate)}. Informe o cofrinho do dia para conferir.` });
+      toast.success(`${person} pagou ${formatMoney(v)}`, { description: `Entrou no caixa de ${ddmm(paidDate)}. Informe o cofrinho do dia para conferir.` });
       setPaying(null);
       setAmount("");
     } catch (err) {
@@ -55,7 +65,7 @@ export function Pendencias() {
 
   return (
     <div className="mx-auto max-w-5xl">
-      <PageHeader title="Pendências" question="Quem me deve?" />
+      <PageHeader title="Pendências" question="Quem me deve?" right={<ScreenHideMoneyButton />} />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-[1.4fr_1fr_1fr]">
         <Kpi big tone="pending" label="Total a recuperar" value={money(rec.total)} formula="Fiados + parceiros + investigação em aberto. Fica fora do lucro até virar quitação." explain={`${money(rec.identified)} identificados + ${money(rec.investigacao)} investigação`} />
         <Kpi label="Fiados" tone="pending" value={money(rec.fiado)} explain={`Parceiros: ${money(rec.parceiro)}`} />

@@ -1,13 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   AlertTriangle,
   ClipboardPaste,
-  Eye,
-  EyeOff,
   NotebookPen,
   Target,
   TrendingDown,
@@ -17,14 +14,13 @@ import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { HideMoneyButton } from "@/components/ui/hide-money-button";
+import { useHideMoney } from "@/hooks/use-hide-money";
 import { formatCurrency, formatPercent, cn } from "@/lib/utils";
 import type {
   DayExecutiveSummary,
   OperationResult,
 } from "@/lib/dashboard-view";
-
-const HIDE_MONEY_KEY = "lbo-hide-money";
-const MONEY_MASK = "R$ ••••";
 
 interface DashboardDayViewProps {
   viewDate: string;
@@ -59,29 +55,8 @@ export function DashboardDayView({
   hasOperations,
   nonOperational = false,
 }: DashboardDayViewProps) {
-  const [hideMoney, setHideMoney] = useState(false);
-
-  useEffect(() => {
-    try {
-      setHideMoney(localStorage.getItem(HIDE_MONEY_KEY) === "1");
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
-  const toggleHideMoney = () => {
-    setHideMoney((prev) => {
-      const next = !prev;
-      try {
-        localStorage.setItem(HIDE_MONEY_KEY, next ? "1" : "0");
-      } catch {
-        /* ignore */
-      }
-      return next;
-    });
-  };
-
-  const money = (value: number) => (hideMoney ? MONEY_MASK : formatCurrency(value));
+  const { hidden: hideMoney, toggle: toggleHideMoney, maskMoney } = useHideMoney("dashboard");
+  const money = maskMoney(formatCurrency);
   const idleDay = nonOperational && revenue === 0 && profit === 0;
   const profitPositive = profit >= 0;
   const pendingLoss = daySummary.pendingCount + daySummary.losses;
@@ -102,15 +77,11 @@ export function DashboardDayView({
               : "border-brand-red/25 bg-gradient-to-br from-brand-red/10 via-surface-card to-surface-card",
         )}
       >
-        <button
-          type="button"
-          onClick={toggleHideMoney}
-          aria-pressed={hideMoney}
-          aria-label={hideMoney ? "Mostrar valores" : "Ocultar valores"}
-          className="absolute right-3 top-3 z-10 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-surface-border/80 bg-surface-base/80 text-text-secondary backdrop-blur-sm transition-colors hover:text-brand-yellow sm:right-4 sm:top-4"
-        >
-          {hideMoney ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-        </button>
+        <HideMoneyButton
+          hidden={hideMoney}
+          onToggle={toggleHideMoney}
+          className="absolute right-3 top-3 z-10 h-10 w-10 sm:right-4 sm:top-4"
+        />
 
         <div className="relative space-y-4 pr-12">
           <div className="flex flex-wrap items-center gap-2">

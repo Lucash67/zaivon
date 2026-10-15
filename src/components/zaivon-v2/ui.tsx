@@ -3,8 +3,8 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import type { Check } from "@/lib/zaivon/finance/day";
 import type { RegisteredSale } from "@/lib/zaivon/types";
-import { money } from "@/lib/zaivon/format";
 import { formatSaleShift } from "@/lib/sale-shift";
+import { useScreenHideMoney } from "@/components/zaivon-v2/hide-money";
 
 export type Tone = "ok" | "pending" | "info" | "alert" | "third" | "neutral";
 
@@ -122,6 +122,7 @@ const SALE_STATUS: Record<RegisteredSale["status"], [string, Tone]> = {
 };
 
 export function RegisteredSalesList({ sales }: { sales?: RegisteredSale[] | undefined }) {
+  const { money } = useScreenHideMoney();
   if (!sales?.length) return <p className="text-xs text-o-muted-foreground">Nenhuma venda gravada individualmente neste dia.</p>;
   const units = sales.reduce((s, x) => s + x.qty, 0);
   const total = sales.reduce((s, x) => s + x.amount, 0);

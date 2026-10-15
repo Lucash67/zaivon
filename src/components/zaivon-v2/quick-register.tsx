@@ -6,12 +6,14 @@ import { useZaivon } from "@/components/zaivon-v2/store";
 import { ZAIVON_CHANNELS, ZAIVON_PRODUCTS } from "@/lib/zaivon/catalog";
 import type { Channel, PaymentMethod, ProductId } from "@/lib/zaivon/types";
 import type { QuickSaleStatus } from "@/lib/zaivon/zaivon-service";
-import { dayLabel, ddmm, money, parseBrNumber } from "@/lib/zaivon/format";
+import { dayLabel, ddmm, money as formatMoney, parseBrNumber } from "@/lib/zaivon/format";
+import { useScreenHideMoney } from "@/components/zaivon-v2/hide-money";
 
 type Kind = "venda" | "quitacao" | "compra" | "perda";
 
 export function QuickRegisterForm({ initial = "venda", onDone }: { initial?: Kind; onDone?: () => void }) {
   const o = useZaivon();
+  const { money } = useScreenHideMoney();
   const [kind, setKind] = useState<Kind>(initial);
   const [date, setDate] = useState(o.selectedDate <= o.today ? o.selectedDate : o.today);
   const [product, setProduct] = useState<ProductId>("salgado");
@@ -52,7 +54,7 @@ export function QuickRegisterForm({ initial = "venda", onDone }: { initial?: Kin
         const r = await o.pay(person, v, paidDate);
         return done(
           "Quitação registrada",
-          `${person}: ${money(v)} entrou no caixa de ${ddmm(paidDate)}${r?.extra > 0 ? ` (${money(r.extra)} sem dívida vinculada)` : ""}. Informe o cofrinho do dia para conferir.`,
+          `${person}: ${formatMoney(v)} entrou no caixa de ${ddmm(paidDate)}${r?.extra > 0 ? ` (${formatMoney(r.extra)} sem dívida vinculada)` : ""}. Informe o cofrinho do dia para conferir.`,
         );
       }
       if (kind === "venda") {
@@ -60,14 +62,14 @@ export function QuickRegisterForm({ initial = "venda", onDone }: { initial?: Kin
         if (status === "fiado" && !person.trim()) return void toast.error("Informe quem pegou fiado.");
         const r = await o.sale({ date, product, channel, qty: units, status, person: person.trim() || undefined, payment });
         const where = status === "paid" ? "entrou no caixa" : "foi para as pendências";
-        return done("Venda registrada", `${units} ${p.name.toLowerCase()} · ${money(r.amount)} ${where} de ${ddmm(date)}.`);
+        return done("Venda registrada", `${units} ${p.name.toLowerCase()} · ${formatMoney(r.amount)} ${where} de ${ddmm(date)}.`);
       }
       if (kind === "compra") {
         const vOwn = parseBrNumber(own);
         const vThird = parseBrNumber(third);
         if (units < 1 && vOwn + vThird <= 0) return void toast.error("Informe unidades ou valores.");
         await o.purchase({ date, units, own: vOwn, third: vThird });
-        return done("Compra registrada", `${units} un · meu custo ${money(vOwn)} · terceiros ${money(vThird)} em ${ddmm(date)}.`);
+        return done("Compra registrada", `${units} un · meu custo ${formatMoney(vOwn)} · terceiros ${formatMoney(vThird)} em ${ddmm(date)}.`);
       }
       if (units < 1) return void toast.error("Informe a quantidade.");
       await o.waste({ date, qty: units, reason: reason.trim() || undefined });

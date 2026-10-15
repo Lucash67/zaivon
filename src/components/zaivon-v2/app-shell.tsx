@@ -1,15 +1,16 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
 import { Button, Toaster, selectClass } from "@/components/zaivon-v2/primitives";
 import { useZaivon } from "@/components/zaivon-v2/store";
 import { salesDays } from "@/lib/zaivon/finance/month";
 import { dayFinance, recovery } from "@/lib/zaivon/finance/day";
-import { ddmm, money, weekday } from "@/lib/zaivon/format";
+import { ddmm, money as formatMoney, weekday } from "@/lib/zaivon/format";
 import { ZAIVON_V2_NAV } from "@/constants/navigation";
 import { cn } from "@/lib/utils";
+import { hideMoneyScreenFromPath, useHideMoney } from "@/hooks/use-hide-money";
 import { QuickRegisterSheet } from "./quick-register";
 
 export const ZAIVON_BASE = "/v2";
@@ -17,6 +18,10 @@ export const ZAIVON_BASE = "/v2";
 /** Barra do dia + atalhos da ZAIVON v2, dentro do layout do sistema atual. */
 export function ZaivonFrame({ children }: { children: ReactNode }) {
   const o = useZaivon();
+  const pathname = usePathname();
+  const screenId = hideMoneyScreenFromPath(pathname) ?? "v2-hoje";
+  const { maskMoney } = useHideMoney(screenId);
+  const money = maskMoney(formatMoney);
   const [cmd, setCmd] = useState(false);
   const [quick, setQuick] = useState(false);
 
@@ -134,6 +139,9 @@ function CommandPalette({ open, onClose, onQuick }: { open: boolean; onClose: ()
 
 function DayStrip() {
   const o = useZaivon();
+  const pathname = usePathname();
+  const screenId = hideMoneyScreenFromPath(pathname) ?? "v2-hoje";
+  const { hidden, mask } = useHideMoney(screenId);
   const all = useMemo(() => [...salesDays(o.plan), ...o.plan.holidays].sort(), [o.plan]);
   const idx = Math.max(0, all.indexOf(o.selectedDate));
   const [page, setPage] = useState(Math.floor(idx / 5));
@@ -153,7 +161,9 @@ function DayStrip() {
             <button key={d} disabled={hol} onClick={() => o.selectDate(d)} aria-pressed={sel}
               className={cn("min-w-14 rounded-lg border px-2 py-1 text-center", sel ? "border-o-primary bg-o-primary/12" : "border-transparent hover:bg-o-muted", hol && "opacity-50")}>
               <div className="text-xs text-o-muted-foreground">{weekday(d)} {ddmm(d)}</div>
-              <div className={cn("num text-xs font-semibold", p == null ? "text-o-muted-foreground" : "text-o-ok")}>{hol ? "feriado" : p == null ? "—" : `R$ ${Math.round(p)}`}</div>
+              <div className={cn("num text-xs font-semibold", p == null ? "text-o-muted-foreground" : "text-o-ok")}>
+                {hol ? "feriado" : p == null ? "—" : hidden ? mask : `R$ ${Math.round(p)}`}
+              </div>
             </button>
           );
         })}

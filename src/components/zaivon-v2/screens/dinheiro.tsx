@@ -4,13 +4,22 @@ import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContai
 import { useZaivon } from "@/components/zaivon-v2/store";
 import { COFRINHO_TOLERANCE, dayFinance, impliedYield } from "@/lib/zaivon/finance/day";
 import { monthDays, monthSummary } from "@/lib/zaivon/finance/month";
-import { ddmm, money } from "@/lib/zaivon/format";
+import { ddmm } from "@/lib/zaivon/format";
 import { chartAxis, chartTooltip, Kpi, PageHeader, Panel, Pill } from "@/components/zaivon-v2/ui";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/zaivon-v2/primitives";
-
+import { HideMoneyScope, ScreenHideMoneyButton, useScreenHideMoney } from "@/components/zaivon-v2/hide-money";
 
 export function Dinheiro() {
+  return (
+    <HideMoneyScope screenId="v2-dinheiro">
+      <DinheiroBody />
+    </HideMoneyScope>
+  );
+}
+
+function DinheiroBody() {
   const o = useZaivon();
+  const { money, axisTick } = useScreenHideMoney();
   const ms = monthSummary(o.days, o.settlements, o.plan);
   const md = monthDays(o.days, o.plan);
   const rows = md.map((d) => {
@@ -20,7 +29,7 @@ export function Dinheiro() {
   });
   return (
     <div className="mx-auto max-w-6xl">
-      <PageHeader title="Dinheiro" question={`Onde está meu dinheiro? · ${o.plan.label}`} />
+      <PageHeader title="Dinheiro" question={`Onde está meu dinheiro? · ${o.plan.label}`} right={<ScreenHideMoneyButton />} />
       <Tabs defaultValue="cofrinho">
         <TabsList><TabsTrigger value="cofrinho">Cofrinho</TabsTrigger><TabsTrigger value="fluxo">Fluxo de caixa</TabsTrigger><TabsTrigger value="custos">Custos & lucro</TabsTrigger></TabsList>
 
@@ -36,7 +45,7 @@ export function Dinheiro() {
                 <LineChart data={rows} margin={{ left: 8, right: 8 }}>
                   <CartesianGrid stroke="var(--color-border)" vertical={false} />
                   <XAxis dataKey="date" {...chartAxis} />
-                  <YAxis {...chartAxis} domain={["dataMin - 100", "dataMax + 50"]} tickFormatter={(v) => `R$ ${Math.round(v)}`} width={70} />
+                  <YAxis {...chartAxis} domain={["dataMin - 100", "dataMax + 50"]} tickFormatter={axisTick} width={70} />
                   <Tooltip {...chartTooltip} formatter={(v: number) => money(v)} />
                   <Line type="monotone" dataKey="cofrinho" name="Cofrinho" stroke="var(--color-info)" strokeWidth={2} dot />
                 </LineChart>
@@ -67,7 +76,7 @@ export function Dinheiro() {
                 <BarChart data={rows}>
                   <CartesianGrid stroke="var(--color-border)" vertical={false} />
                   <XAxis dataKey="date" {...chartAxis} />
-                  <YAxis {...chartAxis} tickFormatter={(v) => `R$ ${v}`} width={60} />
+                  <YAxis {...chartAxis} tickFormatter={axisTick} width={60} />
                   <Tooltip {...chartTooltip} formatter={(v: number) => money(v)} />
                   <Legend wrapperStyle={{ fontSize: 12 }} />
                   <Bar dataKey="received" name="Vendas do dia" stackId="a" fill="var(--color-ok)" />
@@ -91,7 +100,7 @@ export function Dinheiro() {
                 <BarChart data={rows}>
                   <CartesianGrid stroke="var(--color-border)" vertical={false} />
                   <XAxis dataKey="date" {...chartAxis} />
-                  <YAxis {...chartAxis} tickFormatter={(v) => `R$ ${v}`} width={60} />
+                  <YAxis {...chartAxis} tickFormatter={axisTick} width={60} />
                   <Tooltip {...chartTooltip} formatter={(v: number) => money(v)} />
                   <Legend wrapperStyle={{ fontSize: 12 }} />
                   <Bar dataKey="ownCost" name="Meu custo" fill="var(--color-third)" />
