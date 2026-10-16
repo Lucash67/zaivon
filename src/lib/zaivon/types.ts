@@ -83,6 +83,14 @@ export interface OperationDay {
   observations?: string | undefined;
   /** Vendas gravadas no sistema para o dia (informativo; o financeiro vem do diário). */
   registeredSales?: RegisteredSale[] | undefined;
+  /** Quando o diário tem dayClosing v2 — faturamento por competência. */
+  competenceRevenue?: number | undefined;
+  competenceProfit?: number | undefined;
+  /** confirmed = auditado; provisional = há Δ (não somar como definitivo no mês). */
+  competenceStatus?: "confirmed" | "provisional" | undefined;
+  newCredit?: number | undefined;
+  /** Snapshot completo das 5 dimensões (conciliação / UI). */
+  dayClosing?: import("@/lib/finance/day-closing").DayClosingFinance | undefined;
 }
 
 export interface RegisteredSale {

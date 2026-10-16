@@ -7,9 +7,11 @@ import { dayChecks, dayFinance, daysOpen, recovery } from "@/lib/zaivon/finance/
 import { monthSummary } from "@/lib/zaivon/finance/month";
 import { dayLabel, ddmm, pctFmt } from "@/lib/zaivon/format";
 import { CheckRow, Kpi, PageHeader, Panel, Pill, Progress, RegisteredSalesList } from "@/components/zaivon-v2/ui";
+import { DayReconciliationPanel } from "@/components/zaivon-v2/day-reconciliation";
 import { buttonClass } from "@/components/zaivon-v2/primitives";
 import { ZAIVON_BASE } from "@/components/zaivon-v2/app-shell";
 import { HideMoneyScope, ScreenHideMoneyButton, useScreenHideMoney } from "@/components/zaivon-v2/hide-money";
+import { FINANCE_LABELS, PROVISIONAL_HINT } from "@/lib/finance/labels";
 
 const closureLabel = {
   closed: ["Fechado ✓", "ok"],
@@ -58,10 +60,11 @@ function HojeBody() {
     <div className="mx-auto max-w-6xl">
       <PageHeader
         title={`Hoje · ${dayLabel(day.date)}`}
-        question="Como está o dia?"
+        question="Como está o dia? · 5 dimensões financeiras"
         right={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <ScreenHideMoneyButton />
+            {f.competenceStatus === "provisional" && <Pill tone="pending">Provisório</Pill>}
             <Pill tone={tone}>{cl}</Pill>
           </div>
         }
@@ -75,17 +78,69 @@ function HojeBody() {
         </Panel>
       ) : (
         <div className="grid gap-4">
+          {f.competenceStatus === "provisional" && (
+            <div className="rounded-xl border border-o-pending/40 bg-o-pending/10 px-4 py-3 text-sm text-o-pending">
+              {PROVISIONAL_HINT}
+            </div>
+          )}
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.3fr_1fr]">
-            <Kpi big tone="ok" label="Lucro do dia" value={money(f.profit)}
-              formula="Lucro = entrada total no caixa + bonificação − meu custo. Fiado, parceiro e rendimento ficam fora."
-              explain={`${money(f.cashIn)} de entrada${f.bonus ? ` + ${money(f.bonus)} de bônus` : ""} − ${money(f.ownCost)} de custo próprio`} />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Kpi
+                big
+                tone="ok"
+                label={FINANCE_LABELS.cashManagementResult.short}
+                value={money(f.profit)}
+                formula={FINANCE_LABELS.cashManagementResult.formula}
+                explain={`${money(f.cashIn)} de entrada${f.bonus ? ` + ${money(f.bonus)} de bônus` : ""} − ${money(f.ownCost)} de custo próprio`}
+              />
+              <Kpi
+                big
+                label={
+                  f.competenceStatus === "provisional"
+                    ? `${FINANCE_LABELS.competenceProfit.short} (provisório)`
+                    : FINANCE_LABELS.competenceProfit.short
+                }
+                value={money(f.competenceProfit)}
+                formula={FINANCE_LABELS.competenceProfit.formula}
+                explain={
+                  f.competenceStatus === "provisional"
+                    ? `PROVISÓRIO — working figure ${money(f.competenceRevenue)} − ${money(f.ownCost)}. Há Δ diário×sales; não tratar como confirmado.`
+                    : `${FINANCE_LABELS.competenceRevenue.short} ${money(f.competenceRevenue)} − custo ${money(f.ownCost)} · gap vs caixa ${money(f.competenceProfit - f.operationalProfit)}`
+                }
+              />
+            </div>
             <div className="grid grid-cols-2 gap-4">
-              <Kpi label="Entrada no caixa" value={money(f.cashIn)} formula="Recebido do dia + quitações que entraram hoje" explain={`${money(f.received)} do dia + ${money(f.settlements)} quitações`} />
+              <Kpi
+                label={FINANCE_LABELS.competenceRevenue.short}
+                value={money(f.competenceRevenue)}
+                formula={FINANCE_LABELS.competenceRevenue.formula}
+                explain={f.competenceStatus === "provisional" ? "Working figure (provisório)" : `Fiados novos: ${money(f.newCredit)}`}
+              />
+              <Kpi
+                label={FINANCE_LABELS.cashIn.short}
+                value={money(f.cashIn)}
+                formula={FINANCE_LABELS.cashIn.formula}
+                explain={`${money(f.received)} do dia + ${money(f.settlements)} quitações`}
+              />
               <Kpi label="Meu custo" tone="third" value={money(f.ownCost)} formula="O que saiu do meu bolso hoje (terceiros não entram)" explain={`Terceiros: ${money(f.thirdPartyCost)}`} />
               <Kpi label="A recuperar" tone="pending" value={money(rec.total)} formula="Fiados + parceiros + investigação (em aberto)" explain={`${money(rec.identified)} identificados + ${money(rec.investigacao)} investigação`} />
-              <Kpi label="Cofrinho" tone="info" value={day.cofrinhoEnd != null ? money(day.cofrinhoEnd) : "—"} formula="Saldo real do cofrinho no Mercado Pago no fim do dia (inclui rendimentos)" explain={day.cofrinhoEnd != null ? "Informado no fechamento" : "Ainda não informado"} />
+              <Kpi
+                label={FINANCE_LABELS.piggyBalance.short}
+                tone="info"
+                value={day.cofrinhoEnd != null ? money(day.cofrinhoEnd) : "—"}
+                formula={FINANCE_LABELS.piggyBalance.formula}
+                explain={
+                  day.dayClosing?.piggyBank.deposit != null
+                    ? `Depósito do dia: ${money(day.dayClosing.piggyBank.deposit)}`
+                    : day.cofrinhoEnd != null
+                      ? "Informado no fechamento"
+                      : "Ainda não informado"
+                }
+              />
             </div>
           </div>
+
+          <DayReconciliationPanel finance={f} dayClosing={day.dayClosing} cofrinhoEnd={day.cofrinhoEnd} />
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <Panel title="Batimentos" subtitle={`${passed}/2 operacionais OK`} className="lg:col-span-2">

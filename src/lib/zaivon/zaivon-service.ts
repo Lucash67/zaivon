@@ -329,27 +329,37 @@ export async function getZaivonData(requestedMonth?: string): Promise<ZaivonData
   const days: OperationDay[] = sorted
     .filter((e) => e.date.startsWith(plan.month))
     .map((e) => {
+      const dc = e.dayClosing;
       const received = e.revenue.received;
-      const ownCost = Math.max(0, round2(received - e.profit));
+      const ownCost = dc?.costs.ownCost ?? Math.max(0, round2(received - e.profit));
       const investment = e.purchase?.investment;
+      const thirdPartyCost =
+        dc?.costs.thirdPartyCost ??
+        (investment != null ? Math.max(0, round2(investment - ownCost)) : 0);
       const closure = meta.closure[e.date];
+      const priorOnDay = dc?.cash.priorSettlements ?? settlementsOn(e.date, settlements);
       return {
         date: e.date,
-        receivedBase: round2(received - settlementsOn(e.date, settlements)),
+        receivedBase: dc ? dc.cash.salesReceived : round2(received - priorOnDay),
         ownCost,
-        thirdPartyCost: investment != null ? Math.max(0, round2(investment - ownCost)) : 0,
+        thirdPartyCost,
         bonus: e.bonusIncome ?? 0,
         bonusNote: e.bonusIncomeDescription,
         purchaseUnits: e.purchase?.totalUnits,
-        purchaseCost: investment,
+        purchaseCost: investment ?? dc?.costs.totalNewCost,
         soldUnits: e.quantitySold,
         lostUnits: e.quantityLost,
-        cofrinhoEnd: meta.cofrinho[e.date] ?? null,
+        cofrinhoEnd: meta.cofrinho[e.date] ?? dc?.piggyBank.closingBalance ?? null,
         lines: [],
         closure: closure?.status ?? "summary",
         closureNote: closure?.note,
         observations: e.observations,
         registeredSales: monthSales.get(e.date),
+        competenceRevenue: dc?.competenceRevenue,
+        competenceProfit: dc?.competenceProfit,
+        competenceStatus: dc?.competenceStatus,
+        newCredit: dc?.newCredit,
+        dayClosing: dc,
       };
     });
 

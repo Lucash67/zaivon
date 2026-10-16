@@ -1,4 +1,5 @@
 "use client";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -10,13 +11,13 @@ import { EmptyModuleState } from "@/components/ui/empty-module-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useBusinessScope } from "@/hooks/use-business-scope";
-import { formatCurrency } from "@/lib/utils";
 import type { ProfitBankView } from "@/lib/profit-bank-service";
 import { SALGADO_UNIT_PRICE } from "@/lib/day-registration/pricing";
 import { filterUpToDate } from "@/lib/temporal-filter";
 import { isViewingGeneral, useTemporalViewContext } from "@/stores/temporal-context-store";
 
 export default function BancoLucroPage() {
+  const money = useFormatMoney();
   const { activeBusinessId, withQuery } = useBusinessScope();
   const context = useTemporalViewContext();
   const queryClient = useQueryClient();
@@ -134,8 +135,13 @@ export default function BancoLucroPage() {
   const ledgerAdjustment = general ? (data.ledgerAdjustment ?? 0) : 0;
 
   return (
-    <ModuleShell title="Cofrinho" subtitle="Lucro acumulado da operação">
+    <ModuleShell title="Cofrinho" subtitle="Saldo e depósitos · módulo legado">
       <div className="space-y-6">
+        <p className="rounded-xl border border-border/60 bg-surface-2/40 px-3 py-2 text-xs text-text-muted">
+          Aqui &quot;lucro&quot; no histórico costuma ser o <strong className="text-text-primary">resultado gerencial de caixa</strong>{" "}
+          do dia (não o lucro por competência). Saldo do cofrinho ≠ depósito automático. Visão diária canônica em{" "}
+          <span className="text-text-primary">/v2/dinheiro</span>.
+        </p>
         {scopedDays === 0 ? (
           <EmptyModuleState
             icon={PiggyBank}
@@ -183,7 +189,7 @@ export default function BancoLucroPage() {
             ) : (
               <>
                 <p className="mt-1 text-3xl font-black text-brand-green">
-                  {formatCurrency(practicalBalance)}
+                  {money(practicalBalance)}
                 </p>
                 <p className="mt-1 text-xs text-text-muted">Extrato / banco (com rendimento)</p>
                 {general && (
@@ -216,11 +222,11 @@ export default function BancoLucroPage() {
                 Saldo operacional
               </p>
             </div>
-            <p className="mt-1 text-3xl font-black text-brand-gradient">{formatCurrency(systemBalance)}</p>
+            <p className="mt-1 text-3xl font-black text-brand-gradient">{money(systemBalance)}</p>
             <p className="mt-1 text-xs text-text-muted">
               Lucro dos diários · {general ? data.operationalDays : scopedDays} dias
               {general && Math.abs(ledgerAdjustment) > 0.001
-                ? ` · ajuste ${formatCurrency(ledgerAdjustment)}`
+                ? ` · ajuste ${money(ledgerAdjustment)}`
                 : ""}
               {general ? " · seg–sex" : ""}
             </p>
@@ -233,7 +239,7 @@ export default function BancoLucroPage() {
                 Saldo teórico pleno
               </p>
             </div>
-            <p className="mt-1 text-3xl font-black text-z-emerald">{formatCurrency(theoreticalBalance)}</p>
+            <p className="mt-1 text-3xl font-black text-z-emerald">{money(theoreticalBalance)}</p>
             <p className="mt-1 text-xs text-text-muted">
               Se pendências quitassem e não houvesse perdas
             </p>
@@ -255,7 +261,7 @@ export default function BancoLucroPage() {
               <p className="text-[10px] font-semibold uppercase tracking-wide text-text-muted">
                 Pendências abertas
               </p>
-              <p className="mt-1 text-xl font-bold text-z-emerald">{formatCurrency(openPendings)}</p>
+              <p className="mt-1 text-xl font-bold text-z-emerald">{money(openPendings)}</p>
               <p className="mt-0.5 text-[11px] text-text-muted">
                 {general ? data.pendingCount : "no período"} fiado(s) esperados
               </p>
@@ -264,16 +270,16 @@ export default function BancoLucroPage() {
               <p className="text-[10px] font-semibold uppercase tracking-wide text-text-muted">
                 Perdas
               </p>
-              <p className="mt-1 text-xl font-bold text-brand-red">{formatCurrency(lossesImpact)}</p>
+              <p className="mt-1 text-xl font-bold text-brand-red">{money(lossesImpact)}</p>
               <p className="mt-0.5 text-[11px] text-text-muted">
-                {lossesUnits} un. × {formatCurrency(SALGADO_UNIT_PRICE)}
+                {lossesUnits} un. × {money(SALGADO_UNIT_PRICE)}
               </p>
             </div>
             <div className="rounded-xl border border-surface-border bg-surface-base/40 px-3 py-3">
               <p className="text-[10px] font-semibold uppercase tracking-wide text-text-muted">
                 Gap total
               </p>
-              <p className="mt-1 text-xl font-bold text-text-primary">{formatCurrency(frictionGap)}</p>
+              <p className="mt-1 text-xl font-bold text-text-primary">{money(frictionGap)}</p>
               <p className="mt-0.5 text-[11px] text-text-muted">teórico − operacional</p>
             </div>
           </div>
@@ -293,7 +299,7 @@ export default function BancoLucroPage() {
                     <span className="text-text-muted"> · {item.date}</span>
                   </span>
                   <span className="font-semibold tabular-nums text-z-emerald">
-                    {formatCurrency(item.amount)}
+                    {money(item.amount)}
                   </span>
                 </div>
               ))}
@@ -317,7 +323,7 @@ export default function BancoLucroPage() {
                 PIX no dia
               </p>
               <p className="mt-1 text-xl font-bold text-brand-green">
-                {formatCurrency(cashFlow.pixOwnSameDay)}
+                {money(cashFlow.pixOwnSameDay)}
               </p>
               <p className="mt-0.5 text-[11px] text-text-muted">seu extrato no dia da venda</p>
             </div>
@@ -329,7 +335,7 @@ export default function BancoLucroPage() {
                 </p>
               </div>
               <p className="mt-1 text-xl font-bold text-text-primary">
-                {formatCurrency(cashFlow.cashSpecies)}
+                {money(cashFlow.cashSpecies)}
               </p>
               <p className="mt-0.5 text-[11px] text-text-muted">ainda pode estar fora do banco</p>
             </div>
@@ -338,7 +344,7 @@ export default function BancoLucroPage() {
                 Outros canais
               </p>
               <p className="mt-1 text-xl font-bold text-text-primary">
-                {formatCurrency(cashFlow.otherChannels)}
+                {money(cashFlow.otherChannels)}
               </p>
               <p className="mt-0.5 text-[11px] text-text-muted">Henrique / colegas — não é seu PIX</p>
             </div>
@@ -347,7 +353,7 @@ export default function BancoLucroPage() {
                 Quits recebidos
               </p>
               <p className="mt-1 text-xl font-bold text-z-emerald">
-                {formatCurrency(cashFlow.quitsReceived)}
+                {money(cashFlow.quitsReceived)}
               </p>
               <p className="mt-0.5 text-[11px] text-text-muted">fiados de dias anteriores</p>
             </div>
@@ -360,12 +366,12 @@ export default function BancoLucroPage() {
               <p className="text-[11px] text-text-muted">PIX no dia + quits (sem espécie / sem Henrique)</p>
             </div>
             <p className="text-lg font-bold tabular-nums text-brand-green">
-              {formatCurrency(cashFlow.estimatedPixExtrato)}
+              {money(cashFlow.estimatedPixExtrato)}
             </p>
           </div>
           {cashFlow.fiadoSettledLater > 0 && (
             <p className="mt-2 text-[11px] text-text-muted">
-              Neste recorte, {formatCurrency(cashFlow.fiadoSettledLater)} em fiado do próprio dia
+              Neste recorte, {money(cashFlow.fiadoSettledLater)} em fiado do próprio dia
               foi quitado depois (entra em “Quits” no dia do recebimento).
             </p>
           )}
@@ -374,14 +380,14 @@ export default function BancoLucroPage() {
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="rounded-2xl border border-surface-border bg-surface-card p-4">
             <p className="text-xs font-medium uppercase tracking-wide text-text-muted">Lucro total</p>
-            <p className="mt-1 text-2xl font-black text-brand-gradient">{formatCurrency(profit)}</p>
+            <p className="mt-1 text-2xl font-black text-brand-gradient">{money(profit)}</p>
           </div>
           <div className="rounded-2xl border border-surface-border bg-surface-card p-4">
             <p className="text-xs font-medium uppercase tracking-wide text-text-muted">
               Prático vs operacional
             </p>
             <p className="mt-1 text-2xl font-black text-text-primary">
-              {formatCurrency(practicalBalance - systemBalance)}
+              {money(practicalBalance - systemBalance)}
             </p>
             <p className="mt-0.5 text-[11px] text-text-muted">diferença (rendimento / ajustes)</p>
           </div>
@@ -400,7 +406,7 @@ export default function BancoLucroPage() {
         {data.bestDay && (
           <p className="text-sm text-text-secondary">
             Melhor dia: <strong>{data.bestDay.date}</strong> ·{" "}
-            <strong>{formatCurrency(data.bestDay.profit)}</strong>
+            <strong>{money(data.bestDay.profit)}</strong>
           </p>
         )}
       </div>

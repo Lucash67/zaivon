@@ -1,4 +1,5 @@
 "use client";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -10,10 +11,11 @@ import { ChartCard } from "@/components/charts/chart-card";
 import { Button } from "@/components/ui/button";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { useBusinessScope } from "@/hooks/use-business-scope";
-import { formatCurrency, formatPercent, cn } from "@/lib/utils";
+import { formatPercent, cn } from "@/lib/utils";
 import type { PerformanceView } from "@/lib/performance-service";
 
 export default function DesempenhoPage() {
+  const money = useFormatMoney();
   const { activeBusinessId, withQuery } = useBusinessScope();
   const [offset, setOffset] = useState(0);
 
@@ -58,8 +60,13 @@ export default function DesempenhoPage() {
   const isEmptyPeriod = data.metrics.revenue === 0 && data.metrics.salesCount === 0;
 
   return (
-    <ModuleShell title="Semana" subtitle="Comparativo com a semana anterior">
+    <ModuleShell title="Semana" subtitle="Comparativo · módulo legado">
       <div className="space-y-6">
+        <p className="rounded-xl border border-border/60 bg-surface-2/40 px-3 py-2 text-xs text-text-muted">
+          Aqui &quot;Lucro&quot; e &quot;Faturamento&quot; vêm do serviço de performance legado (não das 5 dimensões
+          canônicas). Preferir <span className="text-text-primary">/v2/desempenho</span> para resultado gerencial de
+          caixa e <span className="text-text-primary">/v2/hoje</span> para conciliação do dia.
+        </p>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="icon" className="shrink-0" onClick={() => setOffset((o) => o - 1)}>
             <ChevronLeft className="h-4 w-4" />
@@ -137,7 +144,7 @@ export default function DesempenhoPage() {
                 {Math.round(data.goals.profitProgress)}%
               </p>
               <p className="text-xs text-text-secondary">
-                {formatCurrency(data.metrics.profit)} / {formatCurrency(data.goals.profitTarget)}
+                {money(data.metrics.profit)} / {money(data.goals.profitTarget)}
               </p>
             </div>
             <div className="rounded-xl border border-z-emerald/20 bg-gradient-to-br from-z-emerald/10 to-surface-card px-4 py-3">
@@ -174,12 +181,12 @@ export default function DesempenhoPage() {
             <div className="rounded-xl border border-z-primary/15 bg-gradient-to-br from-z-primary/8 to-surface-card px-4 py-3">
               <p className="text-xs text-text-muted">Lucro semana anterior</p>
               <p className="font-bold text-brand-green">
-                {formatCurrency(data.comparison.previousProfit)}
+                {money(data.comparison.previousProfit)}
               </p>
             </div>
             <div className="rounded-xl border border-z-emerald/15 bg-gradient-to-br from-z-emerald/8 to-surface-card px-4 py-3">
               <p className="text-xs text-text-muted">Fat. semana anterior</p>
-              <p className="font-bold">{formatCurrency(data.comparison.previousRevenue)}</p>
+              <p className="font-bold">{money(data.comparison.previousRevenue)}</p>
             </div>
           </div>
         )}

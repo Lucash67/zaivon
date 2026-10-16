@@ -30,6 +30,7 @@ type DiaryNarrative = {
   lossReason?: string;
   bonusIncome?: number;
   bonusIncomeDescription?: string;
+  dayClosing?: OperationalDiaryEntry["dayClosing"];
 };
 
 interface OperationDayRow {
@@ -205,6 +206,7 @@ function assembleDiaryRecord(
     profit: toNumber(diary.operationalProfit),
     bonusIncome: narrative.bonusIncome,
     bonusIncomeDescription: narrative.bonusIncomeDescription,
+    dayClosing: narrative.dayClosing,
     quantitySold: diary.quantitySold,
     quantityLost: Math.max(
       Number(diary.quantityLost) || 0,
@@ -254,22 +256,47 @@ export async function syncDiaryRelationalTables(
   const db = await getPostgresDb();
   const now = new Date();
 
-  await queryRun(
-    db.delete(operationalLosses).where(eq(operationalLosses.operationDayId, operationDayId)),
+  // Idempotente: preservar UUID/relacionamentos — update in-place; só insert se não houver linha.
+  const existingLosses = await queryAll(
+    db.select().from(operationalLosses).where(eq(operationalLosses.operationDayId, operationDayId)),
   );
-  if (validated.quantityLost > 0) {
-    await queryRun(
-      db.insert(operationalLosses).values({
-        id: generateId(),
-        operationDayId,
-        productId: null,
-        productName: "Não especificado",
-        quantity: validated.quantityLost,
-        reason: validated.lossReason ?? null,
-        createdAt: now,
-        updatedAt: now,
-      }),
-    );
+  if (validated.quantityLost <= 0) {
+    if (existingLosses.length > 0) {
+      await queryRun(
+        db.delete(operationalLosses).where(eq(operationalLosses.operationDayId, operationDayId)),
+      );
+    }
+  } else {
+    const primary = existingLosses[0];
+    if (primary) {
+      await queryRun(
+        db
+          .update(operationalLosses)
+          .set({
+            quantity: validated.quantityLost,
+            reason: validated.lossReason ?? primary.reason,
+            updatedAt: now,
+          })
+          .where(eq(operationalLosses.id, primary.id)),
+      );
+      // Extras órfãos do mesmo dia (não deveria haver) — remove sem recriar o primary.
+      for (const extra of existingLosses.slice(1)) {
+        await queryRun(db.delete(operationalLosses).where(eq(operationalLosses.id, extra.id)));
+      }
+    } else {
+      await queryRun(
+        db.insert(operationalLosses).values({
+          id: generateId(),
+          operationDayId,
+          productId: null,
+          productName: "Não especificado",
+          quantity: validated.quantityLost,
+          reason: validated.lossReason ?? null,
+          createdAt: now,
+          updatedAt: now,
+        }),
+      );
+    }
   }
 
   const existingPurchase = await queryOne(
@@ -472,6 +499,7 @@ export async function upsertDiaryEntryRecord(entry: OperationalDiaryEntry): Prom
       lossReason: validated.lossReason,
       bonusIncome: validated.bonusIncome,
       bonusIncomeDescription: validated.bonusIncomeDescription,
+      dayClosing: validated.dayClosing,
     };
 
     const existing = await queryOne(

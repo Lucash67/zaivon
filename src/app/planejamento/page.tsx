@@ -1,16 +1,17 @@
 "use client";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ModuleShell } from "@/components/layout/module-shell";
 import { PageLoader } from "@/components/ui/loading";
 import { useBusinessScope } from "@/hooks/use-business-scope";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import type { PlanningDay, PlanningTrend, PlanningView, TrendCurveSeries } from "@/lib/planning/planning-service";
 
-function signed(n: number): string {
+function signed(n: number, money: (v: number) => string): string {
   if (n === 0) return "—";
-  return `${n > 0 ? "+" : "−"}${formatCurrency(Math.abs(n))}`;
+  return `${n > 0 ? "+" : "−"}${money(Math.abs(n))}`;
 }
 
 function pct(n: number): string {
@@ -26,6 +27,7 @@ const CURVE_COLORS: Record<TrendCurveSeries["tone"], string> = {
 };
 
 function WeeklyAverageChart({ trend, target }: { trend: PlanningTrend; target: number }) {
+  const money = useFormatMoney();
   const max = Math.max(target, ...trend.weeks.map((w) => w.average), 1) * 1.1;
   return (
     <div className="rounded-2xl border border-surface-border bg-surface-card p-4">
@@ -34,11 +36,11 @@ function WeeklyAverageChart({ trend, target }: { trend: PlanningTrend; target: n
           className="absolute inset-x-0 border-t border-dashed border-text-muted"
           style={{ bottom: `${(target / max) * 100}%` }}
         >
-          <span className="absolute -top-5 right-0 text-[10px] text-text-muted">alvo {formatCurrency(target)}</span>
+          <span className="absolute -top-5 right-0 text-[10px] text-text-muted">alvo {money(target)}</span>
         </div>
         {trend.weeks.map((w, i) => (
           <div key={w.label} className="flex h-full flex-1 flex-col items-center justify-end gap-1">
-            <span className="text-xs font-semibold text-text-primary">{formatCurrency(w.average)}</span>
+            <span className="text-xs font-semibold text-text-primary">{money(w.average)}</span>
             <div
               className={cn(
                 "w-full rounded-t-lg",
@@ -63,6 +65,7 @@ function WeeklyAverageChart({ trend, target }: { trend: PlanningTrend; target: n
 }
 
 function CumulativeCurve({ trend, goal }: { trend: PlanningTrend; goal: number }) {
+  const money = useFormatMoney();
   const W = 640;
   const H = 240;
   const pad = { l: 48, r: 12, t: 12, b: 24 };
@@ -85,7 +88,7 @@ function CumulativeCurve({ trend, goal }: { trend: PlanningTrend; goal: number }
         ))}
         <line x1={pad.l} x2={W - pad.r} y1={y(goal)} y2={y(goal)} stroke="var(--text-primary)" strokeDasharray="4 4" strokeWidth={1} />
         <text x={W - pad.r} y={y(goal) - 4} textAnchor="end" fontSize={10} fill="var(--text-primary)">
-          meta {formatCurrency(goal)}
+          meta {money(goal)}
         </text>
         {trend.curve.series.map((s) => (
           <polyline
@@ -173,6 +176,7 @@ function SimpleTable({
 }
 
 function TrendSection({ data, trend }: { data: PlanningView; trend: PlanningTrend }) {
+  const money = useFormatMoney();
   const growthVsPrev =
     trend.previousAverage != null ? ((trend.monthAverage - trend.previousAverage) / trend.previousAverage) * 100 : null;
   const weekGrowth =
@@ -189,21 +193,21 @@ function TrendSection({ data, trend }: { data: PlanningView; trend: PlanningTren
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <Kpi
             label={growthVsPrev != null ? `Média do mês (${pct(growthVsPrev)} vs ${trend.previousLabel})` : "Média do mês"}
-            value={formatCurrency(trend.monthAverage)}
+            value={money(trend.monthAverage)}
             tone={trend.monthAverage >= data.dailyTarget ? "good" : "warn"}
           />
           {trend.weekAverage != null && (
             <Kpi
               label={weekGrowth != null ? `Última semana (${pct(weekGrowth)} vs anterior)` : "Última semana"}
-              value={formatCurrency(trend.weekAverage)}
+              value={money(trend.weekAverage)}
               tone={trend.weekAverage >= data.dailyTarget ? "good" : "warn"}
             />
           )}
-          <Kpi label="Média dos últimos 10 dias" value={formatCurrency(trend.recentAverage)} />
+          <Kpi label="Média dos últimos 10 dias" value={money(trend.recentAverage)} />
           {base && data.remainingDays > 0 && (
             <Kpi
               label={`Mês projetado (${pct(base.vsGoalPct)} vs meta)`}
-              value={formatCurrency(base.bank ?? base.profit)}
+              value={money(base.bank ?? base.profit)}
               tone={base.vsGoalPct >= 0 ? "good" : "warn"}
             />
           )}
@@ -217,7 +221,7 @@ function TrendSection({ data, trend }: { data: PlanningView; trend: PlanningTren
         <Section title="Quanto a média aumentou" subtitle="Variação percentual entre períodos">
           <SimpleTable
             headers={["Comparação", "De", "Para", "Variação"]}
-            rows={trend.comparisons.map((c) => [c.label, formatCurrency(c.from), formatCurrency(c.to), pct(c.change)])}
+            rows={trend.comparisons.map((c) => [c.label, money(c.from), money(c.to), pct(c.change)])}
             tones={trend.comparisons.map((c) => (c.change >= 0 ? "good" : "warn"))}
           />
         </Section>
@@ -230,19 +234,19 @@ function TrendSection({ data, trend }: { data: PlanningView; trend: PlanningTren
             headers={["Cenário", "Por dia", "Lucro no mês", "vs meta", "vs plano", "Banco c/ rendimentos"]}
             rows={trend.scenarios.map((s) => [
               s.label,
-              formatCurrency(s.perDay),
-              formatCurrency(s.profit),
+              money(s.perDay),
+              money(s.profit),
               pct(s.vsGoalPct),
               pct(s.vsPlanPct),
-              s.bank != null ? formatCurrency(s.bank) : "—",
+              s.bank != null ? money(s.bank) : "—",
             ])}
             tones={trend.scenarios.map((s) => s.tone)}
           />
           <p className="text-xs text-text-muted">
-            Meta = {formatCurrency(data.goal)} no banco · plano = {formatCurrency(data.dailyTarget)} × {data.sellingDays} dias ={" "}
-            {formatCurrency(trend.planTotal)} de lucro.
+            Meta = {money(data.goal)} no banco · plano = {money(data.dailyTarget)} × {data.sellingDays} dias ={" "}
+            {money(trend.planTotal)} de lucro.
             {trend.rendimento != null &&
-              ` Rendimentos do cofrinho no mês: ${formatCurrency(trend.rendimento)} (≈ ${formatCurrency(trend.rendimentoPerDay)} por dia de venda).`}
+              ` Rendimentos do cofrinho no mês: ${money(trend.rendimento)} (≈ ${money(trend.rendimentoPerDay)} por dia de venda).`}
           </p>
         </Section>
       )}
@@ -251,18 +255,18 @@ function TrendSection({ data, trend }: { data: PlanningView; trend: PlanningTren
         <Section title="Contra o planejado" subtitle="Plano do mês × realizado e projeção-base">
           <SimpleTable
             headers={["Item", "Plano", "Real / projetado", "Diferença"]}
-            rows={trend.planComparison.map((p) => [p.label, formatCurrency(p.plan), formatCurrency(p.actual), pct(p.change)])}
+            rows={trend.planComparison.map((p) => [p.label, money(p.plan), money(p.actual), pct(p.change)])}
             tones={trend.planComparison.map((p) => (p.change >= 0 ? "good" : "warn"))}
           />
         </Section>
         {trend.headroom.length > 0 && data.neededPerRemainingDay != null && (
           <Section
             title="Quanto a média pode cair"
-            subtitle={`E ainda bater a meta com ${formatCurrency(data.neededPerRemainingDay)} por dia`}
+            subtitle={`E ainda bater a meta com ${money(data.neededPerRemainingDay)} por dia`}
           >
             <SimpleTable
               headers={["A partir de", "Média", "Pode cair"]}
-              rows={trend.headroom.map((h) => [h.label, formatCurrency(h.from), pct(h.change)])}
+              rows={trend.headroom.map((h) => [h.label, money(h.from), pct(h.change)])}
             />
           </Section>
         )}
@@ -317,6 +321,7 @@ function Section({ title, subtitle, children }: { title: string; subtitle?: stri
 }
 
 export default function PlanejamentoPage() {
+  const money = useFormatMoney();
   const { activeBusinessId, withQuery } = useBusinessScope();
   const [month, setMonth] = useState<string | null>(null);
 
@@ -380,41 +385,46 @@ export default function PlanejamentoPage() {
   );
 
   return (
-    <ModuleShell title={title} subtitle={subtitle} actions={monthPicker}>
+    <ModuleShell title={title} subtitle={`${subtitle} · módulo legado`} actions={monthPicker}>
       <div className="space-y-8">
+        <p className="rounded-xl border border-border/60 bg-surface-2/40 px-3 py-2 text-xs text-text-muted">
+          Meta e realizado usam lucro/banco do diário legado (próximo do{" "}
+          <strong className="text-text-primary">resultado gerencial de caixa</strong>), não lucro por competência.
+          Visão canônica em <span className="text-text-primary">/v2/planejamento</span>.
+        </p>
         <div className="space-y-1">
           <h1 className="text-2xl font-black text-text-primary">
-            {data.label}: meta de {formatCurrency(data.goal)}
+            {data.label}: meta de {money(data.goal)}
           </h1>
           <p className="text-sm text-text-muted">
-            Alvo de {formatCurrency(data.dailyTarget)} por dia de venda · {data.sellingDays} dias de venda (seg–sex sem feriados).
+            Alvo de {money(data.dailyTarget)} por dia de venda · {data.sellingDays} dias de venda (seg–sex sem feriados).
           </p>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <Kpi
             label={data.bankSource ? "No banco no mês" : "Lucro no mês"}
-            value={formatCurrency(achieved)}
+            value={money(achieved)}
             tone={gap <= 0 ? "good" : undefined}
           />
           <Kpi
             label={gap <= 0 ? "Acima da meta" : "Falta para a meta"}
-            value={formatCurrency(Math.abs(gap))}
+            value={money(Math.abs(gap))}
             tone={gap <= 0 ? "good" : "warn"}
           />
           <Kpi
             label={closed ? "Lucro no diário" : "Precisa por dia restante"}
             value={
               closed
-                ? formatCurrency(data.profitDone)
+                ? money(data.profitDone)
                 : data.neededPerRemainingDay != null
-                  ? formatCurrency(data.neededPerRemainingDay)
+                  ? money(data.neededPerRemainingDay)
                   : "Meta batida"
             }
           />
           <Kpi
             label={closed ? "Cofrinho prático" : "Projeção no ritmo recente"}
-            value={formatCurrency(closed ? data.practicalBalance : data.projection)}
+            value={money(closed ? data.practicalBalance : data.projection)}
             tone={!closed && data.projection >= data.goal ? "good" : undefined}
           />
         </div>
@@ -423,7 +433,7 @@ export default function PlanejamentoPage() {
           <div className="flex justify-between text-xs text-text-muted">
             <span>{progress}% da meta</span>
             <span>
-              {formatCurrency(achieved)} de {formatCurrency(data.goal)}
+              {money(achieved)} de {money(data.goal)}
             </span>
           </div>
           <div className="h-3 overflow-hidden rounded-full bg-surface-elevated">
@@ -446,7 +456,7 @@ export default function PlanejamentoPage() {
 
         <Section
           title="Planejado × realizado por dia"
-          subtitle={`Barra verde = lucro final do diário · traço = alvo de ${formatCurrency(data.dailyTarget)}`}
+          subtitle={`Barra verde = lucro final do diário · traço = alvo de ${money(data.dailyTarget)}`}
         >
           <div className="overflow-x-auto rounded-2xl border border-surface-border bg-surface-card">
             <table className="w-full min-w-[640px] text-sm">
@@ -471,7 +481,7 @@ export default function PlanejamentoPage() {
                         {d.weekday} {d.date.slice(8, 10)}/{d.date.slice(5, 7)}
                       </td>
                       <td className="px-4 py-2 font-semibold text-text-primary">
-                        {d.profit == null ? <span className="text-text-muted">—</span> : formatCurrency(d.profit)}
+                        {d.profit == null ? <span className="text-text-muted">—</span> : money(d.profit)}
                       </td>
                       <td className="px-4 py-2">
                         <div className="relative h-2.5 rounded-full bg-surface-elevated">
@@ -497,13 +507,13 @@ export default function PlanejamentoPage() {
                           diff != null && diff < 0 && "text-brand-orange",
                         )}
                       >
-                        {diff == null ? "—" : signed(diff)}
+                        {diff == null ? "—" : signed(diff, money)}
                       </td>
                       <td className="px-4 py-2 text-right text-text-secondary">
-                        {d.received ? formatCurrency(d.received) : "—"}
+                        {d.received ? money(d.received) : "—"}
                       </td>
                       <td className="px-4 py-2 text-right text-text-secondary">
-                        {d.own != null ? formatCurrency(d.own) : "—"}
+                        {d.own != null ? money(d.own) : "—"}
                       </td>
                       <td className="px-4 py-2 text-right text-text-secondary">{roi(d)}</td>
                       <td className="px-4 py-2 text-right text-text-secondary">{d.sold ?? "—"}</td>
@@ -515,7 +525,7 @@ export default function PlanejamentoPage() {
                     <td className="px-4 py-2">
                       {d.weekday} {d.date.slice(8, 10)}/{d.date.slice(5, 7)} · extra
                     </td>
-                    <td className="px-4 py-2">{d.profit != null ? formatCurrency(d.profit) : "—"}</td>
+                    <td className="px-4 py-2">{d.profit != null ? money(d.profit) : "—"}</td>
                     <td className="px-4 py-2 text-xs" colSpan={6}>
                       Fora do plano (fim de semana ou feriado)
                     </td>
@@ -545,7 +555,7 @@ export default function PlanejamentoPage() {
                       <td className="px-4 py-2 text-right text-text-secondary">
                         {w.registered}/{w.days}
                       </td>
-                      <td className="px-4 py-2 text-right text-text-secondary">{formatCurrency(w.planned)}</td>
+                      <td className="px-4 py-2 text-right text-text-secondary">{money(w.planned)}</td>
                       <td
                         className={cn(
                           "px-4 py-2 text-right font-semibold",
@@ -553,7 +563,7 @@ export default function PlanejamentoPage() {
                           w.registered > 0 && w.actual >= w.registered * data.dailyTarget && "text-brand-green",
                         )}
                       >
-                        {w.registered === 0 ? "—" : formatCurrency(w.actual)}
+                        {w.registered === 0 ? "—" : money(w.actual)}
                       </td>
                     </tr>
                   ))}
@@ -579,19 +589,19 @@ export default function PlanejamentoPage() {
                 >
                   <div>
                     <p className="text-sm font-semibold text-text-primary">{s.label}</p>
-                    <p className="text-xs text-text-muted">{formatCurrency(s.perDay)} por dia</p>
+                    <p className="text-xs text-text-muted">{money(s.perDay)} por dia</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-lg font-black text-text-primary">{formatCurrency(s.monthTotal)}</p>
+                    <p className="text-lg font-black text-text-primary">{money(s.monthTotal)}</p>
                     <p className={cn("text-xs", s.vsGoal >= 0 ? "text-brand-green" : "text-brand-orange")}>
-                      {s.vsGoal >= 0 ? `passa ${formatCurrency(s.vsGoal)}` : `falta ${formatCurrency(-s.vsGoal)}`}
+                      {s.vsGoal >= 0 ? `passa ${money(s.vsGoal)}` : `falta ${money(-s.vsGoal)}`}
                     </p>
                   </div>
                 </div>
               ))}
             </div>
             <p className="text-xs text-text-muted">
-              Ritmo recente = média dos últimos 10 dias de venda registrados ({formatCurrency(data.recentAverage)}).
+              Ritmo recente = média dos últimos 10 dias de venda registrados ({money(data.recentAverage)}).
             </p>
           </Section>
           )}

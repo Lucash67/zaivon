@@ -23,15 +23,31 @@ export interface DayFinance {
   thirdPartyCost: number;
   economicCost: number;
   bonus: number;
+  /** Resultado gerencial de caixa (caixa − meu custo), sem bônus. */
   operationalProfit: number;
+  /** Resultado gerencial de caixa + bonificação − (já embutido no profit legado). */
   profit: number;
+  /** Faturamento por competência (vendas do dia, incl. fiados/parceiro/investigar). */
+  competenceRevenue: number;
+  /** Lucro pessoal por competência = faturamento − meu custo. */
+  competenceProfit: number;
+  /** confirmed = auditado; provisional = Δ pendente (não tratar como definitivo). */
+  competenceStatus: "confirmed" | "provisional";
+  /** Fiados novos do dia (valor). */
+  newCredit: number;
 }
 
-/** Lucro final = entrada total no caixa + bonificação − meu custo. */
+/** Lucro final (legado) = entrada total no caixa + bonificação − meu custo. */
 export function dayFinance(day: OperationDay, settlements: Settlement[]): DayFinance {
   const received = receivedSameDay(day);
   const q = settlementsOn(day.date, settlements);
   const cashIn = round2(received + q);
+  const newCredit =
+    day.newCredit ??
+    sumLines(day.lines, (l) => l.status === "fiado" || l.status === "parceiro" || l.status === "investigar");
+  const competenceRevenue = day.competenceRevenue ?? round2(received + newCredit);
+  const competenceProfit = day.competenceProfit ?? round2(competenceRevenue - day.ownCost);
+  const competenceStatus = day.competenceStatus ?? "confirmed";
   return {
     received,
     settlements: q,
@@ -42,6 +58,10 @@ export function dayFinance(day: OperationDay, settlements: Settlement[]): DayFin
     bonus: day.bonus,
     operationalProfit: round2(cashIn - day.ownCost),
     profit: round2(cashIn + day.bonus - day.ownCost),
+    competenceRevenue,
+    competenceProfit,
+    competenceStatus,
+    newCredit,
   };
 }
 
