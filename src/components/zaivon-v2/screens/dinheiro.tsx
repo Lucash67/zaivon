@@ -88,13 +88,18 @@ function DinheiroBody() {
         </TabsContent>
 
         <TabsContent value="custos" className="mt-4 grid gap-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-            <Kpi big tone="ok" label="Lucro do mês" value={money(ms.diaryProfit)} explain={`${money(ms.cashIn)} + ${money(ms.bonus)} bônus − ${money(ms.ownCost)}`} />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Kpi big tone="ok" label="Resultado de caixa (mês)" value={money(ms.diaryProfit)} explain={`${money(ms.cashIn)} + ${money(ms.bonus)} bônus − ${money(ms.ownCost)}`} />
+            <Kpi
+              label="Lucro competência (mês)"
+              value={money(rows.filter((r) => r.competenceStatus !== "provisional").reduce((s, r) => s + r.competenceProfit, 0))}
+              formula="Σ dias com competência confirmada (exclui provisórios)"
+              explain={`Provisórios excluídos: ${rows.filter((r) => r.competenceStatus === "provisional").length} dia(s). Não é depósito automático no cofrinho.`}
+            />
             <Kpi tone="third" label="Meu custo" value={money(ms.ownCost)} />
             <Kpi tone="third" label="Terceiros" value={money(ms.thirdPartyCost)} explain="Não entra no meu lucro" />
-            <Kpi label="Custo econômico" value={money(ms.ownCost + ms.thirdPartyCost)} formula="Meu custo + terceiros" />
           </div>
-          <Panel title="Meu custo × terceiros × lucro" subtitle={`R$ por dia · ${o.plan.label}`}>
+          <Panel title="Competência × caixa × custo" subtitle={`Método ZAIVON · 5 dimensões · ${o.plan.label}`}>
             <div className="h-64">
               <ResponsiveContainer>
                 <BarChart data={rows}>
@@ -103,9 +108,11 @@ function DinheiroBody() {
                   <YAxis {...chartAxis} tickFormatter={axisTick} width={60} />
                   <Tooltip {...chartTooltip} formatter={(v: number) => money(v)} />
                   <Legend wrapperStyle={{ fontSize: 12 }} />
+                  <Bar dataKey="competenceRevenue" name="Faturamento" fill="var(--color-info)" />
+                  <Bar dataKey="cashIn" name="Caixa" fill="var(--color-pending)" />
                   <Bar dataKey="ownCost" name="Meu custo" fill="var(--color-third)" />
-                  <Bar dataKey="thirdPartyCost" name="Terceiros" fill="var(--color-muted-foreground)" />
-                  <Bar dataKey="profit" name="Lucro" fill="var(--color-ok)" />
+                  <Bar dataKey="competenceProfit" name="Lucro competência" fill="var(--color-muted-foreground)" />
+                  <Bar dataKey="profit" name="Resultado caixa" fill="var(--color-ok)" />
                 </BarChart>
               </ResponsiveContainer>
             </div>

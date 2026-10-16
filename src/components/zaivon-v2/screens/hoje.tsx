@@ -76,9 +76,20 @@ function HojeBody() {
       ) : (
         <div className="grid gap-4">
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.3fr_1fr]">
-            <Kpi big tone="ok" label="Lucro do dia" value={money(f.profit)}
-              formula="Lucro = entrada total no caixa + bonificação − meu custo. Fiado, parceiro e rendimento ficam fora."
-              explain={`${money(f.cashIn)} de entrada${f.bonus ? ` + ${money(f.bonus)} de bônus` : ""} − ${money(f.ownCost)} de custo próprio`} />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Kpi big tone="ok" label="Resultado de caixa"
+                value={money(f.profit)}
+                formula="Caixa recebido + bônus − meu custo. É o que pode ir ao cofrinho."
+                explain={`${money(f.cashIn)} de entrada${f.bonus ? ` + ${money(f.bonus)} de bônus` : ""} − ${money(f.ownCost)} de custo próprio`} />
+              <Kpi big label={f.competenceStatus === "provisional" ? "Lucro por competência (provisório)" : "Lucro por competência"}
+                value={money(f.competenceProfit)}
+                formula="Faturamento do dia (inclui fiados) − meu custo. Não deposita sozinho no cofrinho."
+                explain={
+                  f.competenceStatus === "provisional"
+                    ? `PROVISÓRIO — working figure ${money(f.competenceRevenue)} − ${money(f.ownCost)}. Há Δ diário×sales; não tratar como confirmado.`
+                    : `Faturamento ${money(f.competenceRevenue)} − custo ${money(f.ownCost)} · gap vs caixa ${money(f.competenceProfit - f.operationalProfit)}`
+                } />
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <Kpi label="Entrada no caixa" value={money(f.cashIn)} formula="Recebido do dia + quitações que entraram hoje" explain={`${money(f.received)} do dia + ${money(f.settlements)} quitações`} />
               <Kpi label="Meu custo" tone="third" value={money(f.ownCost)} formula="O que saiu do meu bolso hoje (terceiros não entram)" explain={`Terceiros: ${money(f.thirdPartyCost)}`} />

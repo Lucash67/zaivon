@@ -1,7 +1,8 @@
 import { z } from "zod";
+import type { DayClosingFinance } from "@/lib/finance/day-closing";
 
 /** Versão do schema — incrementar em mudanças breaking para IA futura. */
-export const DIARY_SCHEMA_VERSION = 1;
+export const DIARY_SCHEMA_VERSION = 2;
 
 export const diaryProductLineSchema = z.object({
   name: z.string(),
@@ -29,7 +30,8 @@ export const diarySuggestedActionSchema = z.object({
 });
 
 export const operationalDiaryEntrySchema = z.object({
-  version: z.literal(DIARY_SCHEMA_VERSION).default(DIARY_SCHEMA_VERSION),
+  /** Aceita v1 (legado) e v2 (5 dimensões em dayClosing). */
+  version: z.union([z.literal(1), z.literal(2)]).default(DIARY_SCHEMA_VERSION),
   businessId: z.string(),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   dailyGoalUnits: z.number().int().min(0).optional(),
@@ -48,10 +50,16 @@ export const operationalDiaryEntrySchema = z.object({
     })
     .optional(),
   revenue: z.object({
+    /** Caixa do dia (vendas recebidas + quitações antigas + outras entradas). */
     received: z.number().min(0),
     pending: z.number().min(0).default(0),
+    /** Preferir faturamento por competência quando dayClosing existir. */
     total: z.number().min(0),
   }),
+  /**
+   * Resultado gerencial de caixa (caixa − meu custo), histórico.
+   * Com dayClosing, use competenceProfit / cashManagementResult.
+   */
   profit: z.number(),
   /** Receita extra do dia fora das vendas (ex.: bonificação do Henrique). Soma ao lucro total. */
   bonusIncome: z.number().min(0).optional(),
@@ -71,6 +79,11 @@ export const operationalDiaryEntrySchema = z.object({
   suggestedActions: z.array(diarySuggestedActionSchema).optional(),
   productHypotheses: z.array(diaryProductHypothesisSchema).optional(),
   tags: z.array(z.string()).optional(),
+  /**
+   * Método financeiro permanente (5 dimensões).
+   * Persistido em narrative.dayClosing — não altera colunas legadas.
+   */
+  dayClosing: z.custom<DayClosingFinance>().optional(),
 });
 
 export type OperationalDiaryEntry = z.infer<typeof operationalDiaryEntrySchema>;
