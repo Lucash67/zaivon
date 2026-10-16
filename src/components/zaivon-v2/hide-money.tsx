@@ -1,8 +1,10 @@
 "use client";
 
 import { createContext, useContext, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import {
   useHideMoney,
+  hideMoneyScreenFromPath,
   type HideMoneyScreen,
   MONEY_MASK,
 } from "@/hooks/use-hide-money";
@@ -38,12 +40,14 @@ export function HideMoneyScope({
 
 export function useScreenHideMoney(): HideMoneyApi {
   const ctx = useContext(HideMoneyCtx);
+  const pathname = usePathname() ?? "/";
+  const fallback = useHideMoney(hideMoneyScreenFromPath(pathname));
   if (!ctx) {
     return {
-      hidden: false,
-      toggle: () => undefined,
-      money: formatMoney,
-      axisTick: (n) => `R$ ${Math.round(n)}`,
+      hidden: fallback.hidden,
+      toggle: fallback.toggle,
+      money: fallback.maskMoney(formatMoney),
+      axisTick: fallback.axisTick,
       mask: MONEY_MASK,
     };
   }

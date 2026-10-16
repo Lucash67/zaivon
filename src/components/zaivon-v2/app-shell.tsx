@@ -19,7 +19,7 @@ export const ZAIVON_BASE = "/v2";
 export function ZaivonFrame({ children }: { children: ReactNode }) {
   const o = useZaivon();
   const pathname = usePathname();
-  const screenId = hideMoneyScreenFromPath(pathname) ?? "v2-hoje";
+  const screenId = hideMoneyScreenFromPath(pathname);
   const { maskMoney } = useHideMoney(screenId);
   const money = maskMoney(formatMoney);
   const [cmd, setCmd] = useState(false);
@@ -140,7 +140,7 @@ function CommandPalette({ open, onClose, onQuick }: { open: boolean; onClose: ()
 function DayStrip() {
   const o = useZaivon();
   const pathname = usePathname();
-  const screenId = hideMoneyScreenFromPath(pathname) ?? "v2-hoje";
+  const screenId = hideMoneyScreenFromPath(pathname);
   const { hidden, mask } = useHideMoney(screenId);
   const all = useMemo(() => [...salesDays(o.plan), ...o.plan.holidays].sort(), [o.plan]);
   const idx = Math.max(0, all.indexOf(o.selectedDate));
@@ -155,13 +155,30 @@ function DayStrip() {
         {visible.map((d) => {
           const day = o.days.find((x) => x.date === d);
           const hol = o.plan.holidays.includes(d);
-          const p = day ? dayFinance(day, o.settlements).profit : null;
+          const fin = day ? dayFinance(day, o.settlements) : null;
+          const p = fin?.profit ?? null;
+          const provisional = fin?.competenceStatus === "provisional";
           const sel = d === o.selectedDate;
           return (
-            <button key={d} disabled={hol} onClick={() => o.selectDate(d)} aria-pressed={sel}
-              className={cn("min-w-14 rounded-lg border px-2 py-1 text-center", sel ? "border-o-primary bg-o-primary/12" : "border-transparent hover:bg-o-muted", hol && "opacity-50")}>
-              <div className="text-xs text-o-muted-foreground">{weekday(d)} {ddmm(d)}</div>
-              <div className={cn("num text-xs font-semibold", p == null ? "text-o-muted-foreground" : "text-o-ok")}>
+            <button
+              key={d}
+              disabled={hol}
+              onClick={() => o.selectDate(d)}
+              aria-pressed={sel}
+              title={provisional ? "Competência provisória — valores históricos visíveis" : undefined}
+              className={cn(
+                "min-w-14 shrink-0 rounded-lg border px-2 py-1 text-center sm:min-w-16",
+                sel ? "border-o-primary bg-o-primary/12" : "border-transparent hover:bg-o-muted",
+                provisional && !sel && "border-o-pending/50",
+                provisional && sel && "ring-1 ring-o-pending/40",
+                hol && "opacity-50",
+              )}
+            >
+              <div className="text-[10px] text-o-muted-foreground sm:text-xs">
+                {weekday(d)} {ddmm(d)}
+                {provisional ? " · P" : ""}
+              </div>
+              <div className={cn("num text-xs font-semibold", p == null ? "text-o-muted-foreground" : provisional ? "text-o-pending" : "text-o-ok")}>
                 {hol ? "feriado" : p == null ? "—" : hidden ? mask : `R$ ${Math.round(p)}`}
               </div>
             </button>

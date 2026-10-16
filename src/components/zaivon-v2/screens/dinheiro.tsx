@@ -6,8 +6,10 @@ import { COFRINHO_TOLERANCE, dayFinance, impliedYield } from "@/lib/zaivon/finan
 import { monthDays, monthSummary } from "@/lib/zaivon/finance/month";
 import { ddmm } from "@/lib/zaivon/format";
 import { chartAxis, chartTooltip, Kpi, PageHeader, Panel, Pill } from "@/components/zaivon-v2/ui";
+import { DayReconciliationPanel } from "@/components/zaivon-v2/day-reconciliation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/zaivon-v2/primitives";
 import { HideMoneyScope, ScreenHideMoneyButton, useScreenHideMoney } from "@/components/zaivon-v2/hide-money";
+import { FINANCE_LABELS } from "@/lib/finance/labels";
 
 export function Dinheiro() {
   return (
@@ -25,21 +27,49 @@ function DinheiroBody() {
   const rows = md.map((d) => {
     const f = dayFinance(d, o.settlements);
     const y = impliedYield(d, o.days, o.settlements, o.plan);
-    return { date: ddmm(d.date), ...f, cofrinho: d.cofrinhoEnd, yield: y, ok: y == null ? null : y >= -0.5 && y <= COFRINHO_TOLERANCE };
+    return {
+      date: ddmm(d.date),
+      fullDate: d.date,
+      provisional: f.competenceStatus === "provisional",
+      ...f,
+      cofrinho: d.cofrinhoEnd,
+      yield: y,
+      ok: y == null ? null : y >= -0.5 && y <= COFRINHO_TOLERANCE,
+    };
   });
+  const selected = o.selectedDay;
+  const selectedFinance = dayFinance(selected, o.settlements);
   return (
     <div className="mx-auto max-w-6xl">
-      <PageHeader title="Dinheiro" question={`Onde está meu dinheiro? · ${o.plan.label}`} right={<ScreenHideMoneyButton />} />
+      <PageHeader title="Dinheiro" question={`Onde está meu dinheiro? · ${o.plan.label} · 5 dimensões`} right={<ScreenHideMoneyButton />} />
       <Tabs defaultValue="cofrinho">
-        <TabsList><TabsTrigger value="cofrinho">Cofrinho</TabsTrigger><TabsTrigger value="fluxo">Fluxo de caixa</TabsTrigger><TabsTrigger value="custos">Custos & lucro</TabsTrigger></TabsList>
+        <TabsList className="flex w-full flex-wrap h-auto gap-1">
+          <TabsTrigger value="cofrinho">Cofrinho</TabsTrigger>
+          <TabsTrigger value="fluxo">Fluxo de caixa</TabsTrigger>
+          <TabsTrigger value="custos">Custos & lucro</TabsTrigger>
+          <TabsTrigger value="conciliacao">Conciliação do dia</TabsTrigger>
+        </TabsList>
 
         <TabsContent value="cofrinho" className="mt-4 grid gap-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <Kpi big tone="info" label="Cofrinho hoje" value={money(ms.lastCofrinho)} formula="Saldo real no Mercado Pago (fonte da verdade)" explain={`Início do mês: ${money(o.plan.practicalAtStart)}`} />
-            <Kpi tone="ok" label="Banco do mês" value={money(ms.bank)} formula="Cofrinho atual − cofrinho no início do mês" explain={`${money(ms.diaryProfit)} de lucro + ${money(ms.yields)} rendimentos`} />
-            <Kpi label="Rendimentos" value={money(ms.yields)} formula="Banco do mês − lucro do diário. Entra no banco, mas não é lucro." explain={`≈ ${money(ms.avgYieldPerDay)} por dia`} />
+            <Kpi
+              big
+              tone="info"
+              label={FINANCE_LABELS.piggyBalance.short}
+              value={money(ms.lastCofrinho)}
+              formula={FINANCE_LABELS.piggyBalance.formula}
+              explain={`Início do mês: ${money(o.plan.practicalAtStart)}`}
+            />
+            <Kpi
+              tone="ok"
+              label={FINANCE_LABELS.bankOfMonth.short}
+              value={money(ms.bank)}
+              formula={FINANCE_LABELS.bankOfMonth.formula}
+              explain={`${money(ms.diaryProfit)} de ${FINANCE_LABELS.cashManagementResult.short.toLowerCase()} + ${money(ms.yields)} rendimentos`}
+            />
+            <Kpi label="Rendimentos" value={money(ms.yields)} formula="Banco do mês − resultados de caixa do diário. Entra no banco, mas não é lucro." explain={`≈ ${money(ms.avgYieldPerDay)} por dia`} />
           </div>
-          <Panel title="Evolução do cofrinho" subtitle={`R$ no fim de cada dia · ${o.plan.label}`}>
+          <Panel title="Evolução do cofrinho" subtitle={`Saldo no fim de cada dia · ${o.plan.label}`}>
             <div className="h-64">
               <ResponsiveContainer>
                 <LineChart data={rows} margin={{ left: 8, right: 8 }}>
@@ -52,13 +82,45 @@ function DinheiroBody() {
               </ResponsiveContainer>
             </div>
           </Panel>
-          <Panel title="Batimento diário" subtitle="Variação do cofrinho ≈ lucro + rendimento (tolerância R$ 5)">
+          <Panel
+            title="Batimento diário"
+            subtitle={`Variação do cofrinho ≈ ${FINANCE_LABELS.cashManagementResult.short.toLowerCase()} + rendimento (tol. R$ 5)`}
+          >
             <div className="overflow-x-auto">
               <table className="num w-full min-w-[520px] text-sm">
-                <thead className="text-left text-xs text-o-muted-foreground"><tr><th className="py-2">Dia</th><th>Lucro</th><th>Rendimento</th><th>Cofrinho</th><th>Status</th></tr></thead>
-                <tbody>{rows.map((r) => (
-                  <tr key={r.date} className="border-t"><td className="py-2">{r.date}</td><td>{money(r.profit)}</td><td>{r.yield != null ? money(r.yield) : "—"}</td><td>{r.cofrinho != null ? money(r.cofrinho) : "—"}</td><td>{r.ok == null ? <Pill tone="neutral">sem dado</Pill> : r.ok ? <Pill tone="ok">OK</Pill> : <Pill tone="alert">revisar</Pill>}</td></tr>
-                ))}</tbody>
+                <thead className="text-left text-xs text-o-muted-foreground">
+                  <tr>
+                    <th className="py-2">Dia</th>
+                    <th>Resultado caixa</th>
+                    <th>Rendimento</th>
+                    <th>Saldo cofrinho</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((r) => (
+                    <tr key={r.date} className="border-t">
+                      <td className="py-2">
+                        <span className="inline-flex items-center gap-1.5">
+                          {r.date}
+                          {r.provisional ? <Pill tone="pending">P</Pill> : null}
+                        </span>
+                      </td>
+                      <td>{money(r.profit)}</td>
+                      <td>{r.yield != null ? money(r.yield) : "—"}</td>
+                      <td>{r.cofrinho != null ? money(r.cofrinho) : "—"}</td>
+                      <td>
+                        {r.ok == null ? (
+                          <Pill tone="neutral">sem dado</Pill>
+                        ) : r.ok ? (
+                          <Pill tone="ok">OK</Pill>
+                        ) : (
+                          <Pill tone="alert">revisar</Pill>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
               </table>
             </div>
           </Panel>
@@ -89,9 +151,16 @@ function DinheiroBody() {
 
         <TabsContent value="custos" className="mt-4 grid gap-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Kpi big tone="ok" label="Resultado de caixa (mês)" value={money(ms.diaryProfit)} explain={`${money(ms.cashIn)} + ${money(ms.bonus)} bônus − ${money(ms.ownCost)}`} />
             <Kpi
-              label="Lucro competência (mês)"
+              big
+              tone="ok"
+              label={`${FINANCE_LABELS.cashManagementResult.short} (mês)`}
+              value={money(ms.diaryProfit)}
+              formula={FINANCE_LABELS.cashManagementResult.formula}
+              explain={`${money(ms.cashIn)} + ${money(ms.bonus)} bônus − ${money(ms.ownCost)}`}
+            />
+            <Kpi
+              label={`${FINANCE_LABELS.competenceProfit.short} (mês)`}
               value={money(rows.filter((r) => r.competenceStatus !== "provisional").reduce((s, r) => s + r.competenceProfit, 0))}
               formula="Σ dias com competência confirmada (exclui provisórios)"
               explain={`Provisórios excluídos: ${rows.filter((r) => r.competenceStatus === "provisional").length} dia(s). Não é depósito automático no cofrinho.`}
@@ -100,7 +169,7 @@ function DinheiroBody() {
             <Kpi tone="third" label="Terceiros" value={money(ms.thirdPartyCost)} explain="Não entra no meu lucro" />
           </div>
           <Panel title="Competência × caixa × custo" subtitle={`Método ZAIVON · 5 dimensões · ${o.plan.label}`}>
-            <div className="h-64">
+            <div className="h-64 min-h-[16rem]">
               <ResponsiveContainer>
                 <BarChart data={rows}>
                   <CartesianGrid stroke="var(--color-border)" vertical={false} />
@@ -108,15 +177,27 @@ function DinheiroBody() {
                   <YAxis {...chartAxis} tickFormatter={axisTick} width={60} />
                   <Tooltip {...chartTooltip} formatter={(v: number) => money(v)} />
                   <Legend wrapperStyle={{ fontSize: 12 }} />
-                  <Bar dataKey="competenceRevenue" name="Faturamento" fill="var(--color-info)" />
-                  <Bar dataKey="cashIn" name="Caixa" fill="var(--color-pending)" />
+                  <Bar dataKey="competenceRevenue" name={FINANCE_LABELS.competenceRevenue.short} fill="var(--color-info)" />
+                  <Bar dataKey="cashIn" name={FINANCE_LABELS.cashIn.short} fill="var(--color-pending)" />
                   <Bar dataKey="ownCost" name="Meu custo" fill="var(--color-third)" />
-                  <Bar dataKey="competenceProfit" name="Lucro competência" fill="var(--color-muted-foreground)" />
-                  <Bar dataKey="profit" name="Resultado caixa" fill="var(--color-ok)" />
+                  <Bar dataKey="competenceProfit" name={FINANCE_LABELS.competenceProfit.short} fill="var(--color-muted-foreground)" />
+                  <Bar dataKey="profit" name={FINANCE_LABELS.cashManagementResult.short} fill="var(--color-ok)" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </Panel>
+        </TabsContent>
+
+        <TabsContent value="conciliacao" className="mt-4 grid gap-4">
+          <p className="text-sm text-o-muted-foreground">
+            Dia selecionado na faixa superior: <strong className="text-o-foreground">{selected.date}</strong>
+            {selectedFinance.competenceStatus === "provisional" ? " · provisório" : ""}.
+          </p>
+          <DayReconciliationPanel
+            finance={selectedFinance}
+            dayClosing={selected.dayClosing}
+            cofrinhoEnd={selected.cofrinhoEnd}
+          />
         </TabsContent>
       </Tabs>
     </div>

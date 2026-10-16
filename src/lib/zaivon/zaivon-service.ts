@@ -359,6 +359,7 @@ export async function getZaivonData(requestedMonth?: string): Promise<ZaivonData
         competenceProfit: dc?.competenceProfit,
         competenceStatus: dc?.competenceStatus,
         newCredit: dc?.newCredit,
+        dayClosing: dc,
       };
     });
 

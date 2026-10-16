@@ -1,4 +1,5 @@
 "use client";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -10,7 +11,7 @@ import { Input, Select } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { PageLoader } from "@/components/ui/loading";
 import { Plus, Package } from "lucide-react";
-import { formatCurrency, PRODUCT_CATEGORIES } from "@/lib/utils";
+import { PRODUCT_CATEGORIES } from "@/lib/utils";
 import { format, parseISO } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { useBusinessScope } from "@/hooks/use-business-scope";
@@ -43,6 +44,7 @@ interface Product {
 }
 
 export default function ProdutosPage() {
+  const money = useFormatMoney();
   const queryClient = useQueryClient();
   const { activeBusinessId, canWrite, withQuery, writeBlockedMessage } = useBusinessScope();
   const [showForm, setShowForm] = useState(false);
@@ -164,16 +166,21 @@ export default function ProdutosPage() {
                 <p className="mb-4 text-xs text-text-muted">{product.category}</p>
                 <div className="grid grid-cols-2 gap-x-3 gap-y-2.5 text-sm">
                   <div>
-                    <p className="text-text-muted text-xs">Preço</p>
-                    <p className="font-semibold">{formatCurrency(product.price)}</p>
+                    <p className="text-text-muted text-xs">Preço catálogo</p>
+                    <p className="font-semibold">{money(product.price)}</p>
+                    {/sandu/i.test(product.name) ? (
+                      <p className="mt-0.5 text-[10px] leading-snug text-text-muted">
+                        Canais: Acal R$7 · Unifor/Meia Sola R$8 (preço na venda). Catálogo = padrão Acal.
+                      </p>
+                    ) : null}
                   </div>
                   <div>
                     <p className="text-text-muted text-xs">Custo</p>
-                    <p className="font-semibold">{formatCurrency(product.cost)}</p>
+                    <p className="font-semibold">{money(product.cost)}</p>
                   </div>
                   <div>
                     <p className="text-text-muted text-xs">Lucro/un</p>
-                    <p className="font-semibold text-brand-green">{formatCurrency(product.price - product.cost)}</p>
+                    <p className="font-semibold text-brand-green">{money(product.price - product.cost)}</p>
                   </div>
                   <div>
                     <p className="text-text-muted text-xs">Vendidos</p>
@@ -181,7 +188,7 @@ export default function ProdutosPage() {
                   </div>
                   <div>
                     <p className="text-text-muted text-xs">Receita gerada</p>
-                    <p className="font-semibold text-brand-orange">{formatCurrency(product.revenueGenerated)}</p>
+                    <p className="font-semibold text-brand-orange">{money(product.revenueGenerated)}</p>
                   </div>
                   <div>
                     <p className="text-text-muted text-xs">Participação</p>

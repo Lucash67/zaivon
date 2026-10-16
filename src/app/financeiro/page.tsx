@@ -165,21 +165,21 @@ export default function FinanceiroPage() {
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <HeroMetric
-            label="Receita / faturamento"
+            label="Faturamento (competência)"
             value={data.grossRevenue}
             icon={DollarSign}
             theme="finance"
-            subtext="Competência (vendas reconhecidas)"
+            subtext="Legado ≈ receita bruta do período"
           />
           <HeroMetric
-            label="Lucro operacional"
+            label="Lucro operacional (legado)"
             value={data.operationalProfit}
             icon={TrendingUp}
             theme="finance"
-            subtext={`Líquida: ${money(data.netRevenue)}`}
+            subtext={`Não confundir com resultado gerencial de caixa · líquida ${money(data.netRevenue)}`}
           />
           <HeroMetric
-            label="Entrada de caixa"
+            label="Entrada no caixa"
             value={operator.cashIn}
             icon={ArrowDownUp}
             theme="finance"
@@ -190,13 +190,14 @@ export default function FinanceiroPage() {
             value={operator.operatorNetGain}
             icon={UserCircle}
             theme="finance"
-            subtext={`Próprio ${money(operator.ownInvestment)} · terceiros à parte`}
+            subtext={`Próximo do resultado de caixa · próprio ${money(operator.ownInvestment)}`}
             valueTone={operatorPositive ? "success" : "warning"}
           />
         </div>
-        <p className="text-xs text-text-muted">
-          Método ZAIVON: faturamento por competência, caixa, lucro por competência, resultado de caixa e cofrinho são
-          dimensões separadas — o lucro calculado não depositará sozinho no cofrinho.
+        <p className="rounded-xl border border-border/60 bg-surface-2/40 px-3 py-2 text-xs text-text-muted">
+          Módulo legado · Método ZAIVON v2 (5 dimensões): faturamento por competência, entrada no caixa, lucro por
+          competência, resultado gerencial de caixa e saldo/depósito do cofrinho são separados — o lucro calculado não
+          deposita sozinho no cofrinho. Preferir <span className="text-text-primary">/v2</span> para o dia a dia.
         </p>
 
         <SectionPanel theme="finance" title="Indicadores operacionais" subtitle="Desempenho do negócio">

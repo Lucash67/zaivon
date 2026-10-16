@@ -18,9 +18,21 @@ export function Desempenho() {
   return (
     <HideMoneyScope screenId="v2-desempenho">
       <div className="mx-auto max-w-6xl">
-        <PageHeader title="Desempenho" question="Estou melhorando?" right={<ScreenHideMoneyButton />} />
+        <PageHeader
+          title="Desempenho"
+          question="Estou melhorando? · lucros abaixo = resultado gerencial de caixa (legado do diário)"
+          right={<ScreenHideMoneyButton />}
+        />
+        <p className="mb-3 rounded-xl bg-o-surface px-3 py-2 text-xs text-o-muted-foreground">
+          Nesta tela, &quot;lucro&quot; significa <strong className="text-o-foreground">resultado gerencial de caixa</strong>{" "}
+          (caixa − meu custo ± bônus), não lucro por competência. Depósitos e saldo do cofrinho são dimensões separadas.
+        </p>
         <Tabs defaultValue="semana">
-          <TabsList><TabsTrigger value="semana">Semana</TabsTrigger><TabsTrigger value="mes">Mês</TabsTrigger><TabsTrigger value="tendencia">Tendência & Projeções</TabsTrigger></TabsList>
+          <TabsList className="flex h-auto w-full flex-wrap gap-1">
+            <TabsTrigger value="semana">Semana</TabsTrigger>
+            <TabsTrigger value="mes">Mês</TabsTrigger>
+            <TabsTrigger value="tendencia">Tendência & Projeções</TabsTrigger>
+          </TabsList>
           <TabsContent value="semana" className="mt-4"><Semana /></TabsContent>
           <TabsContent value="mes" className="mt-4"><Mes /></TabsContent>
           <TabsContent value="tendencia" className="mt-4"><Tendencia /></TabsContent>
@@ -48,13 +60,13 @@ function Semana() {
         <Button variant="outline" size="icon" disabled={i >= starts.length - 1} onClick={() => setI(i + 1)} aria-label="Próxima semana"><ChevronRight className="size-4" /></Button>
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-        <Kpi tone="ok" label="Lucro da semana" value={money(w.profit)} formula="Soma do lucro final dos dias da semana" explain={`${w.dates.length} dias fechados`} />
+        <Kpi tone="ok" label="Resultado de caixa (semana)" value={money(w.profit)} formula="Soma do resultado gerencial de caixa dos dias" explain={`${w.dates.length} dias fechados`} />
         <Kpi label="Média por dia" value={money(w.avg)} explain={prevW ? `${pctFmt(w.avg / prevW.avg - 1)} vs semana anterior (${money(prevW.avg)})` : undefined} />
         <Kpi label="Rendimentos" value={money(w.yields)} formula="Soma do rendimento implícito de cada dia" />
-        <Kpi tone="info" label="Cofrinho na semana" value={w.cofrinhoDelta != null ? `+${money(w.cofrinhoDelta)}` : "—"} formula="Lucro + rendimentos" />
+        <Kpi tone="info" label="Δ saldo cofrinho" value={w.cofrinhoDelta != null ? `+${money(w.cofrinhoDelta)}` : "—"} formula="Resultados de caixa + rendimentos (não é depósito automático do lucro por competência)" />
       </div>
-      <Panel title="Lucro por dia" subtitle={`R$ · semana de ${ddmm(w.dates[0] ?? start)}`}>
-        <div className="h-56"><ResponsiveContainer><BarChart data={rows}><CartesianGrid stroke="var(--color-border)" vertical={false} /><XAxis dataKey="date" {...chartAxis} /><YAxis {...chartAxis} width={50} tickFormatter={axisTick} /><Tooltip {...chartTooltip} formatter={(v: number) => money(v)} /><ReferenceLine y={o.plan.dailyTarget} stroke="var(--color-pending)" strokeDasharray="4 4" label={{ value: "alvo", fill: "var(--color-pending)", fontSize: 12 }} /><Bar dataKey="lucro" name="Lucro" fill="var(--color-ok)" radius={[6, 6, 0, 0]} /></BarChart></ResponsiveContainer></div>
+      <Panel title="Resultado de caixa por dia" subtitle={`R$ · semana de ${ddmm(w.dates[0] ?? start)}`}>
+        <div className="h-56 min-h-[14rem]"><ResponsiveContainer><BarChart data={rows}><CartesianGrid stroke="var(--color-border)" vertical={false} /><XAxis dataKey="date" {...chartAxis} /><YAxis {...chartAxis} width={50} tickFormatter={axisTick} /><Tooltip {...chartTooltip} formatter={(v: number) => money(v)} /><ReferenceLine y={o.plan.dailyTarget} stroke="var(--color-pending)" strokeDasharray="4 4" label={{ value: "alvo", fill: "var(--color-pending)", fontSize: 12 }} /><Bar dataKey="lucro" name="Resultado caixa" fill="var(--color-ok)" radius={[6, 6, 0, 0]} /></BarChart></ResponsiveContainer></div>
       </Panel>
     </div>
   );
@@ -68,7 +80,7 @@ function Mes() {
     <div className="grid gap-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
         <Kpi big tone="ok" label="Banco do mês" value={money(ms.bank)} formula="Cofrinho atual − início do mês" explain={`${pctFmt(ms.pctGoal, false)} da meta de ${money(o.plan.goal)}`} />
-        <Kpi label="Lucro no diário" value={money(ms.diaryProfit)} explain={`${ms.closedDays} dias · ${money(ms.avgProfit)}/dia`} />
+        <Kpi label="Resultado de caixa (diário)" value={money(ms.diaryProfit)} explain={`${ms.closedDays} dias · ${money(ms.avgProfit)}/dia · legado do método caixa`} />
         <Kpi label="Vs. mês anterior" value={pctFmt(t.monthVsPrev)} explain={`${money(t.monthAvg)} vs ${money(t.prevMonthAvg)}/dia`} />
         <Kpi tone="pending" label="Projeção do mês" value={money(t.projectedProfit)} explain="Base: últimos 10 dias" />
       </div>
