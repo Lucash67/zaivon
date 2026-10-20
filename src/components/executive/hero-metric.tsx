@@ -2,7 +2,8 @@
 
 import { cn } from "@/components/ui/utils";
 import { type LucideIcon, TrendingDown, TrendingUp } from "lucide-react";
-import { formatCurrency, formatNumber, formatPercent } from "@/lib/utils";
+import { formatNumber, formatPercent } from "@/lib/utils";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 import { motion } from "framer-motion";
 import type { ModuleTheme } from "@/lib/module-themes";
 import { MODULE_THEMES } from "@/lib/module-themes";
@@ -32,6 +33,7 @@ export function HeroMetric({
   delay = 0,
   valueTone = "default",
 }: HeroMetricProps) {
+  const money = useFormatMoney();
   const t = MODULE_THEMES[theme];
   const valueColor =
     valueTone === "success"
@@ -43,7 +45,7 @@ export function HeroMetric({
           : t.accent;
   const formatted =
     fmt === "currency"
-      ? formatCurrency(Number(value))
+      ? money(Number(value))
       : fmt === "number"
         ? formatNumber(Number(value))
         : fmt === "percent"

@@ -1,4 +1,5 @@
 "use client";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -21,7 +22,7 @@ import {
   Zap,
   Check,
 } from "lucide-react";
-import { formatCurrency, formatNumber, cn } from "@/lib/utils";
+import { formatNumber, cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { useBusinessScope } from "@/hooks/use-business-scope";
 import { fetchJson, fetchJsonArray } from "@/lib/api/safe-json";
@@ -67,6 +68,7 @@ function isPeriod(value: string | null): value is PeriodProjectionPeriod {
 }
 
 function ProjecoesContent() {
+  const money = useFormatMoney();
   const { activeBusinessId, withQuery } = useBusinessScope();
   const searchParams = useSearchParams();
   const [period, setPeriod] = useState<PeriodProjectionPeriod>(() => {
@@ -279,10 +281,10 @@ function ProjecoesContent() {
                   </div>
                   <p className="text-xs text-text-muted">Receita prevista</p>
                   <p className="text-xl font-bold text-text-primary">
-                    {formatCurrency(scenario.revenue)}
+                    {money(scenario.revenue)}
                   </p>
                   <p className="mt-1 text-sm text-brand-green">
-                    Lucro {formatCurrency(scenario.profit)} · {formatNumber(scenario.units)} un.
+                    Lucro {money(scenario.profit)} · {formatNumber(scenario.units)} un.
                   </p>
                 </motion.button>
               );
@@ -295,7 +297,7 @@ function ProjecoesContent() {
             title="Receita realizada"
             value={data.actual.revenue}
             icon={Wallet}
-            subtitle={`Ritmo ${formatCurrency(data.pace.revenue)}/dia útil`}
+            subtitle={`Ritmo ${money(data.pace.revenue)}/dia útil`}
             delay={0}
           />
           <KpiCard
@@ -310,7 +312,7 @@ function ProjecoesContent() {
             value={activeSlice.profit}
             icon={Zap}
             variant="profit"
-            subtitle={`Realizado ${formatCurrency(data.actual.profit)}`}
+            subtitle={`Realizado ${money(data.actual.profit)}`}
             delay={0.1}
           />
           <KpiCard
@@ -361,7 +363,7 @@ function ProjecoesContent() {
                       </span>
                       {row.label === "Unidades"
                         ? formatNumber(row.actual)
-                        : formatCurrency(row.actual)}
+                        : money(row.actual)}
                     </span>
                     <span className="text-brand-orange">
                       <span className="block text-[10px] uppercase tracking-wide text-text-muted sm:hidden">
@@ -369,7 +371,7 @@ function ProjecoesContent() {
                       </span>
                       {row.label === "Unidades"
                         ? formatNumber(row.projected)
-                        : formatCurrency(row.projected)}
+                        : money(row.projected)}
                     </span>
                     <span className="text-text-muted">
                       <span className="block text-[10px] uppercase tracking-wide text-text-muted sm:hidden">
@@ -378,7 +380,7 @@ function ProjecoesContent() {
                       {row.goal > 0
                         ? row.label === "Unidades"
                           ? formatNumber(row.goal)
-                          : formatCurrency(row.goal)
+                          : money(row.goal)
                         : "—"}
                     </span>
                   </div>
@@ -410,7 +412,7 @@ function ProjecoesContent() {
                   </p>
                   <p className="text-sm text-text-secondary">
                     {gapForScenario.unitsToProjection > 0 || gapForScenario.revenueToProjection > 0
-                      ? `${formatNumber(gapForScenario.unitsToProjection)} un. · ${formatCurrency(gapForScenario.revenueToProjection)} · ritmo sugerido ${Math.ceil(gapForScenario.requiredDailyUnitsToProjection)} un./dia`
+                      ? `${formatNumber(gapForScenario.unitsToProjection)} un. · ${money(gapForScenario.revenueToProjection)} · ritmo sugerido ${Math.ceil(gapForScenario.requiredDailyUnitsToProjection)} un./dia`
                       : data.isCurrentPeriod
                         ? "Cenário já coberto pelo realizado."
                         : "Resultado do ciclo em relação a este cenário."}
@@ -425,7 +427,7 @@ function ProjecoesContent() {
                     {data.goal.source === "none"
                       ? "Defina metas semanal/mensal em Metas ou Configurações."
                       : gapForScenario.revenueToGoal > 0 || gapForScenario.unitsToGoal > 0
-                        ? `${formatCurrency(gapForScenario.revenueToGoal)} restantes · ${formatCurrency(gapForScenario.requiredDailyRevenueToGoal)}/dia útil`
+                        ? `${money(gapForScenario.revenueToGoal)} restantes · ${money(gapForScenario.requiredDailyRevenueToGoal)}/dia útil`
                         : "Meta de receita já atingida neste período."}
                   </p>
                 </div>
@@ -478,12 +480,12 @@ function ProjecoesContent() {
                     <div className="space-y-2 text-sm">
                       <div>
                         <p className="text-xs text-text-muted">Receita mensal</p>
-                        <p className="font-bold">{formatCurrency(p.monthlyRevenue)}</p>
+                        <p className="font-bold">{money(p.monthlyRevenue)}</p>
                       </div>
                       <div>
                         <p className="text-xs text-text-muted">Lucro mensal</p>
                         <p className="font-bold text-brand-green">
-                          {formatCurrency(p.monthlyProfit)}
+                          {money(p.monthlyProfit)}
                         </p>
                       </div>
                     </div>

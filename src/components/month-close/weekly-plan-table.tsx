@@ -1,6 +1,7 @@
 "use client";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
-import { formatCurrency, formatNumber } from "@/lib/utils";
+import { formatNumber } from "@/lib/utils";
 import type { WeekPlanRow } from "@/lib/month-close-view";
 
 interface WeeklyPlanTableProps {
@@ -9,6 +10,7 @@ interface WeeklyPlanTableProps {
 }
 
 export function WeeklyPlanTable({ rows, monthLabel }: WeeklyPlanTableProps) {
+  const money = useFormatMoney();
   const maxUnits = Math.max(...rows.map((r) => r.targetUnits), 1);
   const totals = rows.reduce(
     (acc, row) => ({
@@ -55,13 +57,13 @@ export function WeeklyPlanTable({ rows, monthLabel }: WeeklyPlanTableProps) {
               <div>
                 <span className="text-text-muted">Faturamento </span>
                 <span className="font-medium text-text-primary">
-                  {formatCurrency(row.targetRevenue)}
+                  {money(row.targetRevenue)}
                 </span>
               </div>
               <div>
                 <span className="text-text-muted">Lucro </span>
                 <span className="font-medium text-brand-green">
-                  {formatCurrency(row.targetProfit)}
+                  {money(row.targetProfit)}
                 </span>
               </div>
               <div>
@@ -82,11 +84,11 @@ export function WeeklyPlanTable({ rows, monthLabel }: WeeklyPlanTableProps) {
       <div className="grid grid-cols-2 gap-x-4 gap-y-1 border-t border-surface-border bg-surface-elevated/40 px-4 py-3 text-xs sm:grid-cols-4 sm:px-5">
         <div>
           <span className="text-text-muted">Total mês </span>
-          <span className="font-semibold text-text-primary">{formatCurrency(totals.revenue)}</span>
+          <span className="font-semibold text-text-primary">{money(totals.revenue)}</span>
         </div>
         <div>
           <span className="text-text-muted">Lucro </span>
-          <span className="font-semibold text-brand-green">{formatCurrency(totals.profit)}</span>
+          <span className="font-semibold text-brand-green">{money(totals.profit)}</span>
         </div>
         <div>
           <span className="text-text-muted">Unidades </span>

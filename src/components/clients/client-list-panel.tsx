@@ -1,7 +1,7 @@
 "use client";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 import { cn } from "@/components/ui/utils";
-import { formatCurrency } from "@/lib/utils";
 import { User } from "lucide-react";
 import { ClientBadgeChip } from "./client-badge";
 import type { ClientCrmListItem } from "@/lib/client-crm-service";
@@ -58,6 +58,7 @@ export function ClientListPanel({
   onFilterChange,
   onSearchChange,
 }: ClientListPanelProps) {
+  const money = useFormatMoney();
   const visible = filterClientList(clients, filter, search);
 
   return (
@@ -119,7 +120,7 @@ export function ClientListPanel({
                   Última compra · {client.lastPurchaseRelative}
                 </p>
                 <p className="mt-1 text-xs font-semibold text-blue-400">
-                  {formatCurrency(client.totalSpent)}
+                  {money(client.totalSpent)}
                   {client.purchaseCount > 0 && (
                     <span className="font-normal text-text-muted"> · {client.purchaseCount} compras</span>
                   )}

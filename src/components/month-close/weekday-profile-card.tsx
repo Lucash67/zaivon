@@ -1,7 +1,7 @@
 "use client";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 import { cn } from "@/components/ui/utils";
-import { formatCurrency } from "@/lib/utils";
 import type { WeekdayProfileRow } from "@/lib/month-close-view";
 
 interface WeekdayProfileCardProps {
@@ -17,6 +17,7 @@ const WEEKDAY_FULL: Record<number, string> = {
 };
 
 export function WeekdayProfileCard({ rows }: WeekdayProfileCardProps) {
+  const money = useFormatMoney();
   const maxProfit = Math.max(...rows.map((r) => r.avgProfit), 1);
 
   return (
@@ -42,7 +43,7 @@ export function WeekdayProfileCard({ rows }: WeekdayProfileCardProps) {
                 </span>
                 <span className="flex items-baseline gap-2">
                   <span className="font-medium text-text-primary">
-                    {formatCurrency(row.avgProfit)}
+                    {money(row.avgProfit)}
                   </span>
                   <span
                     className={cn(

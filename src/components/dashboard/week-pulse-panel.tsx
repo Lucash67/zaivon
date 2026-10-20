@@ -1,8 +1,9 @@
 "use client";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 import { motion } from "framer-motion";
 import { TrendingDown, TrendingUp } from "lucide-react";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import type { WeekPulse } from "@/lib/week-pulse";
 
 /** Mini painel da semana em foco — sustenta a frase de saudação com números. */
@@ -13,6 +14,7 @@ export function WeekPulsePanel({
   pulse: WeekPulse;
   className?: string;
 }) {
+  const money = useFormatMoney();
   const maxRevenue = Math.max(...pulse.days.map((day) => day.revenue), 1);
   const trend = pulse.profitTrend;
 
@@ -54,7 +56,7 @@ export function WeekPulsePanel({
             Faturamento
           </p>
           <p className="text-2xl font-black leading-tight text-brand-yellow">
-            {formatCurrency(pulse.revenue)}
+            {money(pulse.revenue)}
           </p>
         </div>
         <div className="min-w-0 text-right">
@@ -62,7 +64,7 @@ export function WeekPulsePanel({
             Lucro
           </p>
           <p className="text-lg font-bold leading-tight text-emerald-400">
-            {formatCurrency(pulse.profit)}
+            {money(pulse.profit)}
           </p>
         </div>
       </div>
@@ -76,7 +78,7 @@ export function WeekPulsePanel({
         {pulse.days.map((day, index) => (
           <div
             key={day.date}
-            title={`${day.label} · ${formatCurrency(day.revenue)} · lucro ${formatCurrency(day.profit)}`}
+            title={`${day.label} · ${money(day.revenue)} · lucro ${money(day.profit)}`}
             className="flex min-w-0 flex-1 flex-col items-center gap-1"
           >
             <div className="flex h-8 w-full items-end overflow-hidden rounded-[4px] bg-surface-hover/60">
@@ -114,7 +116,7 @@ export function WeekPulsePanel({
           <div className="flex items-center justify-between gap-2 text-[10px]">
             <span className="text-text-muted">Meta lucro</span>
             <span className="font-bold text-text-secondary">
-              {Math.round(pulse.goalProgress)}% de {formatCurrency(pulse.goalRevenue)}
+              {Math.round(pulse.goalProgress)}% de {money(pulse.goalRevenue)}
             </span>
           </div>
           <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-surface-hover">

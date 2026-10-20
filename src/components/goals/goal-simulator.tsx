@@ -1,9 +1,9 @@
 "use client";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 import { useState, useMemo } from "react";
 import { SectionPanel } from "@/components/executive/section-panel";
 import { Input } from "@/components/ui/input";
-import { formatCurrency } from "@/lib/utils";
 import { simulateExtraUnits } from "@/lib/smart-goals-view";
 import { Calculator } from "lucide-react";
 
@@ -20,6 +20,7 @@ export function GoalSimulator({
   avgUnitPrice,
   avgUnitProfit,
 }: GoalSimulatorProps) {
+  const money = useFormatMoney();
   const [extraUnits, setExtraUnits] = useState(2);
 
   const result = useMemo(
@@ -51,11 +52,11 @@ export function GoalSimulator({
         <div className="grid grid-cols-2 gap-3 text-sm">
           <div>
             <p className="text-text-muted text-xs">Receita prevista</p>
-            <p className="font-semibold text-text-primary">{formatCurrency(result.projectedRevenue)}</p>
+            <p className="font-semibold text-text-primary">{money(result.projectedRevenue)}</p>
           </div>
           <div>
             <p className="text-text-muted text-xs">Lucro previsto</p>
-            <p className="font-semibold text-brand-green">{formatCurrency(result.projectedProfit)}</p>
+            <p className="font-semibold text-brand-green">{money(result.projectedProfit)}</p>
           </div>
           <div>
             <p className="text-text-muted text-xs">Total projetado</p>

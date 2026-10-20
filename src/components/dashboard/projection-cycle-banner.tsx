@@ -1,4 +1,5 @@
 "use client";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -6,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { X, TrendingUp } from "lucide-react";
 import { useBusinessScope } from "@/hooks/use-business-scope";
 import { fetchJson } from "@/lib/api/safe-json";
-import { formatCurrency, formatNumber } from "@/lib/utils";
+import { formatNumber } from "@/lib/utils";
 import type { ProjectionCycleClose } from "@/lib/period-projections-service";
 
 const STORAGE_PREFIX = "lbo-proj-cycle-dismiss:";
@@ -16,6 +17,7 @@ function dismissKey(businessId: string, cycleKey: string) {
 }
 
 export function ProjectionCycleBanner() {
+  const money = useFormatMoney();
   const { activeBusinessId, withQuery } = useBusinessScope();
   const [dismissed, setDismissed] = useState(true);
 
@@ -63,7 +65,7 @@ export function ProjectionCycleBanner() {
             {banner.period === "weekly" ? "Semana" : "Mês"} · {banner.label}
           </p>
           <p className="mt-1 text-sm text-text-secondary">
-            Realizado {formatCurrency(banner.actual.profit)} de lucro ·{" "}
+            Realizado {money(banner.actual.profit)} de lucro ·{" "}
             {formatNumber(banner.actual.units)} un. ({vsBase}% da projeção Base de receita).
           </p>
           <Link

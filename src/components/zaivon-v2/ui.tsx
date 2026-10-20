@@ -90,12 +90,13 @@ export function Pill({ tone, children }: { tone: Tone; children: ReactNode }) {
 export function CheckRow({ c }: { c: Check }) {
   const Icon = c.ok == null ? CircleDashed : c.ok ? CheckCircle2 : AlertTriangle;
   const tone = c.ok == null ? "text-o-muted-foreground" : c.ok ? "text-o-ok" : "text-o-alert";
+  const statusLabel = c.ok == null ? "parcial / pendente" : c.ok ? "OK" : "não bateu";
   return (
     <div className="flex gap-3 rounded-xl bg-o-surface p-3">
       <Icon className={cn("mt-0.5 size-4 shrink-0", tone)} aria-hidden />
       <div className="min-w-0">
         <div className="text-sm font-semibold">
-          {c.label} <span className={cn("ml-1 text-xs", tone)}>{c.ok == null ? "sem dados" : c.ok ? "OK" : "não bateu"}</span>
+          {c.label} <span className={cn("ml-1 text-xs", tone)}>{statusLabel}</span>
         </div>
         <p className="num text-xs text-o-muted-foreground">{c.detail}</p>
       </div>
@@ -121,14 +122,36 @@ const SALE_STATUS: Record<RegisteredSale["status"], [string, Tone]> = {
   partial: ["parcial", "pending"],
 };
 
-export function RegisteredSalesList({ sales }: { sales?: RegisteredSale[] | undefined }) {
+export function RegisteredSalesList({
+  sales,
+  dayClosing,
+}: {
+  sales?: RegisteredSale[] | undefined;
+  dayClosing?: import("@/lib/finance/day-closing").DayClosingFinance | null | undefined;
+}) {
   const { money } = useScreenHideMoney();
   if (!sales?.length) return <p className="text-xs text-o-muted-foreground">Nenhuma venda gravada individualmente neste dia.</p>;
   const units = sales.reduce((s, x) => s + x.qty, 0);
   const total = sales.reduce((s, x) => s + x.amount, 0);
+  const paid = sales.filter((s) => s.status === "paid").reduce((s, x) => s + x.amount, 0);
+  const pending = sales.filter((s) => s.status !== "paid").reduce((s, x) => s + x.amount, 0);
+  const competence = dayClosing?.competenceRevenue;
+  const salesReceived = dayClosing?.cash.salesReceived;
   return (
     <div>
-      <p className="num mb-2 text-xs text-o-muted-foreground">{sales.length} vendas · {units} un · {money(total)}</p>
+      <p className="num mb-1 text-xs text-o-muted-foreground">
+        {sales.length} registros · {units} un · cadastrado {money(total)}
+        {` · pagos ${money(paid)} · pendentes/perda ${money(pending)}`}
+      </p>
+      {(salesReceived != null || competence != null) && (
+        <p className="mb-2 text-xs text-o-muted-foreground">
+          Leitura canônica:{" "}
+          {salesReceived != null && <>vendas no caixa {money(salesReceived)}</>}
+          {salesReceived != null && competence != null && " · "}
+          {competence != null && <>competência provisória {money(competence)}</>}
+          {`. O total cadastrado (${money(total)}) inclui fiados e perdas — não é entrada no caixa.`}
+        </p>
+      )}
       <ul className="grid max-h-80 gap-1.5 overflow-y-auto">
         {sales.map((s) => {
           const [label, tone] = SALE_STATUS[s.status];

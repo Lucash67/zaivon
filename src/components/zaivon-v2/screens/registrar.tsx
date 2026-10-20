@@ -252,7 +252,11 @@ function Closing() {
             <div className="grid gap-3 sm:grid-cols-3">
               <Kpi tone="ok" label="Recebido do dia" value={money(f.received)} />
               <Kpi tone="ok" label="Quitações" value={money(f.settlements)} />
-              <Kpi label="Entrada total" value={money(f.cashIn)} formula="Recebido do dia + quitações" />
+              <Kpi
+                label="Entrada total"
+                value={money(f.cashIn)}
+                formula="Recebido do dia + quitações + outras entradas"
+              />
             </div>
             <ul className="grid gap-1 text-sm">{qs.map((s) => <li key={s.id} className="flex justify-between rounded-lg bg-o-surface px-3 py-2"><span>{s.person} (venda {ddmm(s.originDate)})</span><span className="num">{money(s.amount)}</span></li>)}</ul>
           </div>

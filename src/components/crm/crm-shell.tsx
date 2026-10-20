@@ -9,12 +9,11 @@ import { ProductSwitcher } from "@/components/hub/product-switcher";
 
 export function CrmShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const wide = pathname === "/crm/notas" || pathname.startsWith("/crm/notas/");
 
   return (
     <div className="min-h-screen bg-[#0b0c14] text-[#F5F6FA]">
       <header className="sticky top-0 z-30 border-b border-emerald-500/15 bg-[#0b0c14]/95 backdrop-blur">
-        <div className={cn("mx-auto flex items-center justify-between gap-3 px-4 py-3", wide ? "max-w-[1400px]" : "max-w-6xl")}>
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
           <Link href="/crm" className="flex min-w-0 items-center gap-2.5">
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-[#0CD4FF] text-white shadow-[0_0_20px_rgba(16,185,129,0.35)]">
               <Kanban className="h-4 w-4" />
@@ -32,7 +31,7 @@ export function CrmShell({ children }: { children: React.ReactNode }) {
             <ProductSwitcher />
           </div>
         </div>
-        <nav className={cn("mx-auto flex gap-1 overflow-x-auto px-3 pb-2 scrollbar-none", wide ? "max-w-[1400px]" : "max-w-6xl")}>
+        <nav className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-3 pb-2 scrollbar-none">
           {CRM_NAV.map((item) => {
             const active =
               "exact" in item && item.exact
@@ -55,7 +54,7 @@ export function CrmShell({ children }: { children: React.ReactNode }) {
           })}
         </nav>
       </header>
-      <main className={cn("mx-auto px-4 py-5 pb-24 sm:py-6", wide ? "max-w-[1400px]" : "max-w-6xl")}>{children}</main>
+      <main className="mx-auto max-w-6xl px-4 py-5 pb-24 sm:py-6">{children}</main>
     </div>
   );
 }

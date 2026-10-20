@@ -1,4 +1,5 @@
 "use client";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -8,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useBusinessScope } from "@/hooks/use-business-scope";
-import { formatCurrency, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import type { SmartGoalsView } from "@/lib/smart-goals-view";
 
 interface GoalTargetEditorProps {
@@ -16,6 +17,7 @@ interface GoalTargetEditorProps {
 }
 
 export function GoalTargetEditor({ view }: GoalTargetEditorProps) {
+  const money = useFormatMoney();
   const { withQuery, canWrite, goalsBlockedMessage } = useBusinessScope();
   const queryClient = useQueryClient();
   const avgPrice = view.avgUnitPrice > 0 ? view.avgUnitPrice : 5;
@@ -125,7 +127,7 @@ export function GoalTargetEditor({ view }: GoalTargetEditorProps) {
         <p className="text-sm text-text-muted">
           Sugestão do sistema: <strong className="text-text-secondary">{suggested.daily.units} un./dia</strong>
           {" · "}
-          {suggested.weekly.units} un./semana ({formatCurrency(suggested.weekly.revenue)}).
+          {suggested.weekly.units} un./semana ({money(suggested.weekly.revenue)}).
           {source === "manual"
             ? " Sua meta manual está valendo até você voltar à sugestão."
             : " Ajuste e salve se quiser um alvo diferente."}

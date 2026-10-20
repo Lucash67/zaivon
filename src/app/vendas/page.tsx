@@ -1,4 +1,5 @@
 "use client";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -11,7 +12,7 @@ import { Input, Select, Textarea } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { PageLoader } from "@/components/ui/loading";
 import { Plus, ShoppingCart, Package } from "lucide-react";
-import { formatCurrency, formatDateTime, paymentMethodLabel, todayISO, nowTime, DEPARTMENTS, PAYMENT_METHODS } from "@/lib/utils";
+import { formatDateTime, paymentMethodLabel, todayISO, nowTime, DEPARTMENTS, PAYMENT_METHODS } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useBusinessScope } from "@/hooks/use-business-scope";
 import { asArray, fetchJsonArray } from "@/lib/api/safe-json";
@@ -59,6 +60,7 @@ async function postJson(url: string, data: unknown) {
 }
 
 export default function VendasPage() {
+  const money = useFormatMoney();
   const queryClient = useQueryClient();
   const context = useTemporalViewContext();
   const { activeBusinessId, canWrite, withQuery, writeBlockedMessage } = useBusinessScope();
@@ -181,7 +183,7 @@ export default function VendasPage() {
                       <option value="">Selecione</option>
                       {activeProducts.map((p) => (
                         <option key={p.id} value={p.id}>
-                          {p.name} — {formatCurrency(p.price)} (estoque: {p.stockQuantity})
+                          {p.name} — {money(p.price)} (estoque: {p.stockQuantity})
                         </option>
                       ))}
                     </Select>
@@ -209,7 +211,7 @@ export default function VendasPage() {
                     {previewTotal > 0 && (
                       <div className="sm:col-span-2 lg:col-span-3 flex items-center justify-between rounded-xl bg-brand-orange/10 p-4">
                         <span className="text-sm text-text-secondary">Total da venda</span>
-                        <span className="text-xl font-bold text-brand-orange">{formatCurrency(previewTotal)}</span>
+                        <span className="text-xl font-bold text-brand-orange">{money(previewTotal)}</span>
                       </div>
                     )}
                     {formError && (
@@ -261,9 +263,9 @@ export default function VendasPage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-text-primary">{formatCurrency(sale.totalAmount)}</p>
+                    <p className="font-bold text-text-primary">{money(sale.totalAmount)}</p>
                     <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="success">+{formatCurrency(sale.profit)}</Badge>
+                      <Badge variant="success">+{money(sale.profit)}</Badge>
                       <Badge>{paymentMethodLabel(sale.paymentMethod)}</Badge>
                     </div>
                   </div>

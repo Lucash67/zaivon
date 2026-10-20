@@ -1,4 +1,5 @@
 "use client";
+import { useFormatMoney, useMoneyHidden } from "@/hooks/use-hide-money";
 
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -11,7 +12,7 @@ import {
   TrendingUp,
   Trophy,
 } from "lucide-react";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import type { WeekPulse, WeekPulseDay } from "@/lib/week-pulse";
 
 const WEEKDAY_FULL: Record<string, string> = {
@@ -25,7 +26,8 @@ const WEEKDAY_FULL: Record<string, string> = {
 };
 
 /** Sem centavos e sem espaço: cabe nas colunas estreitas do celular. */
-function compactBRL(value: number): string {
+function compactBRL(value: number, hidden: boolean): string {
+  if (hidden) return "R$••••";
   return `R$${Math.round(value).toLocaleString("pt-BR")}`;
 }
 
@@ -90,6 +92,8 @@ function StatCard({
 }
 
 function DayBars({ days }: { days: WeekPulseDay[] }) {
+  const money = useFormatMoney();
+  const moneyHidden = useMoneyHidden();
   const max = Math.max(...days.map((day) => day.revenue), 1);
 
   return (
@@ -101,8 +105,8 @@ function DayBars({ days }: { days: WeekPulseDay[] }) {
             <span className="text-[10px] font-bold text-text-secondary sm:text-[11px]">
               {day.revenue > 0 ? (
                 <>
-                  <span className="lg:hidden">{compactBRL(day.revenue)}</span>
-                  <span className="hidden lg:inline">{formatCurrency(day.revenue)}</span>
+                  <span className="lg:hidden">{compactBRL(day.revenue, moneyHidden)}</span>
+                  <span className="hidden lg:inline">{money(day.revenue)}</span>
                 </>
               ) : (
                 "—"
@@ -122,8 +126,8 @@ function DayBars({ days }: { days: WeekPulseDay[] }) {
             <span className="text-[10px] text-emerald-400/90">
               {day.profit > 0 ? (
                 <>
-                  <span className="lg:hidden">{compactBRL(day.profit)}</span>
-                  <span className="hidden lg:inline">{formatCurrency(day.profit)}</span>
+                  <span className="lg:hidden">{compactBRL(day.profit, moneyHidden)}</span>
+                  <span className="hidden lg:inline">{money(day.profit)}</span>
                 </>
               ) : (
                 "—"
@@ -138,6 +142,7 @@ function DayBars({ days }: { days: WeekPulseDay[] }) {
 
 /** Bloco principal do fim de semana: a semana operada ganha o topo da tela. */
 export function WeekFocusSection({ pulse }: { pulse: WeekPulse }) {
+  const money = useFormatMoney();
   const operated = pulse.days.filter((day) => day.revenue > 0);
   const best = [...operated].sort((a, b) => b.profit - a.profit)[0] ?? null;
   const weakest =
@@ -198,7 +203,7 @@ export function WeekFocusSection({ pulse }: { pulse: WeekPulse }) {
       >
         <StatCard
           label="Faturamento"
-          value={formatCurrency(pulse.revenue)}
+          value={money(pulse.revenue)}
           hint={`${pulse.operationalDays} ${pulse.operationalDays === 1 ? "dia operado" : "dias operados"}`}
           tone="revenue"
           trend={pulse.revenueTrend}
@@ -206,7 +211,7 @@ export function WeekFocusSection({ pulse }: { pulse: WeekPulse }) {
         />
         <StatCard
           label="Lucro"
-          value={formatCurrency(pulse.profit)}
+          value={money(pulse.profit)}
           hint={`${Math.round(pulse.margin)}% de margem`}
           tone="profit"
           trend={pulse.profitTrend}
@@ -230,8 +235,8 @@ export function WeekFocusSection({ pulse }: { pulse: WeekPulse }) {
             pulse.goalRevenue <= 0
               ? "sem meta definida"
               : missingToGoal > 0
-                ? `faltaram ${formatCurrency(missingToGoal)} de ${formatCurrency(pulse.goalRevenue)}`
-                : `meta de ${formatCurrency(pulse.goalRevenue)} batida`
+                ? `faltaram ${money(missingToGoal)} de ${money(pulse.goalRevenue)}`
+                : `meta de ${money(pulse.goalRevenue)} batida`
           }
           tone="goal"
           delay={0.18}
@@ -326,13 +331,13 @@ export function WeekFocusSection({ pulse }: { pulse: WeekPulse }) {
                   Melhor dia
                 </p>
                 <p className="text-sm font-bold capitalize text-text-primary">
-                  {WEEKDAY_FULL[best.label] ?? best.label} · {formatCurrency(best.profit)} de
+                  {WEEKDAY_FULL[best.label] ?? best.label} · {money(best.profit)} de
                   lucro
                 </p>
                 {weakest && weakest.date !== best.date && (
                   <p className="text-[11px] text-text-secondary">
                     Mais fraco: {WEEKDAY_FULL[weakest.label] ?? weakest.label} com{" "}
-                    {formatCurrency(weakest.profit)}
+                    {money(weakest.profit)}
                   </p>
                 )}
               </div>

@@ -3,7 +3,8 @@
 import { motion } from "framer-motion";
 import { type LucideIcon, TrendingDown, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { formatCurrency, formatNumber, formatPercent } from "@/lib/utils";
+import { formatNumber, formatPercent } from "@/lib/utils";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 export type PulseVariant = "gain" | "loss" | "revenue" | "meta" | "info" | "neutral";
 
@@ -80,10 +81,11 @@ export function PulseMetric({
   delay = 0,
   className,
 }: PulseMetricProps) {
+  const money = useFormatMoney();
   const v = VARIANT_STYLES[variant];
   const formatted =
     fmt === "currency"
-      ? formatCurrency(Number(value))
+      ? money(Number(value))
       : fmt === "number"
         ? formatNumber(Number(value))
         : fmt === "percent"

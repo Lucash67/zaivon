@@ -39,21 +39,54 @@ function HojeBody() {
   const rec = recovery(o.debts);
   const ms = monthSummary(o.days, o.settlements, o.plan);
   const failed = checks.filter((c) => c.ok === false);
-  const passed = checks.filter((c) => c.id !== "cofrinho" && c.ok).length;
+  const passed = checks.filter((c) => c.id !== "cofrinho" && c.ok === true).length;
+  const partialOps = checks.filter((c) => c.id !== "cofrinho" && c.ok === null).length;
   const [cl, tone] = closureLabel[day.closure];
 
-  const oldest = [...o.debts].filter((d) => d.status === "open" && d.type !== "investigacao").sort((a, b) => a.originDate.localeCompare(b.originDate))[0];
+  const oldest = [...o.debts]
+    .filter(
+      (d) =>
+        d.status === "open" &&
+        d.type !== "investigacao" &&
+        (!d.deferredUntil || d.deferredUntil <= o.selectedDate),
+    )
+    .sort((a, b) => a.originDate.localeCompare(b.originDate))[0];
+  const deferredOpen = o.debts.filter(
+    (d) => d.status === "open" && d.deferredUntil && d.deferredUntil > o.selectedDate,
+  );
   const inv = o.debts.filter((d) => d.status === "open" && d.type === "investigacao");
   const closing = `${ZAIVON_BASE}/registrar?tab=fechamento`;
   const pendings = `${ZAIVON_BASE}/pendencias`;
   const cofCheck = checks.find((c) => c.id === "cofrinho");
   const actions: { text: string; to: string }[] = [];
-  if (day.closure !== "closed" && day.closure !== "summary") actions.push({ text: "Fechar o dia (fechamento assistido)", to: closing });
-  if (cofCheck?.ok === false) actions.push({ text: `Informar o saldo do cofrinho de ${ddmm(day.date)} — o lucro mudou e o cofrinho ainda não foi atualizado`, to: closing });
-  else if (cofCheck?.ok == null) actions.push({ text: `Informar o saldo do cofrinho de ${ddmm(day.date)}`, to: closing });
+  const fullyClosed = day.closure === "closed" || day.closure === "summary" || day.closure === "closed_with_note";
+  if (!fullyClosed) actions.push({ text: "Fechar o dia (fechamento assistido)", to: closing });
+  if (cofCheck?.ok === false && day.cofrinhoEnd == null) {
+    actions.push({ text: `Informar o saldo do cofrinho de ${ddmm(day.date)}`, to: closing });
+  } else if (cofCheck?.ok === false) {
+    actions.push({
+      text: `Revisar batimento do cofrinho de ${ddmm(day.date)} (saldo já informado — não redepositar)`,
+      to: closing,
+    });
+  } else if (cofCheck?.ok == null && day.cofrinhoEnd == null) {
+    actions.push({ text: `Informar o saldo do cofrinho de ${ddmm(day.date)}`, to: closing });
+  }
   const otherFailed = failed.filter((c) => c.id !== "cofrinho");
   if (otherFailed.length) actions.push({ text: `Revisar: ${otherFailed.map((c) => c.label.toLowerCase()).join(", ")}`, to: closing });
-  if (oldest) actions.push({ text: `Cobrar ${oldest.person} — ${money(oldest.amount - oldest.paid)} desde ${ddmm(oldest.originDate)} (${daysOpen(oldest.originDate, o.selectedDate)} dias)`, to: pendings });
+  if (oldest) {
+    actions.push({
+      text: `Cobrar ${oldest.person} — ${money(oldest.amount - oldest.paid)} desde ${ddmm(oldest.originDate)} (${daysOpen(oldest.originDate, o.selectedDate)} dias)`,
+      to: pendings,
+    });
+  }
+  if (deferredOpen.length) {
+    const names = [...new Set(deferredOpen.map((d) => d.person))];
+    const sum = deferredOpen.reduce((s, d) => s + (d.amount - d.paid), 0);
+    actions.push({
+      text: `Acordo diferido: ${names.join(", ")} — ${money(sum)} (não cobrar agora; ver pendências)`,
+      to: pendings,
+    });
+  }
   if (inv.length) actions.push({ text: `Decidir ${inv.length} itens não identificados (${money(rec.investigacao)})`, to: pendings });
 
   return (
@@ -120,7 +153,11 @@ function HojeBody() {
                 label={FINANCE_LABELS.cashIn.short}
                 value={money(f.cashIn)}
                 formula={FINANCE_LABELS.cashIn.formula}
-                explain={`${money(f.received)} do dia + ${money(f.settlements)} quitações`}
+                explain={
+                  f.otherInflows > 0
+                    ? `${money(f.received)} do dia + ${money(f.settlements)} quitações + ${money(f.otherInflows)} outras`
+                    : `${money(f.received)} do dia + ${money(f.settlements)} quitações`
+                }
               />
               <Kpi label="Meu custo" tone="third" value={money(f.ownCost)} formula="O que saiu do meu bolso hoje (terceiros não entram)" explain={`Terceiros: ${money(f.thirdPartyCost)}`} />
               <Kpi label="A recuperar" tone="pending" value={money(rec.total)} formula="Fiados + parceiros + investigação (em aberto)" explain={`${money(rec.identified)} identificados + ${money(rec.investigacao)} investigação`} />
@@ -143,13 +180,26 @@ function HojeBody() {
           <DayReconciliationPanel finance={f} dayClosing={day.dayClosing} cofrinhoEnd={day.cofrinhoEnd} />
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            <Panel title="Batimentos" subtitle={`${passed}/2 operacionais OK`} className="lg:col-span-2">
+            <Panel
+              title="Batimentos"
+              subtitle={
+                partialOps
+                  ? `${passed}/2 OK · ${partialOps} parcial/pendente`
+                  : `${passed}/2 operacionais OK`
+              }
+              className="lg:col-span-2"
+            >
               <div className="grid gap-2">{checks.map((c) => <CheckRow key={c.id} c={c} />)}</div>
             </Panel>
             <Panel title="Ritmo da meta" subtitle={`${o.plan.label} · ${ms.closedDays} de ${ms.totalDays} dias de venda`}>
               <div className="num text-2xl font-semibold">{money(ms.bank)} <span className="text-sm text-o-muted-foreground">de {money(o.plan.goal)}</span></div>
               <div className="my-3"><Progress value={ms.pctGoal} tone="ok" /></div>
-              <p className="text-xs text-o-muted-foreground">{pctFmt(ms.pctGoal, false)} da meta no banco. Precisa de <strong className="text-o-foreground">{money(ms.neededPerDay)}/dia</strong> nos {ms.remainingDays} dias restantes (alvo {money(o.plan.dailyTarget)}).</p>
+              <p className="text-xs text-o-muted-foreground">
+                {pctFmt(ms.pctGoal, false)} da meta no <strong className="text-o-foreground">banco do mês</strong>{" "}
+                (último cofrinho − início do mês). Precisa de{" "}
+                <strong className="text-o-foreground">{money(ms.neededPerDay)}/dia</strong> nos {ms.remainingDays} dias
+                restantes (alvo {money(o.plan.dailyTarget)}). Não usa lucro por competência nem o caixa de um único dia.
+              </p>
               <Link href={`${ZAIVON_BASE}/planejamento`} className={buttonClass("link", "default", "mt-1 h-auto p-0")}>Ver planejamento <ArrowRight className="size-3" /></Link>
             </Panel>
           </div>
@@ -172,8 +222,11 @@ function HojeBody() {
           </Panel>
 
           {day.registeredSales?.length ? (
-            <Panel title="Vendas gravadas no dia" subtitle="Detalhe do sistema. O lucro do dia vem do diário (resumo do dia).">
-              <RegisteredSalesList sales={day.registeredSales} />
+            <Panel
+              title="Vendas gravadas no dia"
+              subtitle="Cadastro operacional. Caixa e competência vêm do dayClosing — não use o total abaixo como entrada no caixa."
+            >
+              <RegisteredSalesList sales={day.registeredSales} dayClosing={day.dayClosing} />
             </Panel>
           ) : null}
         </div>

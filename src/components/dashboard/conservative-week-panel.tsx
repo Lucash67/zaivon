@@ -1,9 +1,10 @@
 "use client";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Shield } from "lucide-react";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import type { ConservativeWeekForecast } from "@/lib/conservative-week-forecast";
 
 /** Painel de domingo: projeção conservadora seg–sex. */
@@ -14,6 +15,7 @@ export function ConservativeWeekPanel({
   forecast: ConservativeWeekForecast;
   className?: string;
 }) {
+  const money = useFormatMoney();
   const maxRevenue = Math.max(...forecast.days.map((day) => day.revenue), 1);
 
   return (
@@ -39,7 +41,7 @@ export function ConservativeWeekPanel({
             Faturamento
           </p>
           <p className="text-2xl font-black leading-tight text-emerald-300">
-            {formatCurrency(forecast.revenue)}
+            {money(forecast.revenue)}
           </p>
         </div>
         <div className="min-w-0 text-right">
@@ -47,13 +49,13 @@ export function ConservativeWeekPanel({
             Lucro
           </p>
           <p className="text-lg font-bold leading-tight text-brand-yellow">
-            {formatCurrency(forecast.profit)}
+            {money(forecast.profit)}
           </p>
         </div>
       </div>
 
       <p className="mt-1 text-[11px] text-text-secondary">
-        {forecast.units} un · ~{formatCurrency(forecast.dailyProfit)}/dia ·{" "}
+        {forecast.units} un · ~{money(forecast.dailyProfit)}/dia ·{" "}
         {forecast.days.length} dias úteis
       </p>
 
@@ -61,7 +63,7 @@ export function ConservativeWeekPanel({
         {forecast.days.map((day, index) => (
           <div
             key={day.date}
-            title={`${day.label} · ${formatCurrency(day.revenue)} · lucro ${formatCurrency(day.profit)}`}
+            title={`${day.label} · ${money(day.revenue)} · lucro ${money(day.profit)}`}
             className="flex min-w-0 flex-1 flex-col items-center gap-1"
           >
             <div className="flex h-8 w-full items-end overflow-hidden rounded-[4px] bg-surface-hover/60">

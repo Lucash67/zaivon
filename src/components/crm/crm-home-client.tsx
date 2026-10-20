@@ -125,12 +125,6 @@ export function CrmHomeClient() {
           <ArrowRight className="h-4 w-4" />
         </Link>
         <Link
-          href="/crm/notas"
-          className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-[#F5F6FA] hover:bg-white/10"
-        >
-          Notas
-        </Link>
-        <Link
           href="/crm/mensagens"
           className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-[#F5F6FA] hover:bg-white/10"
         >

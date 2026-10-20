@@ -12,7 +12,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { formatCurrency } from "@/lib/utils";
+import { useFormatMoney, useMoneyHidden } from "@/hooks/use-hide-money";
 import { HUB_COLORS } from "@/constants/hub-brand";
 
 interface ComparePoint {
@@ -42,7 +42,10 @@ export function CompareSeriesChart({
   currentName = "Semana atual",
   currency = true,
 }: CompareSeriesChartProps) {
-  const fmt = (v: number) => (currency ? formatCurrency(v) : String(v));
+  const money = useFormatMoney();
+  const moneyHidden = useMoneyHidden();
+  const fmt = (v: number) => (currency ? money(v) : String(v));
+  const axisFmt = (v: number) => (currency && moneyHidden ? "••" : fmt(v));
 
   return (
     <div className="rounded-2xl border border-z-primary/15 bg-surface-card p-4 sm:p-5">
@@ -55,7 +58,7 @@ export function CompareSeriesChart({
           <LineChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-border)" />
             <XAxis dataKey="label" tick={{ fontSize: 12, fill: "var(--text-muted)" }} />
-            <YAxis tick={{ fontSize: 11, fill: "var(--text-muted)" }} width={48} />
+            <YAxis tick={{ fontSize: 11, fill: "var(--text-muted)" }} width={48} tickFormatter={axisFmt} />
             <Tooltip
               formatter={(value: number, name: string) => [fmt(value), name]}
               contentStyle={{
@@ -86,7 +89,7 @@ export function CompareSeriesChart({
           <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-border)" />
             <XAxis dataKey="label" tick={{ fontSize: 12, fill: "var(--text-muted)" }} />
-            <YAxis tick={{ fontSize: 11, fill: "var(--text-muted)" }} width={48} />
+            <YAxis tick={{ fontSize: 11, fill: "var(--text-muted)" }} width={48} tickFormatter={axisFmt} />
             <Tooltip
               formatter={(value: number, name: string) => [fmt(value), name]}
               contentStyle={{

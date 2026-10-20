@@ -1,7 +1,8 @@
 "use client";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 import { motion } from "framer-motion";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 export interface DayPulse {
   revenue: number;
@@ -20,6 +21,7 @@ export function DayPulsePanel({
   pulse: DayPulse;
   className?: string;
 }) {
+  const money = useFormatMoney();
   const hasGoal = (pulse.goalRevenue ?? 0) > 0;
   const progress = pulse.goalProgress ?? 0;
 
@@ -40,7 +42,7 @@ export function DayPulsePanel({
             Faturamento
           </p>
           <p className="text-2xl font-black leading-tight text-brand-yellow">
-            {formatCurrency(pulse.revenue)}
+            {money(pulse.revenue)}
           </p>
         </div>
         <div className="min-w-0 text-right">
@@ -48,7 +50,7 @@ export function DayPulsePanel({
             Lucro
           </p>
           <p className="text-lg font-bold leading-tight text-emerald-400">
-            {formatCurrency(pulse.profit)}
+            {money(pulse.profit)}
           </p>
         </div>
       </div>
@@ -66,7 +68,7 @@ export function DayPulsePanel({
           <div className="flex items-center justify-between gap-2 text-[10px]">
             <span className="text-text-muted">Meta do dia</span>
             <span className="font-bold text-text-secondary">
-              {Math.round(progress)}% de {formatCurrency(pulse.goalRevenue ?? 0)}
+              {Math.round(progress)}% de {money(pulse.goalRevenue ?? 0)}
             </span>
           </div>
           <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-surface-hover">

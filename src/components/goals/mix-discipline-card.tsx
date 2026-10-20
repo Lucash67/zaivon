@@ -1,7 +1,7 @@
 "use client";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 import { cn } from "@/components/ui/utils";
-import { formatCurrency } from "@/lib/utils";
 import type { SmartGoalsView } from "@/lib/smart-goals-view";
 import { Check, CircleAlert, Scale } from "lucide-react";
 import { motion } from "framer-motion";
@@ -38,10 +38,11 @@ function Row({
   ok: boolean;
   format?: "units" | "currency";
 }) {
+  const money = useFormatMoney();
   const pct = target > 0 ? Math.min(100, (current / target) * 100) : 0;
   const display =
     format === "currency"
-      ? `${formatCurrency(current)} / ${formatCurrency(target)}`
+      ? `${money(current)} / ${money(target)}`
       : `${current} / ${target} un.`;
 
   return (

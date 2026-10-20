@@ -1,9 +1,10 @@
 "use client";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 import { motion } from "framer-motion";
 import { Check, TrendingUp } from "lucide-react";
 import { cn } from "@/components/ui/utils";
-import { formatCurrency, formatNumber } from "@/lib/utils";
+import { formatNumber } from "@/lib/utils";
 import type { ForecastScenario, ForecastScenarioKey } from "@/lib/month-close-view";
 
 interface ScenarioCardProps {
@@ -27,6 +28,7 @@ export function ScenarioCard({
   onSelect,
   delay = 0,
 }: ScenarioCardProps) {
+  const money = useFormatMoney();
   return (
     <motion.button
       type="button"
@@ -53,7 +55,7 @@ export function ScenarioCard({
             )}
           </div>
           <p className="mt-1 text-xs text-text-muted">
-            {scenario.daysOperated} dias úteis · {formatCurrency(scenario.dailyRevenue)}/dia
+            {scenario.daysOperated} dias úteis · {money(scenario.dailyRevenue)}/dia
           </p>
         </div>
         <span
@@ -72,7 +74,7 @@ export function ScenarioCard({
         <div>
           <p className="text-xs text-text-muted">Lucro previsto</p>
           <p className="text-2xl font-bold tracking-tight text-brand-green">
-            {formatCurrency(scenario.profit)}
+            {money(scenario.profit)}
           </p>
           <p className="mt-0.5 flex items-center gap-1 text-xs font-medium text-brand-green">
             <TrendingUp className="h-3 w-3" />
@@ -83,7 +85,7 @@ export function ScenarioCard({
         <div className="grid grid-cols-2 gap-3 border-t border-surface-border pt-3 text-xs">
           <div>
             <p className="text-text-muted">Faturamento</p>
-            <p className="font-semibold text-text-primary">{formatCurrency(scenario.revenue)}</p>
+            <p className="font-semibold text-text-primary">{money(scenario.revenue)}</p>
           </div>
           <div>
             <p className="text-text-muted">Unidades</p>
@@ -96,7 +98,7 @@ export function ScenarioCard({
           <div>
             <p className="text-text-muted">Seu capital</p>
             <p className="font-semibold text-text-primary">
-              {formatCurrency(scenario.ownCapitalNeeded)}
+              {money(scenario.ownCapitalNeeded)}
             </p>
           </div>
         </div>

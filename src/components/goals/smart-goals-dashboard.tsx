@@ -1,4 +1,5 @@
 "use client";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 import { HeroMetric } from "@/components/executive/hero-metric";
 import { GoalPeriodCard } from "@/components/goals/goal-period-card";
@@ -8,7 +9,7 @@ import { GoalSimulator } from "@/components/goals/goal-simulator";
 import { GoalMotivationPanel } from "@/components/goals/goal-motivation-panel";
 import { GoalTargetEditor } from "@/components/goals/goal-target-editor";
 import { MixDisciplineCard } from "@/components/goals/mix-discipline-card";
-import { formatCurrency, formatPercent } from "@/lib/utils";
+import { formatPercent } from "@/lib/utils";
 import type { SmartGoalsView } from "@/lib/smart-goals-view";
 import { Target, Calendar, CalendarDays, TrendingUp } from "lucide-react";
 
@@ -17,6 +18,7 @@ interface SmartGoalsDashboardProps {
 }
 
 export function SmartGoalsDashboard({ view }: SmartGoalsDashboardProps) {
+  const money = useFormatMoney();
   const { daily, weekly, monthly } = view;
 
   return (
@@ -60,7 +62,7 @@ export function SmartGoalsDashboard({ view }: SmartGoalsDashboardProps) {
           format="currency"
           trend={monthly.previousMonthChangePercent}
           trendLabel="vs mês anterior"
-          subtext={`Lucro projetado: ${formatCurrency(monthly.projectionProfit)}`}
+          subtext={`Lucro projetado: ${money(monthly.projectionProfit)}`}
         />
       </div>
 
@@ -88,11 +90,11 @@ export function SmartGoalsDashboard({ view }: SmartGoalsDashboardProps) {
             <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
               <div>
                 <p className="text-text-muted">Projeção receita</p>
-                <p className="font-semibold">{formatCurrency(monthly.projectionRevenue)}</p>
+                <p className="font-semibold">{money(monthly.projectionRevenue)}</p>
               </div>
               <div>
                 <p className="text-text-muted">Mês anterior</p>
-                <p className="font-semibold">{formatCurrency(monthly.previousMonthRevenue)}</p>
+                <p className="font-semibold">{money(monthly.previousMonthRevenue)}</p>
               </div>
               <div>
                 <p className="text-text-muted">vs anterior</p>
