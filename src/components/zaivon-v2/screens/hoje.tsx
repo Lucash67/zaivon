@@ -80,7 +80,7 @@ function HojeBody() {
     });
   }
   if (deferredOpen.length) {
-    const names = [...new Set(deferredOpen.map((d) => d.person))];
+    const names = Array.from(new Set(deferredOpen.map((d) => d.person)));
     const sum = deferredOpen.reduce((s, d) => s + (d.amount - d.paid), 0);
     actions.push({
       text: `Acordo diferido: ${names.join(", ")} — ${money(sum)} (não cobrar agora; ver pendências)`,

@@ -156,3 +156,35 @@ export const crmMessageDrafts = crmSchema.table(
     contactIdx: index("idx_crm_messages_contact").on(t.contactId),
   }),
 );
+
+/** Notas rápidas do CRM (isoladas de public.sticky_notes). */
+export const crmStickyNotes = crmSchema.table(
+  "sticky_notes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => crmWorkspaces.id, { onDelete: "cascade" }),
+    userId: uuid("user_id").notNull(),
+    title: text("title").notNull().default(""),
+    body: text("body").notNull().default(""),
+    color: text("color").notNull().default("default"),
+    noteDate: date("note_date"),
+    pinned: boolean("pinned").notNull().default(false),
+    archived: boolean("archived").notNull().default(false),
+    sortOrder: integer("sort_order").notNull().default(0),
+    clientUpdatedAt: timestamp("client_updated_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    wsUserIdx: index("idx_crm_notes_ws_user").on(t.workspaceId, t.userId),
+    wsUserArchivedIdx: index("idx_crm_notes_ws_user_archived").on(
+      t.workspaceId,
+      t.userId,
+      t.archived,
+    ),
+    wsUserUpdatedIdx: index("idx_crm_notes_ws_user_updated").on(t.workspaceId, t.userId, t.clientUpdatedAt),
+    wsUserDateIdx: index("idx_crm_notes_ws_user_date").on(t.workspaceId, t.userId, t.noteDate),
+  }),
+);
