@@ -20,7 +20,7 @@ export function ZaivonRoot({ children }: { children: ReactNode }) {
     <AppShell title={`ZAIVON v2 · ${page}`} subtitle="5 dimensões: faturamento · caixa · competência · resultado caixa · cofrinho">
       <div
         className={cn(
-          "zaivon2 -m-3 min-h-[calc(100dvh-56px)] bg-o-background font-zaivon text-o-foreground sm:-m-5 lg:-m-6 lg:min-h-[calc(100dvh-64px)]",
+          "zaivon2 -m-3 min-h-[calc(100dvh-56px)] bg-o-background font-sans text-o-foreground sm:-m-5 lg:-m-6 lg:min-h-[calc(100dvh-64px)]",
           light && "zaivon2-light",
         )}
       >
