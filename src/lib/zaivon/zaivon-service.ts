@@ -2,7 +2,15 @@ import { and, asc, eq, gte, inArray, lte } from "drizzle-orm";
 import { getPostgresDb } from "@/platform/db";
 import { toDbBusinessId } from "@/platform/db/business-id";
 import { queryAll, queryRun } from "@/platform/db/query";
-import { clients, dailyInvestments, products, saleItems, sales } from "@/lib/db/postgres/schema";
+import {
+  clients,
+  dailyInvestments,
+  diaryEntries,
+  operationDays,
+  products,
+  saleItems,
+  sales,
+} from "@/lib/db/postgres/schema";
 import { listSettingsMap, upsertSetting } from "@/platform/db/repositories/settings-repository";
 import { createClient, listClientsRaw } from "@/platform/db/repositories/client-repository";
 import { createProduct, listProducts } from "@/platform/db/repositories/product-repository";
@@ -288,27 +296,44 @@ async function loadMonthSales(month: string): Promise<Map<string, RegisteredSale
   return byDate;
 }
 
+/** Meses com diário — query leve (só datas), sem narrative/relacionados. */
+async function listAvailableDiaryMonths(): Promise<string[]> {
+  const db = await getPostgresDb();
+  const rows = await queryAll(
+    db
+      .select({ date: operationDays.operationDate })
+      .from(operationDays)
+      .innerJoin(diaryEntries, eq(diaryEntries.operationDayId, operationDays.id))
+      .where(eq(operationDays.businessId, toDbBusinessId(BUSINESS)))
+      .orderBy(asc(operationDays.operationDate)),
+  );
+  return Array.from(new Set(rows.map((r) => monthKey(r.date))));
+}
+
 export async function getZaivonData(requestedMonth?: string): Promise<ZaivonData> {
   const today = todayFortaleza();
   const month = requestedMonth && /^\d{4}-\d{2}$/.test(requestedMonth) ? requestedMonth : monthKey(today);
   const prevMonth = previousMonthKey(month);
   const from = `${prevMonth}-01`;
+  const to = lastDayOfMonth(month);
 
-  const [allEntries, meta, salesData, monthSales] = await Promise.all([
-    listDiaryEntries(BUSINESS),
-    readMeta(),
-    loadSalesForZaivon(from),
-    loadMonthSales(month),
-  ]);
-  const entries = allEntries.filter((e) => e.date >= from && e.date <= lastDayOfMonth(month));
+  // Sequencial de propósito: pool serverless max=3. Promise.all com
+  // listDiaryEntries + sales estoura conexões e vira statement_timeout eterno no /v2.
+  const entries = await listDiaryEntries(BUSINESS, from, to);
+  const meta = await readMeta();
+  const salesData = await loadSalesForZaivon(from);
+  const monthSales = await loadMonthSales(month);
+  const monthKeys = await listAvailableDiaryMonths();
+
   const monthEntries = entries.filter((e) => e.date.startsWith(month));
   const plan = resolvePlan(
     month,
     monthEntries.reduce((s, e) => s + deriveDiaryTotalProfit(e), 0),
     monthEntries.length,
   );
-  const monthsWithData = new Set(allEntries.map((e) => monthKey(e.date)));
+  const monthsWithData = new Set(monthKeys);
   monthsWithData.add(monthKey(today));
+  monthsWithData.add(month);
   const availableMonths = Array.from(monthsWithData)
     .sort()
     .reverse()

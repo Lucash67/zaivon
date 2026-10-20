@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { useZaivon } from "@/components/zaivon-v2/store";
@@ -11,6 +12,8 @@ import { DayReconciliationPanel } from "@/components/zaivon-v2/day-reconciliatio
 import { buttonClass } from "@/components/zaivon-v2/primitives";
 import { ZAIVON_BASE } from "@/components/zaivon-v2/app-shell";
 import { HideMoneyScope, ScreenHideMoneyButton, useScreenHideMoney } from "@/components/zaivon-v2/hide-money";
+import { ZaivonPulse } from "@/components/dashboard/zaivon-pulse";
+import { buildZaivonPulse } from "@/lib/zaivon-pulse";
 import { FINANCE_LABELS, PROVISIONAL_HINT } from "@/lib/finance/labels";
 
 const closureLabel = {
@@ -89,6 +92,34 @@ function HojeBody() {
   }
   if (inv.length) actions.push({ text: `Decidir ${inv.length} itens não identificados (${money(rec.investigacao)})`, to: pendings });
 
+  const pulse = useMemo(
+    () =>
+      buildZaivonPulse({
+        focusDate: day.date,
+        isToday: day.date === o.today,
+        diary: day.dayClosing
+          ? ({ dayClosing: day.dayClosing, revenue: undefined, profit: undefined } as never)
+          : exists
+            ? ({
+                revenue: {
+                  received: f.cashIn,
+                  pending: f.newCredit,
+                  total: f.competenceRevenue,
+                },
+                profit: f.competenceProfit,
+              } as never)
+            : null,
+        fallback: {
+          revenue: f.competenceRevenue,
+          profit: f.competenceProfit,
+          cashIn: f.cashIn,
+          newCredit: f.newCredit,
+        },
+        isRecord: false,
+      }),
+    [day.date, day.dayClosing, exists, f.cashIn, f.competenceProfit, f.competenceRevenue, f.newCredit, o.today],
+  );
+
   return (
     <div className="mx-auto max-w-6xl">
       <PageHeader
@@ -102,6 +133,9 @@ function HojeBody() {
           </div>
         }
       />
+
+      <ZaivonPulse pulse={pulse} hideMoneyScreen="v2-hoje" className="mb-4" />
+
       {!exists ? (
         <Panel>
           <div className="py-8 text-center">

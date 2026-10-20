@@ -5,7 +5,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { getFirstName, getTimeGreeting, resolveUserTimeZone } from "@/lib/time-greeting";
 import { useSessionUser } from "@/hooks/use-session-user";
-import { useHideMoney } from "@/hooks/use-hide-money";
+import { useHideMoney, type HideMoneyScreen } from "@/hooks/use-hide-money";
 import { formatCurrency } from "@/lib/utils";
 import {
   PULSE_METRIC_META,
@@ -16,6 +16,8 @@ import {
 interface ZaivonPulseProps {
   pulse: ZaivonPulseView;
   className?: string;
+  /** Escopo do olhinho (dashboard ou v2-hoje). */
+  hideMoneyScreen?: HideMoneyScreen;
 }
 
 function formatPulseMoney(
@@ -26,9 +28,9 @@ function formatPulseMoney(
   return mask(formatCurrency)(value);
 }
 
-export function ZaivonPulse({ pulse, className }: ZaivonPulseProps) {
+export function ZaivonPulse({ pulse, className, hideMoneyScreen = "dashboard" }: ZaivonPulseProps) {
   const { data: user } = useSessionUser();
-  const { maskMoney } = useHideMoney("dashboard");
+  const { maskMoney } = useHideMoney(hideMoneyScreen);
   const reduceMotion = useReducedMotion();
   const firstName = getFirstName(user?.name ?? "Lucas");
   const [greeting, setGreeting] = useState("Boa noite");
