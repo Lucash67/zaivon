@@ -18,12 +18,15 @@ import { isViewingToday, useTemporalViewContext } from "@/stores/temporal-contex
 import { useBusinessScope } from "@/hooks/use-business-scope";
 import type { OperationalDiaryEntry } from "@/lib/diary/types";
 import type { WeekPulse } from "@/lib/week-pulse";
+import type { ZaivonPulseView } from "@/lib/zaivon-pulse";
 import { temporalQueryParams } from "@/lib/temporal-filter";
+import { ZaivonPulse } from "@/components/dashboard/zaivon-pulse";
 
 interface DashboardViewPayload {
   data: DashboardViewData;
   diaryEntry: OperationalDiaryEntry | null;
   autoInsights: DiaryAutoInsight[];
+  pulse?: ZaivonPulseView | null;
   weekPulse?: WeekPulse | null;
   context?: {
     mode: "day" | "general" | "range";
@@ -150,6 +153,8 @@ export default function DashboardPage() {
       actions={headerActions}
     >
       <DashboardWelcomeBanner viewDate={context.mode === "day" ? context.viewDate : null} />
+
+      {payload.pulse && <ZaivonPulse pulse={payload.pulse} className="mb-5" />}
 
       <div className="dashboard-mesh -mx-1 rounded-3xl px-1 py-1 sm:mx-0 sm:px-0">
         <DashboardGeneralView

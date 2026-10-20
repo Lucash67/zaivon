@@ -37,7 +37,10 @@ export function DayReconciliationPanel({ finance, dayClosing, cofrinhoEnd }: Pro
     {
       label: FINANCE_LABELS.cashIn.short,
       value: money(finance.cashIn),
-      note: `${money(finance.received)} vendas do dia + ${money(finance.settlements)} quitações.`,
+      note:
+        finance.otherInflows > 0
+          ? `${money(finance.received)} vendas do dia + ${money(finance.settlements)} quitações + ${money(finance.otherInflows)} outras (ex.: crédito sem origem).`
+          : `${money(finance.received)} vendas do dia + ${money(finance.settlements)} quitações.`,
     },
     {
       label: FINANCE_LABELS.competenceProfit.short,
@@ -93,7 +96,10 @@ export function DayReconciliationPanel({ finance, dayClosing, cofrinhoEnd }: Pro
       <ul className="mt-3 grid gap-1.5 text-xs text-o-muted-foreground">
         <li>
           Faturamento − caixa = {money(gapFatCash)}
-          {dc ? ` (fiados novos ${money(dc.newCredit)} − quitações ${money(dc.cash.priorSettlements)})` : ""}.
+          {dc
+            ? ` (fiados novos ${money(dc.newCredit)} − quitações ${money(dc.cash.priorSettlements)}${dc.cash.otherInflows ? ` − outras ${money(dc.cash.otherInflows)}` : ""})`
+            : ""}
+          .
         </li>
         <li>
           Lucro competência − resultado caixa = {money(gapCompCash)}

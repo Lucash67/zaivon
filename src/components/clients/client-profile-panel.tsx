@@ -1,7 +1,8 @@
 "use client";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 import type { ComponentType } from "react";
-import { formatCurrency, formatDate, formatDateTime, paymentMethodLabel } from "@/lib/utils";
+import { formatDate, formatDateTime, paymentMethodLabel } from "@/lib/utils";
 import { SectionPanel } from "@/components/executive/section-panel";
 import { ClientBadgeChip } from "./client-badge";
 import type { ClientCrmProfile } from "@/lib/client-crm-service";
@@ -57,6 +58,7 @@ function MetricCard({
 }
 
 export function ClientProfilePanel({ profile }: ClientProfilePanelProps) {
+  const money = useFormatMoney();
   const { client, summary, behavior, relationship, timeline, insights, suggestedAction } = profile;
 
   return (
@@ -74,9 +76,9 @@ export function ClientProfilePanel({ profile }: ClientProfilePanelProps) {
 
       <SectionPanel theme="clients" title="Resumo">
         <div className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-3">
-          <MetricCard label="Total gasto" value={formatCurrency(summary.totalReceived)} icon={ShoppingBag} accent />
+          <MetricCard label="Total gasto" value={money(summary.totalReceived)} icon={ShoppingBag} accent />
           <MetricCard label="Compras" value={String(summary.purchaseCount)} icon={Repeat} />
-          <MetricCard label="Ticket médio" value={formatCurrency(summary.averageTicket)} icon={Receipt} />
+          <MetricCard label="Ticket médio" value={money(summary.averageTicket)} icon={Receipt} />
           <MetricCard
             label="Última compra"
             value={summary.lastPurchaseRelative}
@@ -91,7 +93,7 @@ export function ClientProfilePanel({ profile }: ClientProfilePanelProps) {
         </div>
         {summary.pendingAmount > 0 && (
           <p className="mt-3 rounded-lg border border-brand-orange/20 bg-brand-orange/5 px-3 py-2 text-sm text-brand-orange">
-            Pagamento pendente: {formatCurrency(summary.pendingAmount)}
+            Pagamento pendente: {money(summary.pendingAmount)}
           </p>
         )}
       </SectionPanel>
@@ -182,12 +184,12 @@ export function ClientProfilePanel({ profile }: ClientProfilePanelProps) {
                         {sale.paymentStatus === "pending" ? " · Pendente" : ""}
                       </p>
                     </div>
-                    <p className="shrink-0 text-sm font-bold text-blue-400">{formatCurrency(sale.totalAmount)}</p>
+                    <p className="shrink-0 text-sm font-bold text-blue-400">{money(sale.totalAmount)}</p>
                   </div>
                   <ul className="mt-2 space-y-1">
                     {sale.items.map((item, itemIndex) => (
                       <li key={itemIndex} className="text-xs text-text-secondary">
-                        {item.quantity}× {item.productName} · {formatCurrency(item.subtotal)}
+                        {item.quantity}× {item.productName} · {money(item.subtotal)}
                       </li>
                     ))}
                   </ul>

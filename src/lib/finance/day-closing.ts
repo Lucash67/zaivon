@@ -16,7 +16,7 @@ export interface DayClosingCashBreakdown {
   salesReceived: number;
   /** Quitações de dívidas de dias anteriores que entraram neste dia. */
   priorSettlements: number;
-  /** Outras entradas (bonificação em dinheiro, etc.). */
+  /** Outras entradas já no caixa (bonificação, crédito sem origem classificada, etc.). */
   otherInflows: number;
   /** Total efetivo no caixa/banco. */
   cashIn: number;
@@ -57,7 +57,7 @@ export interface CashAtCloseReconstruction {
   /** Vendas do dia que já estavam pagas no encerramento. */
   daySalesPaidAtClose: number;
   priorSettlements: number;
-  /** daySalesPaidAtClose + priorSettlements. */
+  /** daySalesPaidAtClose + priorSettlements (+ otherInflows quando houver). */
   reconstructedCash: number;
   /**
    * Soma enganosa se lida hoje: inclui quitações posteriores
@@ -107,6 +107,28 @@ export interface DayClosingFinance {
     classification: string;
     note: string;
   }>;
+  /**
+   * Batimento operacional por resumo (quando não há lines[] unitárias).
+   * Permite distinguir salgados conciliados de sanduíches ainda pendentes.
+   */
+  operationalAudit?: {
+    salgados?: {
+      initial: number;
+      paidUnits: number;
+      lostUnits: number;
+      final: number;
+      status: "ok" | "pending" | "diverged";
+      note?: string;
+    };
+    sandwiches?: {
+      initial: number;
+      ownConsumption: number;
+      countedAt?: string;
+      counted: number;
+      status: "ok" | "pending" | "diverged";
+      note?: string;
+    };
+  };
 }
 
 export function roundMoney(n: number): number {
@@ -137,6 +159,7 @@ export function buildDayClosing(input: {
   provisionalCompetence?: ProvisionalCompetencePair;
   cashAtClose?: CashAtCloseReconstruction;
   historicalWriteOffs?: DayClosingFinance["historicalWriteOffs"];
+  operationalAudit?: DayClosingFinance["operationalAudit"];
 }): DayClosingFinance {
   const otherInflows = input.otherInflows ?? 0;
   const cashIn = roundMoney(input.salesReceived + input.priorSettlements + otherInflows);
@@ -206,6 +229,7 @@ export function buildDayClosing(input: {
     provisionalCompetence: input.provisionalCompetence,
     cashAtClose: input.cashAtClose,
     historicalWriteOffs: input.historicalWriteOffs,
+    operationalAudit: input.operationalAudit,
   };
 }
 
@@ -369,3 +393,268 @@ export const CLOSING_2026_10_14 = buildDayClosing({
     "Depósito efetivo ao cofrinho = resultado gerencial de caixa (R$131), não o lucro por competência (R$151).",
   ],
 });
+
+/**
+ * Fechamento 15/10/2026 — caixa/cofrinho/depósito CONFIRMADOS; competência PROVISÓRIA.
+ *
+ * Confirmados: 27 Pix R$217 · quitações R$25 · fiados novos R$25 · meu custo R$110 ·
+ * resultado caixa R$107 · depósito R$107 · cofrinho R$4.725,44 · 0 salgados · 16 sanduíches.
+ *
+ * Provisórios: faturamento R$198 · lucro competência R$88 · recebimentos estimados do dia R$173.
+ * Ressalvas: R$19 crédito sem origem (otherInflows; NÃO criar venda/fiado/perda) ·
+ * 2 saídas de sanduíche sem vínculo individual (na receita provisória de R$28, sem venda nominal).
+ */
+export const CLOSING_2026_10_15 = buildDayClosing({
+  date: "2026-10-15",
+  competenceStatus: "provisional",
+  competenceRevenue: 198,
+  salesReceived: 173,
+  priorSettlements: 25,
+  otherInflows: 19,
+  ownCost: 110,
+  thirdPartyCost: 0,
+  newCredit: 25,
+  lossesAmount: 0,
+  lossesUnits: 0,
+  stockRemainingUnits: 16,
+  piggyOpening: 4618.44,
+  piggyDeposit: 107,
+  bankYield: 0,
+  piggyClosing: 4725.44,
+  ownCostPaymentDates: [
+    {
+      date: "2026-10-15",
+      amount: 110,
+      note: "Custo próprio informado no fechamento (encomenda 34 salgados; sanduíches já em estoque).",
+    },
+  ],
+  provisionalCompetence: {
+    status: "provisional",
+    fromDiary: {
+      revenue: 198,
+      profit: 88,
+      formula: "Fechamento: salgados 170 + sanduíches provisórios 28 − ownCost 110 = 88 (PROVISÓRIO)",
+    },
+    fromIdentifiedSales: {
+      revenue: 184,
+      profit: 74,
+      formula: "Salgados 170 + Anderson 2 sanduíches Acal 14 = 184 − ownCost 110 = 74 (sem 2 saídas sanduíche sem vínculo)",
+    },
+    gap: 14,
+  },
+  cashAtClose: {
+    diaryCash: 217,
+    daySalesPaidAtClose: 173,
+    priorSettlements: 25,
+    reconstructedCash: 217,
+    currentPaidSnapshot: 173,
+    gaps: [
+      "Pix total 217 = vendas estimadas 173 + quitações 25 + crédito sem origem 19.",
+      "Crédito R$19: NÃO criar venda, fiado, perda nem segunda entrada bancária.",
+      "Quitações 15/10 R$25 já no sistema (Sarah 5 + Anderson 10 + NI 5 + Paulo André 5 de 14/10).",
+    ],
+  },
+  extraNotes: [
+    "Status: ENCERRADO COM RESSALVA — competência provisória; caixa/cofrinho confirmados.",
+    "HOMOLOGADO 19/10/2026: ownCost 110 · caixa 217 · resultado 107 · otherInflows 19 · depósito 107 · cofrinho 4725,44 — NÃO alterar por sanduíches de 16/10.",
+    "27 Pix R$217 confirmados. Suellen 12:36: dois Pix R$5 separados preservados.",
+    "Anderson Pix R$24 = quitação R$10 (14/10) + 2 sanduíches Acal R$14 (15/10).",
+    "Henrique Pix R$15 inclui espécie NI R$5 (quitação 14/10) — não gerar segundo recebimento.",
+    "Sanduíches: redução física 4 (20→16); só Anderson 2 un identificadas; 2 un sem vínculo individual.",
+    "Ponte estoque 14→15: fim 14/10 = 2 un · início adotado 15/10 = 20 un (+18) SEM entrada de produção comprovada — NÃO criar compra retroativa.",
+    "ownCost 110 = só salgados (34 un). Sanduíches já em estoque — sem reconhecimento de produção neste dia.",
+    "João Lucas fiado 13/10 R$5: não duplicar como venda em 15/10.",
+    "Depósito cofrinho = resultado gerencial de caixa R$107 (não o lucro por competência R$88).",
+    "Não afetar fechamento de 16/10.",
+  ],
+});
+
+/**
+ * Fechamento 16/10/2026 — PARCIALMENTE CONCILIADO (sanduíches aguardam 19/10).
+ *
+ * Confirmados: caixa R$207 (vendas 154 + quitações 53) · custo salgados R$93,30 ·
+ * depósito cofrinho R$127 REALIZADO · saldo R$4.854,52 · salgados 29→0 · 1 perda recuperável R$5.
+ *
+ * Provisório: competência (sanduíches incompletos) · estoque sanduíches 7 às 16h (Natália incerta).
+ * Não forçar resultado caixa (113,70) = depósito (127) — depósito vem da distribuição do acumulado 16–18.
+ */
+export const CLOSING_2026_10_16 = buildDayClosing({
+  date: "2026-10-16",
+  competenceStatus: "provisional",
+  /** Salgados pagos 140 + sanduíches pagos 14 + fiados novos Ana Laura 14. Perda R$5 fora da receita. */
+  competenceRevenue: 168,
+  salesReceived: 154,
+  priorSettlements: 53,
+  otherInflows: 0,
+  ownCost: 93.3,
+  thirdPartyCost: 0,
+  newCredit: 14,
+  lossesAmount: 5,
+  lossesUnits: 1,
+  stockRemainingUnits: 7,
+  piggyOpening: 4727.52,
+  piggyDeposit: 127,
+  bankYield: 0,
+  piggyClosing: 4854.52,
+  ownCostPaymentDates: [
+    {
+      date: "2026-10-20",
+      amount: 93.3,
+      note: "Repasse de custo salgados previsto 20/10. Reserva R$100 (R$93,30 custo + R$6,70 margem). Reconhecimento do custo em 16/10.",
+    },
+  ],
+  provisionalCompetence: {
+    status: "provisional",
+    fromDiary: {
+      revenue: 168,
+      profit: 74.7,
+      formula: "Salgados pagos 140 + sanduíches pagos 14 + Ana Laura fiados novos 14 − ownCost 93,30 = 74,70 (PROVISÓRIO; sanduíches anônimos fora)",
+    },
+    fromIdentifiedSales: {
+      revenue: 154,
+      profit: 60.7,
+      formula: "Só vendas pagas identificadas 154 − ownCost 93,30 = 60,70 (sem fiados novos Ana Laura; sem anônimos)",
+    },
+    gap: 14,
+  },
+  cashAtClose: {
+    diaryCash: 207,
+    daySalesPaidAtClose: 154,
+    priorSettlements: 53,
+    reconstructedCash: 207,
+    currentPaidSnapshot: 154,
+    gaps: [
+      "Caixa 207 = vendas 154 + quitações 53 (Mikelly 43 + Gerb 5 + João Victor 5).",
+      "Recebimentos 17/10 (João Lucas 10) e 18/10 (Carlos 10) NÃO entram no caixa de 16/10.",
+      "Depósito cofrinho 127 ≠ resultado caixa 113,70 — distribuição do acumulado 16–18, não lucro exclusivo do dia.",
+      "Sanduíches: 5–6 retiradas sem pagamento (R$35–42) pendentes até contagem 19/10 — não viram perda ainda.",
+      "Natália R$7 (~16h48): pode ser quitação anterior ou nova retirada pós-16h — estoque físico confirmado permanece 7 às 16h.",
+      "Abertura cofrinho informada 4727,52 (Δ +2,08 vs fechamento 15/10 4725,44 — não classificado como rendimento separado).",
+    ],
+  },
+  extraNotes: [
+    "Status: HOMOLOGADO COM RESSALVAS OPERACIONAIS (19/10/2026) — financeiro conciliado; sanduíches com divergência de período.",
+    "FINANCEIRO CONCILIADO: vendas 154 · quitações 53 · caixa 207 · ownCost 93,30 · lucro pessoal pagas 60,70 · resultado caixa 113,70 · competência provisória 168/74,70 · depósito 127 · cofrinho 4854,52.",
+    "Salgados: 29 un · Unifor 16 + Acal 13 · final 0 · pagos 28 un R$140 · 1 perda recuperável R$5.",
+    "Unifor R$60 = Pix nominais R$35 + repasse Henrique espécie→Pix R$25 (não duplicar faturamento).",
+    "Gerb Pix R$10 = venda 16/10 R$5 + quitação 15/10 R$5 (atribuição da conciliação; pode exigir confirmação).",
+    "Sanduíches: estoque inicial 16 (de 15/10) · consumo próprio 2 · contagem sex 16h = 7 · pagamentos Letícia+Natália R$14 · Ana Laura fiados R$14 PROVISÓRIOS.",
+    "Custo sanduíches: NÃO reapropriar em 16/10. ownCost 15/10 = só salgados; produção/custo do lote recente em 14/10 (e anteriores). Estoque carregado — sem duplicar CMV no ownCost do dia.",
+    "Natália R$7 ~16h48: SEM horário físico comprovado — quitação de retirada pré-16h OU nova pós-contagem; estoque 16h permanece 7.",
+    "Divergência estoque PERÍODO (sex 16h → seg ~10h): 7→4 = 3 un SEM DATA — não atribuir a 16, 17 ou 19 sem evidência.",
+    "Transferência cofrinho R$127 REALIZADA · saldo final R$4.854,52 · reserva custos R$100 separada (prev. 20/10).",
+    "Recebimentos 17/10 (João Lucas 10) e 18/10 (Carlos 10) nas datas efetivas — fora do caixa 16/10.",
+    "Mikelly R$7 (sanduíche 14/10) baixado por inadimplência (lossSaleIds, writeOff 19/10). Fiado 15/10 R$5 permanece cobrável. NÃO reativar o R$7 baixado.",
+  ],
+  historicalWriteOffs: [
+    {
+      saleId: "4834b3a8-fd8b-4876-9354-2ecee94028da",
+      amount: 7,
+      occurrenceDate: "2026-10-14",
+      writeOffDate: "2026-10-19",
+      classification: "fiado→inadimplencia_credito_incobravel→lossSaleIds",
+      note: "Mikelly: R$50 − R$43 (16/10) = R$7. Distinto da perda salgado NI R$5 de 16/10. Sem impacto em caixa/cofrinho.",
+    },
+  ],
+  operationalAudit: {
+    salgados: {
+      initial: 29,
+      paidUnits: 28,
+      lostUnits: 1,
+      final: 0,
+      status: "ok",
+      note: "29 = 28 pagos + 1 perda recuperável (NI). Estoque final 0.",
+    },
+    sandwiches: {
+      initial: 16,
+      ownConsumption: 2,
+      countedAt: "16:00",
+      counted: 7,
+      status: "diverged",
+      note: "Contagem sex 16h=7; seg 19/10 ~10h=4. Δ3 = divergência de período sem data. Natália físico incerto. Ana Laura R$14 provisório. Não inventar baixas.",
+    },
+  },
+});
+
+/**
+ * Fechamento 19/10/2026 — FINANCEIRO CONCILIADO · DEPÓSITO REALIZADO · ressalva variação bancária R$2,09.
+ *
+ * Disponíveis: 36 salgados + 2 sanduíches novos.
+ * Pagos: 22 salgados R$110 + 1 sanduíche R$8 = R$118.
+ * Fiados novos: JV R$10 + Mikelly sanduíche NOVO R$7 + Henrique R$35 = R$52.
+ * Competência 170 · ownCost 110 · lucro competência 60 · resultado caixa 8 · desembolso 0.
+ * 5 salgados NI Acal R$25 potencial — NÃO receita (perda operacional).
+ * Henrique R$20 espécie→Pix = conversão de meio, NÃO venda/quitação.
+ * Depósito R$118 REALIZADO 19/10 (Mercado Pago). Abertura 4.854,52 + 118 = 4.972,52.
+ * Saldo observado captura MP: R$4.974,61. Δ R$2,09 = variação NÃO CLASSIFICADA (não rendimento).
+ */
+export const CLOSING_2026_10_19 = buildDayClosing({
+  date: "2026-10-19",
+  competenceStatus: "confirmed",
+  competenceRevenue: 170,
+  salesReceived: 118,
+  priorSettlements: 0,
+  otherInflows: 0,
+  ownCost: 110,
+  thirdPartyCost: 0,
+  newCredit: 52,
+  lossesAmount: 25,
+  lossesUnits: 5,
+  /** Salgados final 0; remanescente = sanduíches (4 herdados ± produção do dia = 4). */
+  stockRemainingUnits: 4,
+  piggyOpening: 4854.52,
+  piggyDeposit: 118,
+  /** bankYield=0: Δ R$2,09 NÃO é rendimento confirmado — ver notes / DIVERGENTE. */
+  bankYield: 0,
+  piggyClosing: 4974.61,
+  ownCostPaymentDates: [
+    {
+      date: "2026-10-19",
+      amount: 0,
+      note: "Desembolso pessoal efetivo R$0. Custo gerencial R$110 reconhecido; pagamento do fornecedor não desembolsado neste dia.",
+    },
+  ],
+  cashAtClose: {
+    diaryCash: 118,
+    daySalesPaidAtClose: 118,
+    priorSettlements: 0,
+    reconstructedCash: 118,
+    currentPaidSnapshot: 118,
+    gaps: [
+      "Depósito cofrinho R$118 REALIZADO em 19/10 (Mercado Pago). Abertura 4854,52 + 118 = 4972,52.",
+      "Saldo observado captura MP R$4.974,61. Δ R$2,09 = variação bancária NÃO CLASSIFICADA (não bankYield).",
+      "Henrique R$20 espécie→Pix: conversão de meio — NÃO entra como venda nem quitação.",
+      "5 salgados NI Acal: valor comercial potencial R$25 — NÃO receita; em lossesAmount.",
+      "Mikelly fiado R$7 = sanduíche NOVO de 19/10 — distinto do R$7 de 14/10 já em lossSaleIds.",
+    ],
+  },
+  extraNotes: [
+    "Status: FINANCEIRO CONCILIADO — DEPÓSITO REALIZADO — RESSALVA DE VARIAÇÃO BANCÁRIA R$2,09.",
+    "FINANCEIRO: vendas pagas 118 · fiados novos 52 · competência 170 · ownCost 110 · lucro competência 60 · resultado caixa 8 · desembolso 0.",
+    "Cofrinho: abertura 4854,52 + depósito 118 = 4972,52 (aritmética). Observado MP 4974,61. bankYield=0.",
+    "Salgados 36: Unifor ini 22 · Acal ini 14 · Unifor manhã 7 pagos · 15 transferidos Unifor→Acal · Acal saídas (pagas + 5 NI) · Gabriela Barreto 1 Unifor · Henrique fiado 7.",
+    "Batimento FINANCEIRO unidades: 22 pagos + JV 2 fiado + Henrique 7 fiado + 5 NI = 36. Estoque final salgados 0.",
+    "RESSALVA OPERACIONAL: narrativa Acal '16 pagas' + Unifor7 + Gabriela1 = 24; financeiro homologado = 22 pagos. Δ2 documentado sem forçar batimento nem criar vendas.",
+    "Sanduíches: 2 novos · 1 pago R$8 · 1 fiado Mikelly R$7. Contagem manhã (antes da produção) = 4 (herança do gap 16→19).",
+    "Não reativar Mikelly R$7 inadimplência 14/10 (4834b3a8).",
+  ],
+  operationalAudit: {
+    salgados: {
+      initial: 36,
+      paidUnits: 22,
+      lostUnits: 5,
+      final: 0,
+      status: "ok",
+      note: "22 pagos + 9 fiado (JV2+Henrique7) + 5 NI = 36. Transferência Unifor→Acal 15 un documentada.",
+    },
+    sandwiches: {
+      initial: 4,
+      ownConsumption: 0,
+      countedAt: "10:00",
+      counted: 4,
+      status: "ok",
+      note: "4 herdados (gap período sex→seg já no 16/10). +2 novos −1 pago −1 fiado Mikelly. Não fechar Δ3 do período anterior aqui.",
+    },
+  },
+});
+

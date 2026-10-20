@@ -1,13 +1,10 @@
 "use client";
 
-import { formatCurrency, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import type { PeriodReview } from "@/lib/period-reviews/types";
 import { Badge } from "@/components/ui/badge";
 import { CompareSeriesChart } from "@/components/period-reviews/compare-series-chart";
-
-function money(n: number) {
-  return formatCurrency(n);
-}
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 function pct(n: number) {
   const sign = n > 0 ? "+" : "";
@@ -26,6 +23,7 @@ interface RetratoReaderProps {
 }
 
 export function RetratoReader({ review }: RetratoReaderProps) {
+  const money = useFormatMoney();
   const snap = review.metricsSnapshot;
   const curr = snap.current;
   const prev = snap.previous;

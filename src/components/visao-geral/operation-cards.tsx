@@ -1,4 +1,5 @@
 "use client";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
@@ -8,7 +9,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ALL_BUSINESSES_ID } from "@/lib/business-units";
 import { useBusinessContextStore } from "@/stores/business-context-store";
-import { formatCurrency, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import type { OperationPulse } from "@/lib/visao-geral";
 
 interface OperationCardsProps {
@@ -35,6 +36,7 @@ function OperationCard({
   consolidated?: boolean;
   onOpen: () => void;
 }) {
+  const money = useFormatMoney();
   const Icon = consolidated ? Layers : Building2;
   const hasData = pulse.revenueMonth > 0 || pulse.profitMonth > 0;
 
@@ -88,7 +90,7 @@ function OperationCard({
             Faturamento do mês
           </p>
           <p className="mt-0.5 text-lg font-black tracking-tight text-text-primary sm:text-xl">
-            {hasData ? formatCurrency(pulse.revenueMonth) : "—"}
+            {hasData ? money(pulse.revenueMonth) : "—"}
           </p>
         </div>
         <div>
@@ -96,7 +98,7 @@ function OperationCard({
             Lucro do mês
           </p>
           <p className="mt-0.5 text-lg font-black tracking-tight text-brand-green sm:text-xl">
-            {hasData ? formatCurrency(pulse.profitMonth) : "—"}
+            {hasData ? money(pulse.profitMonth) : "—"}
           </p>
         </div>
       </div>
@@ -110,7 +112,7 @@ function OperationCard({
         <span className="text-text-muted">·</span>
         <span>
           Último: {formatLastDate(pulse.lastDate)}
-          {pulse.lastDayProfit > 0 ? ` · ${formatCurrency(pulse.lastDayProfit)}` : ""}
+          {pulse.lastDayProfit > 0 ? ` · ${money(pulse.lastDayProfit)}` : ""}
         </span>
         {pulse.unitsMonth > 0 && (
           <>

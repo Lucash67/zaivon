@@ -1,7 +1,8 @@
 "use client";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 import { SectionPanel } from "@/components/executive/section-panel";
-import { formatCurrency, formatPercent } from "@/lib/utils";
+import { formatPercent } from "@/lib/utils";
 import type { ComparisonRow, StreakInfo } from "@/lib/smart-goals-view";
 import { Flame, Trophy, ArrowRightLeft } from "lucide-react";
 
@@ -11,6 +12,7 @@ interface GoalStreakComparisonProps {
 }
 
 export function GoalStreakComparison({ streak, comparisons }: GoalStreakComparisonProps) {
+  const money = useFormatMoney();
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       <SectionPanel theme="goals" title="Sequência" subtitle="Consistência operacional">
@@ -50,7 +52,7 @@ export function GoalStreakComparison({ streak, comparisons }: GoalStreakComparis
               </div>
               <div className="text-right shrink-0">
                 <p className="text-sm font-semibold text-text-primary">
-                  {row.label.includes("receita") ? formatCurrency(row.current) : row.current}
+                  {row.label.includes("receita") ? money(row.current) : row.current}
                 </p>
                 <p
                   className={`text-xs font-medium ${

@@ -2,7 +2,8 @@
 
 import { cn } from "@/components/ui/utils";
 import { type LucideIcon, TrendingUp, TrendingDown } from "lucide-react";
-import { formatCurrency, formatNumber, formatPercent } from "@/lib/utils";
+import { formatNumber, formatPercent } from "@/lib/utils";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 export type MetricValueColor = "default" | "orange" | "green" | "red";
 
@@ -41,9 +42,10 @@ export function MetricCard({
   format: fmt = "currency",
   compact = false,
 }: MetricCardProps) {
+  const money = useFormatMoney();
   const formattedValue =
     fmt === "currency"
-      ? formatCurrency(Number(value))
+      ? money(Number(value))
       : fmt === "number"
         ? formatNumber(Number(value))
         : fmt === "percent"

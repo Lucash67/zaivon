@@ -22,6 +22,8 @@ import {
   SALGADOS_WEEKLY_PROFIT_GOAL,
   usesSalgadosProfitGoals,
 } from "@/lib/salgados-profit-goals";
+import { buildZaivonPulse } from "@/lib/zaivon-pulse";
+import { sumPendingRevenue, sumProfit, sumReceivedRevenue, sumRevenue } from "@/lib/analytics-engine/client";
 
 function isSunday(dateKey: string): boolean {
   return parseISO(dateKey).getDay() === 0;
@@ -147,10 +149,24 @@ export async function GET(request: NextRequest) {
             Number(entry.quantityLost) || 0,
           );
         }
+        const todayKey = format(new Date(), "yyyy-MM-dd");
+        const pulse = buildZaivonPulse({
+          focusDate: viewDate,
+          isToday: viewDate === todayKey,
+          diary: diaryEntry,
+          fallback: {
+            revenue: data.metrics.revenueToday,
+            profit: data.metrics.profitToday,
+            cashIn: data.metrics.revenueToday,
+            newCredit: diaryEntry?.revenue?.pending ?? null,
+          },
+        });
+
         return NextResponse.json({
           data,
           diaryEntry,
           autoInsights,
+          pulse,
           weekPulse: dayMetrics
             ? buildWeekPulse(dayMetrics, viewDate, {
                 ...weekPulseOptions,
@@ -189,10 +205,36 @@ export async function GET(request: NextRequest) {
       );
       const pulseDate =
         viewMode === "day" ? viewDate : viewMode === "range" ? dateTo : format(new Date(), "yyyy-MM-dd");
+
+      // Pulse: diário do dia-âncora (hoje / fim do range). Sem diário, usa só vendas daquele dia.
+      let pulseDiary = null;
+      if (!isAllBusinesses(businessId)) {
+        pulseDiary = await getDiaryEntry(businessId, pulseDate).catch(() => null);
+      }
+      const daySalesForPulse = sales.filter((s) => s.date === pulseDate);
+      const pulseSaleRows = daySalesForPulse.map((s) => ({
+        totalAmount: Number(s.totalAmount) || 0,
+        profit: Number(s.profit) || 0,
+        paymentStatus: s.paymentStatus,
+        amountReceived: s.amountReceived != null ? Number(s.amountReceived) : null,
+      }));
+      const pulse = buildZaivonPulse({
+        focusDate: pulseDate,
+        isToday: pulseDate === format(new Date(), "yyyy-MM-dd"),
+        diary: pulseDiary,
+        fallback: {
+          revenue: sumRevenue(pulseSaleRows),
+          profit: sumProfit(pulseSaleRows),
+          cashIn: sumReceivedRevenue(pulseSaleRows),
+          newCredit: sumPendingRevenue(pulseSaleRows),
+        },
+      });
+
       return NextResponse.json({
         data,
         diaryEntry: null,
         autoInsights: [],
+        pulse,
         weekPulse: dayMetrics
           ? buildWeekPulse(dayMetrics, pulseDate, {
               ...weekPulseOptions,

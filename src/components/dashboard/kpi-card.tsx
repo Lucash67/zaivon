@@ -3,7 +3,8 @@
 import { motion } from "framer-motion";
 import { cn } from "@/components/ui/utils";
 import { type LucideIcon, TrendingUp, TrendingDown } from "lucide-react";
-import { formatCurrency, formatNumber, formatPercent } from "@/lib/utils";
+import { formatNumber, formatPercent } from "@/lib/utils";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 interface KpiCardProps {
   title: string;
@@ -26,9 +27,10 @@ export function KpiCard({
   delay = 0,
   format: fmt = "currency",
 }: KpiCardProps) {
+  const money = useFormatMoney();
   const formattedValue =
     fmt === "currency"
-      ? formatCurrency(Number(value))
+      ? money(Number(value))
       : fmt === "number"
         ? formatNumber(Number(value))
         : fmt === "percent"

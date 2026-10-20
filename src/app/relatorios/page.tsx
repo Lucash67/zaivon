@@ -1,4 +1,5 @@
 "use client";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -10,7 +11,7 @@ import { PageLoader } from "@/components/ui/loading";
 import { ExecutiveSummary } from "@/components/executive/executive-summary";
 import { SectionPanel } from "@/components/executive/section-panel";
 import { FileText, Download } from "lucide-react";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 import { useBusinessScope } from "@/hooks/use-business-scope";
 import { isViewingGeneral, useTemporalViewContext } from "@/stores/temporal-context-store";
 
@@ -75,7 +76,7 @@ function exportExcel(data: ReportData) {
   });
 }
 
-function exportPDF(data: ReportData) {
+function exportPDF(data: ReportData, money: (v: number) => string) {
   import("jspdf").then(({ default: jsPDF }) => {
     import("jspdf-autotable").then(() => {
       const doc = new jsPDF();
@@ -88,8 +89,8 @@ function exportPDF(data: ReportData) {
         startY: 40,
         head: [["Métrica", "Valor"]],
         body: [
-          ["Receita", formatCurrency(data.totalRevenue ?? data.revenue ?? 0)],
-          ["Lucro", formatCurrency(data.totalProfit ?? data.profit ?? 0)],
+          ["Receita", money(data.totalRevenue ?? data.revenue ?? 0)],
+          ["Lucro", money(data.totalProfit ?? data.profit ?? 0)],
           ["Itens Vendidos", String(data.totalItems ?? data.itemsSold ?? 0)],
           ["Vendas", String(data.totalSales ?? data.salesCount ?? 0)],
         ],
@@ -100,6 +101,7 @@ function exportPDF(data: ReportData) {
 }
 
 export default function RelatoriosPage() {
+  const money = useFormatMoney();
   const [type, setType] = useState("daily");
   const { activeBusinessId, withQuery } = useBusinessScope();
   const context = useTemporalViewContext();
@@ -139,11 +141,11 @@ export default function RelatoriosPage() {
 
     let conclusion: string;
     if (goalTarget > 0 && revenue >= goalTarget) {
-      conclusion = `Meta ${goalType === "monthly" ? "mensal" : goalType === "weekly" ? "semanal" : "diária"} atingida com ${formatCurrency(revenue)} — desempenho sólido no período.`;
+      conclusion = `Meta ${goalType === "monthly" ? "mensal" : goalType === "weekly" ? "semanal" : "diária"} atingida com ${money(revenue)} — desempenho sólido no período.`;
     } else if (goalTarget > 0) {
-      conclusion = `${goalPct.toFixed(0)}% da meta alcançada. Faltam ${formatCurrency(goalTarget - revenue)} para o objetivo.`;
+      conclusion = `${goalPct.toFixed(0)}% da meta alcançada. Faltam ${money(goalTarget - revenue)} para o objetivo.`;
     } else if (sales > 0) {
-      conclusion = `${sales} vendas e ${items} itens movimentados — ticket médio de ${formatCurrency(data.averageTicket ?? revenue / sales)}.`;
+      conclusion = `${sales} vendas e ${items} itens movimentados — ticket médio de ${money(data.averageTicket ?? revenue / sales)}.`;
     } else {
       conclusion = "Nenhuma movimentação registrada neste período.";
     }
@@ -198,7 +200,7 @@ export default function RelatoriosPage() {
           title="Resumo Executivo"
           conclusion={summary.conclusion}
           items={[
-            { label: "Receita", value: formatCurrency(summary.revenue), highlight: true },
+            { label: "Receita", value: money(summary.revenue), highlight: true },
             { label: "Vendas", value: String(summary.sales) },
             { label: "Produtos", value: `${summary.productCount} ativos` },
             { label: "Meta", value: summary.goalLabel, highlight: summary.goalLabel !== "—" },
@@ -220,12 +222,12 @@ export default function RelatoriosPage() {
               <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
                 <div className="rounded-xl bg-surface-elevated p-3">
                   <p className="label-upper">Receita</p>
-                  <p className="text-lg font-bold sm:text-xl">{formatCurrency(summary.revenue)}</p>
+                  <p className="text-lg font-bold sm:text-xl">{money(summary.revenue)}</p>
                 </div>
                 <div className="rounded-xl bg-surface-elevated p-3">
                   <p className="label-upper">Lucro</p>
                   <p className="text-lg font-bold text-brand-green sm:text-xl">
-                    {formatCurrency(data.totalProfit ?? data.profit ?? 0)}
+                    {money(data.totalProfit ?? data.profit ?? 0)}
                   </p>
                 </div>
                 <div className="rounded-xl bg-surface-elevated p-3">
@@ -245,7 +247,7 @@ export default function RelatoriosPage() {
                     {Object.entries(data.paymentBreakdown).map(([method, amount]) => (
                       <div key={method} className="rounded-lg bg-surface-elevated p-3 text-sm">
                         <span className="text-text-muted uppercase">{method}: </span>
-                        <span className="font-semibold">{formatCurrency(amount)}</span>
+                        <span className="font-semibold">{money(amount)}</span>
                       </div>
                     ))}
                   </div>
@@ -267,7 +269,7 @@ export default function RelatoriosPage() {
               )}
 
               <div className="flex flex-wrap gap-2">
-                <Button variant="secondary" size="sm" onClick={() => exportPDF(data)}><Download className="h-4 w-4" />PDF</Button>
+                <Button variant="secondary" size="sm" onClick={() => exportPDF(data, money)}><Download className="h-4 w-4" />PDF</Button>
                 <Button variant="secondary" size="sm" onClick={() => exportExcel(data)}><Download className="h-4 w-4" />Excel</Button>
                 <Button variant="secondary" size="sm" onClick={() => exportCSV(data)}><Download className="h-4 w-4" />CSV</Button>
               </div>

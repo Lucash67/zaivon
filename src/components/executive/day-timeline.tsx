@@ -1,6 +1,6 @@
 "use client";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
-import { formatCurrency } from "@/lib/utils";
 import { cn } from "@/components/ui/utils";
 import { formatSaleShift } from "@/lib/sale-shift";
 import type { DayTimelineGroup } from "@/lib/dashboard-view";
@@ -17,6 +17,7 @@ const STATUS_STYLES = {
 };
 
 export function DayTimeline({ groups }: DayTimelineProps) {
+  const money = useFormatMoney();
   if (groups.length === 0) {
     return (
       <p className="rounded-xl bg-surface-elevated px-4 py-6 text-center text-sm text-text-muted">
@@ -49,7 +50,7 @@ export function DayTimeline({ groups }: DayTimelineProps) {
                   </div>
                 </div>
                 <div className="flex items-center gap-3 sm:shrink-0 sm:flex-col sm:items-end">
-                  <p className="text-sm font-bold text-text-primary">{formatCurrency(entry.amount)}</p>
+                  <p className="text-sm font-bold text-text-primary">{money(entry.amount)}</p>
                   <span
                     className={cn(
                       "rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",

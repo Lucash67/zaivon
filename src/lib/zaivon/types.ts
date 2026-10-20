@@ -56,6 +56,11 @@ export interface Debt {
   paid: number;
   description: string;
   status: "open" | "paid" | "loss";
+  /**
+   * Se definido, a cobrança não deve aparecer como “Cobrar agora” até esta data
+   * (ex.: acordo Ana Laura até o pagamento salarial de novembro).
+   */
+  deferredUntil?: string | undefined;
 }
 
 export type ClosureStatus = "closed" | "closed_with_note" | "draft" | "summary" | "open";

@@ -18,6 +18,8 @@ export function receivedSameDay(day: OperationDay): number {
 export interface DayFinance {
   received: number;
   settlements: number;
+  /** Crédito/outras entradas já no caixa (ex.: R$19 sem origem classificada). */
+  otherInflows: number;
   cashIn: number;
   ownCost: number;
   thirdPartyCost: number;
@@ -37,11 +39,39 @@ export interface DayFinance {
   newCredit: number;
 }
 
-/** Lucro final (legado) = entrada total no caixa + bonificação − meu custo. */
+/**
+ * Indicadores do dia.
+ * Quando há dayClosing v2, ele é a fonte canônica das 5 dimensões
+ * (inclui otherInflows no caixa — não recalcular só com vendas + quitações).
+ */
 export function dayFinance(day: OperationDay, settlements: Settlement[]): DayFinance {
+  const dc = day.dayClosing;
+  if (dc) {
+    const cashIn = dc.cash.cashIn;
+    const ownCost = dc.costs.ownCost;
+    const operationalProfit = dc.cashManagementResult;
+    return {
+      received: dc.cash.salesReceived,
+      settlements: dc.cash.priorSettlements,
+      otherInflows: dc.cash.otherInflows,
+      cashIn,
+      ownCost,
+      thirdPartyCost: dc.costs.thirdPartyCost,
+      economicCost: round2(dc.costs.ownCost + dc.costs.thirdPartyCost),
+      bonus: day.bonus,
+      operationalProfit,
+      profit: round2(operationalProfit + day.bonus),
+      competenceRevenue: dc.competenceRevenue,
+      competenceProfit: dc.competenceProfit,
+      competenceStatus: dc.competenceStatus,
+      newCredit: dc.newCredit,
+    };
+  }
+
   const received = receivedSameDay(day);
   const q = settlementsOn(day.date, settlements);
-  const cashIn = round2(received + q);
+  const otherInflows = 0;
+  const cashIn = round2(received + q + otherInflows);
   const newCredit =
     day.newCredit ??
     sumLines(day.lines, (l) => l.status === "fiado" || l.status === "parceiro" || l.status === "investigar");
@@ -51,6 +81,7 @@ export function dayFinance(day: OperationDay, settlements: Settlement[]): DayFin
   return {
     received,
     settlements: q,
+    otherInflows,
     cashIn,
     ownCost: day.ownCost,
     thirdPartyCost: day.thirdPartyCost,
@@ -109,7 +140,12 @@ export function previousCofrinho(day: OperationDay, days: OperationDay[], plan: 
   return prev?.cofrinhoEnd ?? plan.practicalAtStart;
 }
 
-/** Rendimento implícito = (cofrinho hoje − ontem) − lucro do dia. */
+/**
+ * Batimento do cofrinho:
+ * saldo final − (abertura + depósito − retirada + rendimento declarado).
+ * Com dayClosing, usa a abertura/depósito do snapshot — NÃO comparar com
+ * resultado de caixa nem lucro por competência (isso inventa Δ falso, ex. R$15,38).
+ */
 export function impliedYield(
   day: OperationDay,
   days: OperationDay[],
@@ -117,8 +153,18 @@ export function impliedYield(
   plan: MonthPlan,
 ): number | null {
   if (day.cofrinhoEnd == null) return null;
+  const dc = day.dayClosing;
+  if (dc?.piggyBank) {
+    const expectedClose = round2(
+      dc.piggyBank.openingBalance +
+        dc.piggyBank.deposit -
+        (dc.piggyBank.withdrawal ?? 0) +
+        (dc.piggyBank.bankYield ?? 0),
+    );
+    return round2(day.cofrinhoEnd - expectedClose);
+  }
   const delta = day.cofrinhoEnd - previousCofrinho(day, days, plan);
-  return round2(delta - dayFinance(day, settlements).profit);
+  return round2(delta - dayFinance(day, settlements).operationalProfit);
 }
 
 export function dayChecks(
@@ -129,24 +175,79 @@ export function dayChecks(
 ): Check[] {
   const o = dayOutflow(day);
   const hasLines = day.lines.length > 0;
-  const fis: Check = hasLines && day.available != null
-    ? {
-        id: "fisico",
-        label: "Batimento físico",
-        ok: day.available === o.totalUnits,
-        detail: `${day.available} disponíveis = ${o.units.paid} pagos + ${o.units.fiado} fiados + ${o.units.parceiro} parceiro + ${o.units.investigar} não identificados + ${o.units.perda} perdas + ${o.units.sobra} sobras${day.available === o.totalUnits ? "" : ` (soma ${o.totalUnits})`}`,
-      }
-    : { id: "fisico", label: "Batimento físico", ok: null, detail: "Dia registrado só por resumo." };
+  const dc = day.dayClosing;
+  const audit = dc?.operationalAudit;
+
+  let fis: Check;
+  if (hasLines && day.available != null) {
+    fis = {
+      id: "fisico",
+      label: "Batimento físico",
+      ok: day.available === o.totalUnits,
+      detail: `${day.available} disponíveis = ${o.units.paid} pagos + ${o.units.fiado} fiados + ${o.units.parceiro} parceiro + ${o.units.investigar} não identificados + ${o.units.perda} perdas + ${o.units.sobra} sobras${day.available === o.totalUnits ? "" : ` (soma ${o.totalUnits})`}`,
+    };
+  } else if (audit?.salgados) {
+    const s = audit.salgados;
+    const sum = s.paidUnits + s.lostUnits;
+    const salgadosOk = s.status === "ok" && s.initial === sum && s.final === 0;
+    const sand = audit.sandwiches;
+    const sandNote = sand
+      ? ` Sanduíches: ${sand.status === "pending" ? "PENDENTE" : sand.status} — inicial ${sand.initial} · consumo próprio ${sand.ownConsumption} · contagem ${sand.countedAt ?? "—"} = ${sand.counted}${sand.note ? ` (${sand.note})` : ""}.`
+      : "";
+    fis = {
+      id: "fisico",
+      label: "Batimento físico (resumo)",
+      // Só OK pleno se salgados batem E sanduíches não estão pendentes.
+      ok: salgadosOk && sand?.status !== "pending" ? true : salgadosOk && sand?.status === "pending" ? null : false,
+      detail: `Salgados ${salgadosOk ? "OK" : "divergente"}: inicial ${s.initial} = ${s.paidUnits} pagos + ${s.lostUnits} perda → final ${s.final}.${sandNote}`,
+    };
+  } else {
+    fis = {
+      id: "fisico",
+      label: "Batimento físico",
+      ok: null,
+      detail: dc
+        ? `Sem linhas unitárias nem operationalAudit. Estoque remanescente (dayClosing): ${dc.stockRemainingUnits} un · perdas ${dc.lossesUnits} un.`
+        : "Dia registrado só por resumo — faltam linhas de saída (paid/fiado/perda) para batimento físico.",
+    };
+  }
+
   const rhs = round2(o.received + o.fiado + o.parceiro + o.investigar + o.perda);
-  const fin: Check = hasLines
-    ? {
-        id: "financeiro",
-        label: "Batimento financeiro",
-        ok: Math.abs(o.potential - rhs) < 0.01,
-        detail: `Potencial ${o.potential} = ${o.received} recebido + ${round2(o.fiado + o.parceiro)} a receber + ${o.investigar} investigação + ${o.perda} perdas`,
-      }
-    : { id: "financeiro", label: "Batimento financeiro", ok: null, detail: "Sem saídas detalhadas." };
+  let fin: Check;
+  if (hasLines) {
+    fin = {
+      id: "financeiro",
+      label: "Batimento financeiro",
+      ok: Math.abs(o.potential - rhs) < 0.01,
+      detail: `Potencial ${o.potential} = ${o.received} recebido + ${round2(o.fiado + o.parceiro)} a receber + ${o.investigar} investigação + ${o.perda} perdas`,
+    };
+  } else if (dc) {
+    const parts = round2(dc.cash.salesReceived + dc.cash.priorSettlements + dc.cash.otherInflows);
+    const cashOk = Math.abs(dc.cash.cashIn - parts) < 0.01;
+    const sandPending = audit?.sandwiches?.status === "pending";
+    fin = {
+      id: "financeiro",
+      label: sandPending ? "Batimento financeiro (caixa)" : "Batimento financeiro",
+      ok: cashOk && !sandPending ? true : cashOk && sandPending ? null : false,
+      detail: cashOk
+        ? `Caixa R$ ${dc.cash.cashIn.toFixed(2)} = vendas ${dc.cash.salesReceived.toFixed(2)} + quitações ${dc.cash.priorSettlements.toFixed(2)} + outras ${dc.cash.otherInflows.toFixed(2)}.${
+            sandPending
+              ? " Sanduíches anônimos ainda sem conciliação — não OK pleno."
+              : ""
+          }`
+        : `Caixa dayClosing R$ ${dc.cash.cashIn.toFixed(2)} ≠ soma partes R$ ${parts.toFixed(2)}.`,
+    };
+  } else {
+    fin = {
+      id: "financeiro",
+      label: "Batimento financeiro",
+      ok: null,
+      detail: "Sem saídas detalhadas — faltam linhas de venda para batimento financeiro por composição.",
+    };
+  }
+
   const y = impliedYield(day, days, settlements, plan);
+  const piggy = dc?.piggyBank;
   const cof: Check =
     y == null
       ? { id: "cofrinho", label: "Batimento do cofrinho", ok: null, detail: "Cofrinho do dia não informado." }
@@ -154,7 +255,12 @@ export function dayChecks(
           id: "cofrinho",
           label: "Batimento do cofrinho",
           ok: y >= -0.5 && y <= COFRINHO_TOLERANCE,
-          detail: `Variação do cofrinho − lucro = R$ ${y.toFixed(2).replace(".", ",")} (rendimento esperado entre R$ 0 e R$ ${COFRINHO_TOLERANCE})`,
+          detail:
+            Math.abs(y) < 0.01 && piggy
+              ? `Saldo ${piggy.closingBalance.toFixed(2).replace(".", ",")} = abertura ${piggy.openingBalance.toFixed(2).replace(".", ",")} + depósito ${piggy.deposit.toFixed(2).replace(".", ",")} − retirada ${(piggy.withdrawal ?? 0).toFixed(2).replace(".", ",")} + rendimento ${(piggy.bankYield ?? 0).toFixed(2).replace(".", ",")} (batimento OK; depósito único). Não comparar com resultado de caixa.`
+              : piggy
+                ? `Saldo informado − (abertura + depósito − retirada + rendimento) = R$ ${y.toFixed(2).replace(".", ",")} (tol. R$ ${COFRINHO_TOLERANCE}). Não comparar com resultado de caixa nem lucro por competência.`
+                : `Variação − resultado de caixa = R$ ${y.toFixed(2).replace(".", ",")} (tol. R$ ${COFRINHO_TOLERANCE}).`,
         };
   return [fis, fin, cof];
 }

@@ -1,4 +1,5 @@
 "use client";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -12,7 +13,7 @@ import { PageLoader } from "@/components/ui/loading";
 import { EmptyModuleState } from "@/components/ui/empty-module-state";
 import { useBusinessScope } from "@/hooks/use-business-scope";
 import { fetchJson } from "@/lib/api/safe-json";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import type { AppliedGoalsResult } from "@/lib/month-close-service";
 import type { ForecastScenarioKey, MonthCloseView } from "@/lib/month-close-view";
 
@@ -29,6 +30,7 @@ function isEmptyMonthClose(data: MonthClosePayload | undefined): data is { empty
 }
 
 export default function FechamentoPage() {
+  const money = useFormatMoney();
   const { activeBusinessId, canWrite, withQuery, goalsBlockedMessage } = useBusinessScope();
   const queryClient = useQueryClient();
   const [monthKey, setMonthKey] = useState<string | null>(null);
@@ -183,7 +185,7 @@ export default function FechamentoPage() {
               title="Faturamento"
               value={reference.revenue}
               icon={Wallet}
-              subtitle={`${formatCurrency(reference.avgDailyRevenue)}/dia útil`}
+              subtitle={`${money(reference.avgDailyRevenue)}/dia útil`}
               delay={0}
             />
             <KpiCard
@@ -191,7 +193,7 @@ export default function FechamentoPage() {
               value={reference.profit}
               icon={TrendingUp}
               variant="profit"
-              subtitle={`${formatCurrency(reference.avgDailyProfit)}/dia · margem ${reference.margin.toFixed(1)}%`}
+              subtitle={`${money(reference.avgDailyProfit)}/dia · margem ${reference.margin.toFixed(1)}%`}
               delay={1}
             />
             <KpiCard
@@ -199,7 +201,7 @@ export default function FechamentoPage() {
               value={reference.units}
               icon={CalendarDays}
               format="number"
-              subtitle={`${reference.avgDailyUnits.toFixed(1)} un./dia · ${formatCurrency(reference.avgUnitPrice)} por unidade`}
+              subtitle={`${reference.avgDailyUnits.toFixed(1)} un./dia · ${money(reference.avgUnitPrice)} por unidade`}
               delay={2}
             />
             <KpiCard
@@ -208,7 +210,7 @@ export default function FechamentoPage() {
               icon={BadgeCheck}
               subtitle={
                 reference.bestDay
-                  ? `${reference.bestDay.label} · pior foi ${reference.worstDay?.label} com ${formatCurrency(reference.worstDay?.profit ?? 0)}`
+                  ? `${reference.bestDay.label} · pior foi ${reference.worstDay?.label} com ${money(reference.worstDay?.profit ?? 0)}`
                   : "—"
               }
               delay={3}
@@ -236,9 +238,9 @@ export default function FechamentoPage() {
               >
                 <p className="text-xs font-semibold capitalize text-text-primary">{row.label}</p>
                 <p className="mt-1 text-sm font-bold text-text-primary">
-                  {formatCurrency(row.revenue)}
+                  {money(row.revenue)}
                 </p>
-                <p className="text-xs text-brand-green">{formatCurrency(row.profit)} lucro</p>
+                <p className="text-xs text-brand-green">{money(row.profit)} lucro</p>
               </button>
             ))}
           </div>
@@ -267,7 +269,7 @@ export default function FechamentoPage() {
                 className="rounded-lg border border-z-primary/15 bg-surface-elevated/40 px-3 py-2"
               >
                 <p className="text-[10px] uppercase text-text-muted">{goal.label}</p>
-                <p className="text-sm font-bold">{formatCurrency(goal.targetRevenue)}</p>
+                <p className="text-sm font-bold">{money(goal.targetRevenue)}</p>
               </div>
             ))}
           </div>

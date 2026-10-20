@@ -1,4 +1,5 @@
 "use client";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 import Link from "next/link";
 import { format, parseISO } from "date-fns";
@@ -9,7 +10,6 @@ import { ExecutiveSummary } from "@/components/executive/executive-summary";
 import { SectionPanel } from "@/components/executive/section-panel";
 import { Badge } from "@/components/ui/badge";
 import { useBusinessScope } from "@/hooks/use-business-scope";
-import { formatCurrency } from "@/lib/utils";
 import type { DiaryAutoInsight } from "@/lib/diary-auto-insights";
 import {
   useTemporalViewContext,
@@ -30,6 +30,7 @@ interface DaySummaryResponse {
 }
 
 export function TemporalDayBanner() {
+  const money = useFormatMoney();
   const context = useTemporalViewContext();
   const { activeBusinessId, withQuery } = useBusinessScope();
   const dayScoped =
@@ -77,11 +78,11 @@ export function TemporalDayBanner() {
           <ExecutiveSummary
             theme="dashboard"
             title={`Resumo do dia ${format(parseISO(context.viewDate), "dd/MM")}`}
-            conclusion={`Faturamento ${formatCurrency(data.metrics.revenue)} · lucro ${formatCurrency(data.metrics.profit)} · fonte: ${data.metrics.source === "diary" ? "diário homologado" : "vendas"}.`}
+            conclusion={`Faturamento ${money(data.metrics.revenue)} · lucro ${money(data.metrics.profit)} · fonte: ${data.metrics.source === "diary" ? "diário homologado" : "vendas"}.`}
             items={[
-              { label: "Faturamento", value: formatCurrency(data.metrics.revenue), highlight: true },
-              { label: "Lucro", value: formatCurrency(data.metrics.profit), highlight: true },
-              { label: "Custo operacional", value: formatCurrency(data.metrics.costs) },
+              { label: "Faturamento", value: money(data.metrics.revenue), highlight: true },
+              { label: "Lucro", value: money(data.metrics.profit), highlight: true },
+              { label: "Custo operacional", value: money(data.metrics.costs) },
             ]}
           />
 

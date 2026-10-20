@@ -84,7 +84,7 @@ function DinheiroBody() {
           </Panel>
           <Panel
             title="Batimento diário"
-            subtitle={`Variação do cofrinho ≈ ${FINANCE_LABELS.cashManagementResult.short.toLowerCase()} + rendimento (tol. R$ 5)`}
+            subtitle="Batimento: saldo − (abertura + depósito − retirada + rendimento). Não comparar com resultado de caixa (tol. R$ 5)"
           >
             <div className="overflow-x-auto">
               <table className="num w-full min-w-[520px] text-sm">
@@ -127,12 +127,23 @@ function DinheiroBody() {
         </TabsContent>
 
         <TabsContent value="fluxo" className="mt-4 grid gap-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <Kpi big label="Entrada no mês" value={money(ms.cashIn)} formula="Soma de (recebido do dia + quitações)" />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Kpi
+              big
+              label="Entrada no mês"
+              value={money(ms.cashIn)}
+              formula="Soma de (vendas do dia + quitações + outras entradas)"
+            />
             <Kpi tone="ok" label="Vendas do próprio dia" value={money(rows.reduce((s, r) => s + r.received, 0))} />
             <Kpi tone="ok" label="Quitações" value={money(rows.reduce((s, r) => s + r.settlements, 0))} explain="Contam no dia em que entram" />
+            <Kpi
+              tone="pending"
+              label="Outras entradas"
+              value={money(rows.reduce((s, r) => s + r.otherInflows, 0))}
+              explain="Crédito sem origem / demais — já no caixa, sem venda inventada"
+            />
           </div>
-          <Panel title="Entrada no caixa por dia" subtitle={`R$ · vendas do dia × quitações · ${o.plan.label}`}>
+          <Panel title="Entrada no caixa por dia" subtitle={`R$ · vendas × quitações × outras · ${o.plan.label}`}>
             <div className="h-64">
               <ResponsiveContainer>
                 <BarChart data={rows}>
@@ -142,7 +153,8 @@ function DinheiroBody() {
                   <Tooltip {...chartTooltip} formatter={(v: number) => money(v)} />
                   <Legend wrapperStyle={{ fontSize: 12 }} />
                   <Bar dataKey="received" name="Vendas do dia" stackId="a" fill="var(--color-ok)" />
-                  <Bar dataKey="settlements" name="Quitações" stackId="a" fill="var(--color-pending)" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="settlements" name="Quitações" stackId="a" fill="var(--color-pending)" />
+                  <Bar dataKey="otherInflows" name="Outras" stackId="a" fill="var(--color-info)" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

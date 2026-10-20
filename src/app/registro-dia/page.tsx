@@ -1,4 +1,5 @@
 "use client";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -11,7 +12,6 @@ import { Badge } from "@/components/ui/badge";
 import { useBusinessScope } from "@/hooks/use-business-scope";
 import { isAllBusinesses, SALGADOS_BUSINESS_ID } from "@/lib/business-units";
 import { useBusinessContextStore } from "@/stores/business-context-store";
-import { formatCurrency } from "@/lib/utils";
 import { formatSaleShift } from "@/lib/sale-shift";
 import { buildWeekdayDraftTemplate, type DayRegistrationPreview } from "@/lib/day-registration/types";
 import {
@@ -48,6 +48,7 @@ function PreviewSection({
 }
 
 export default function RegistroDiaPage() {
+  const money = useFormatMoney();
   const { canWrite, writeBlockedMessage, activeBusinessId } = useBusinessScope();
   const setActiveBusiness = useBusinessContextStore((s) => s.setActiveBusiness);
   const queryClient = useQueryClient();
@@ -242,10 +243,10 @@ export default function RegistroDiaPage() {
               <PreviewSection title="Resumo" icon={BookOpen}>
                 <div className="grid gap-2 sm:grid-cols-2 text-sm">
                   <p className="rounded-lg border border-z-info/15 bg-z-info/5 px-3 py-2">
-                    Receita: <strong className="text-z-info">{formatCurrency(preview.summary.revenue)}</strong>
+                    Receita: <strong className="text-z-info">{money(preview.summary.revenue)}</strong>
                   </p>
                   <p className="rounded-lg border border-brand-green/20 bg-brand-green/5 px-3 py-2">
-                    Lucro: <strong className="text-brand-green">{formatCurrency(preview.summary.profit)}</strong>
+                    Lucro: <strong className="text-brand-green">{money(preview.summary.profit)}</strong>
                   </p>
                   <p>
                     Vendidas: <strong>{preview.summary.quantitySold}</strong>
@@ -259,7 +260,7 @@ export default function RegistroDiaPage() {
               {preview.purchase && (
                 <PreviewSection title="Compra" icon={Package}>
                   <p className="text-sm mb-2">
-                    {preview.purchase.totalUnits} un. · {formatCurrency(preview.purchase.investment)}
+                    {preview.purchase.totalUnits} un. · {money(preview.purchase.investment)}
                   </p>
                   <ul className="space-y-1 text-sm text-text-secondary">
                     {preview.purchase.products.map((p) => (

@@ -1,4 +1,5 @@
 "use client";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -16,7 +17,6 @@ import { PageLoader } from "@/components/ui/loading";
 import { SectionPanel } from "@/components/executive/section-panel";
 import { useBusinessScope } from "@/hooks/use-business-scope";
 import { isAllBusinesses, getBusinessUnitName } from "@/lib/business-units";
-import { formatCurrency } from "@/lib/utils";
 import { useTemporalContextStore, useViewDate } from "@/stores/temporal-context-store";
 import type { OperationalDiaryEntry } from "@/lib/diary/types";
 import {
@@ -53,6 +53,7 @@ function DiarySection({ title, children }: { title: string; children: React.Reac
 }
 
 function DiaryView({ entry }: { entry: DiaryEntry }) {
+  const money = useFormatMoney();
   return (
     <div className="space-y-4">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -60,14 +61,14 @@ function DiaryView({ entry }: { entry: DiaryEntry }) {
           <p className="text-xl font-bold">{entry.dailyGoalUnits ?? "—"} un.</p>
         </DiarySection>
         <DiarySection title="Receita total">
-          <p className="text-xl font-bold text-brand-orange">{formatCurrency(entry.revenue.total)}</p>
+          <p className="text-xl font-bold text-brand-orange">{money(entry.revenue.total)}</p>
           <p className="text-xs text-text-muted mt-1">
-            Recebida {formatCurrency(entry.revenue.received)}
-            {entry.revenue.pending > 0 && ` · Pendente ${formatCurrency(entry.revenue.pending)}`}
+            Recebida {money(entry.revenue.received)}
+            {entry.revenue.pending > 0 && ` · Pendente ${money(entry.revenue.pending)}`}
           </p>
         </DiarySection>
         <DiarySection title="Lucro">
-          <p className="text-xl font-bold text-brand-green">{formatCurrency(entry.profit)}</p>
+          <p className="text-xl font-bold text-brand-green">{money(entry.profit)}</p>
         </DiarySection>
         <DiarySection title="Quantidades">
           <p className="text-sm">
@@ -86,7 +87,7 @@ function DiaryView({ entry }: { entry: DiaryEntry }) {
       {entry.purchase && (
         <DiarySection title="Compra do dia">
           <p className="text-sm mb-2">
-            {entry.purchase.totalUnits} unidades · Investimento {formatCurrency(entry.purchase.investment)}
+            {entry.purchase.totalUnits} unidades · Investimento {money(entry.purchase.investment)}
           </p>
           <ul className="space-y-1 text-sm text-text-secondary">
             {entry.purchase.products.map((p) => (
@@ -116,7 +117,7 @@ function DiaryView({ entry }: { entry: DiaryEntry }) {
                 <span className="text-text-muted">
                   {entry.sales.fatherSale.buyerName ?? "Henrique"}:
                 </span>{" "}
-                {entry.sales.fatherSale.units} un. · {formatCurrency(entry.sales.fatherSale.amount)}
+                {entry.sales.fatherSale.units} un. · {money(entry.sales.fatherSale.amount)}
               </p>
             )}
           </div>

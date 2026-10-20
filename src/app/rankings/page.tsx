@@ -1,4 +1,5 @@
 "use client";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 import { useQuery } from "@tanstack/react-query";
 import { ModuleShell } from "@/components/layout/module-shell";
@@ -6,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { PageLoader } from "@/components/ui/loading";
 import { EmptyModuleState } from "@/components/ui/empty-module-state";
 import { Trophy, Package, Users, Calendar, Clock, DollarSign } from "lucide-react";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { useBusinessScope } from "@/hooks/use-business-scope";
 
@@ -46,6 +47,7 @@ function RankingList({
 }
 
 export default function RankingsPage() {
+  const money = useFormatMoney();
   const { activeBusinessId, withQuery } = useBusinessScope();
   const { data, isLoading, isError, error, refetch } = useQuery<RankingsData>({
     queryKey: ["rankings", activeBusinessId],
@@ -120,7 +122,7 @@ export default function RankingsPage() {
                   </div>
                   <div className="shrink-0 text-right">
                     <p className="font-semibold">{item.quantity as number} un.</p>
-                    <p className="text-xs text-brand-green">{formatCurrency(item.profit as number)}</p>
+                    <p className="text-xs text-brand-green">{money(item.profit as number)}</p>
                   </div>
                 </div>
               )}
@@ -145,7 +147,7 @@ export default function RankingsPage() {
                       <p className="truncate text-xs text-text-muted">{item.count as number} compras · Favorito: {item.favorite as string}</p>
                     </div>
                   </div>
-                  <p className="shrink-0 font-semibold">{formatCurrency(item.total as number)}</p>
+                  <p className="shrink-0 font-semibold">{money(item.total as number)}</p>
                 </div>
               )}
             />
@@ -166,7 +168,7 @@ export default function RankingsPage() {
                     <Trophy className={`h-4 w-4 ${i === 0 ? "text-z-emerald" : "text-text-muted"}`} />
                     <span>{formatDate(item.date as string)}</span>
                   </div>
-                  <span className="font-semibold">{formatCurrency(item.revenue as number)}</span>
+                  <span className="font-semibold">{money(item.revenue as number)}</span>
                 </div>
               )}
             />
@@ -203,21 +205,21 @@ export default function RankingsPage() {
                 {data.highestRevenue && (
                   <div className="rounded-2xl bg-brand-orange/10 p-4 text-center sm:p-5">
                     <p className="text-xs text-text-muted mb-1">Maior Faturamento</p>
-                    <p className="text-xl font-bold">{formatCurrency(data.highestRevenue[1])}</p>
+                    <p className="text-xl font-bold">{money(data.highestRevenue[1])}</p>
                     <p className="text-xs text-text-muted mt-1">{formatDate(data.highestRevenue[0])}</p>
                   </div>
                 )}
                 {data.highestProfit && (
                   <div className="rounded-2xl bg-brand-green/10 p-5 text-center">
                     <p className="text-xs text-text-muted mb-1">Maior Lucro</p>
-                    <p className="text-xl font-bold text-brand-green">{formatCurrency(data.highestProfit.profit)}</p>
+                    <p className="text-xl font-bold text-brand-green">{money(data.highestProfit.profit)}</p>
                     <p className="text-xs text-text-muted mt-1">{formatDate(data.highestProfit.date)}</p>
                   </div>
                 )}
                 {data.highestTicket && (
                   <div className="rounded-2xl bg-surface-elevated p-5 text-center">
                     <p className="text-xs text-text-muted mb-1">Maior Ticket Médio</p>
-                    <p className="text-xl font-bold">{formatCurrency(data.highestTicket.totalAmount)}</p>
+                    <p className="text-xl font-bold">{money(data.highestTicket.totalAmount)}</p>
                     <p className="text-xs text-text-muted mt-1">{formatDate(data.highestTicket.date)}</p>
                   </div>
                 )}

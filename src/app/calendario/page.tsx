@@ -1,4 +1,5 @@
 "use client";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -12,7 +13,7 @@ import { SectionPanel } from "@/components/executive/section-panel";
 import { ChevronLeft, ChevronRight, LayoutDashboard } from "lucide-react";
 import { useTemporalContextStore, useViewDate } from "@/stores/temporal-context-store";
 import { useBusinessScope } from "@/hooks/use-business-scope";
-import { formatCurrency, formatDate, formatPercent } from "@/lib/utils";
+import { formatDate, formatPercent } from "@/lib/utils";
 import { format, getDaysInMonth, parseISO, startOfMonth, getDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -43,6 +44,7 @@ const statusLabels = {
 };
 
 export default function CalendarioPage() {
+  const money = useFormatMoney();
   const router = useRouter();
   const viewDate = useViewDate();
   const setViewDate = useTemporalContextStore((s) => s.setViewDate);
@@ -98,11 +100,11 @@ export default function CalendarioPage() {
     if (matchedDayReport.salesCount === 0) {
       conclusion = "Nenhuma venda registrada neste dia.";
     } else if (status === "hit") {
-      conclusion = `Meta batida com ${formatPercent(pct)} de aproveitamento. ${matchedDayReport.salesCount} vendas e ticket médio de ${formatCurrency(matchedDayReport.averageTicket)}.`;
+      conclusion = `Meta batida com ${formatPercent(pct)} de aproveitamento. ${matchedDayReport.salesCount} vendas e ticket médio de ${money(matchedDayReport.averageTicket)}.`;
     } else if (status === "close") {
-      conclusion = `Próximo da meta (${formatPercent(pct)}). Faltaram ${formatCurrency(Math.max(calendar.target - matchedDayReport.revenue, 0))} para atingir o objetivo.`;
+      conclusion = `Próximo da meta (${formatPercent(pct)}). Faltaram ${money(Math.max(calendar.target - matchedDayReport.revenue, 0))} para atingir o objetivo.`;
     } else {
-      conclusion = `Meta não atingida — ${formatCurrency(matchedDayReport.revenue)} de ${formatCurrency(calendar.target)}. Revise produção e horários.`;
+      conclusion = `Meta não atingida — ${money(matchedDayReport.revenue)} de ${money(calendar.target)}. Revise produção e horários.`;
     }
 
     return { pct, conclusion };
@@ -157,7 +159,7 @@ export default function CalendarioPage() {
               {label}
             </div>
           ))}
-          <div className="text-xs text-text-muted">Meta diária: {formatCurrency(calendar.target)}</div>
+          <div className="text-xs text-text-muted">Meta diária: {money(calendar.target)}</div>
         </div>
 
         <div className="grid gap-5 lg:grid-cols-3">
@@ -196,7 +198,7 @@ export default function CalendarioPage() {
                             <div className={`absolute right-1 top-1 h-1.5 w-1.5 rounded-full sm:right-1.5 sm:top-1.5 ${statusColors[status]}`} />
                             {/* Receita em 9px é ilegível no celular: só do sm pra cima. */}
                             <span className="mt-0.5 hidden text-[10px] text-text-muted sm:inline">
-                              {formatCurrency(dayInfo.revenue)}
+                              {money(dayInfo.revenue)}
                             </span>
                           </>
                         )}
@@ -216,7 +218,7 @@ export default function CalendarioPage() {
                   title={formatDate(selectedDate!)}
                   conclusion={daySummary.conclusion}
                   items={[
-                    { label: "Receita", value: formatCurrency(matchedDayReport.revenue), highlight: true },
+                    { label: "Receita", value: money(matchedDayReport.revenue), highlight: true },
                     { label: "Vendas", value: String(matchedDayReport.salesCount) },
                     { label: "Itens", value: String(matchedDayReport.itemsSold) },
                     {
@@ -231,7 +233,7 @@ export default function CalendarioPage() {
                     <div className="grid grid-cols-2 gap-3">
                       <div className="rounded-lg bg-surface-elevated p-3">
                         <p className="label-upper">Lucro</p>
-                        <p className="font-bold text-brand-green">{formatCurrency(matchedDayReport.profit)}</p>
+                        <p className="font-bold text-brand-green">{money(matchedDayReport.profit)}</p>
                       </div>
                       <div className="rounded-lg bg-surface-elevated p-3">
                         <p className="label-upper">Clientes</p>
@@ -239,7 +241,7 @@ export default function CalendarioPage() {
                       </div>
                       <div className="col-span-2 rounded-lg bg-surface-elevated p-3">
                         <p className="label-upper">Ticket médio</p>
-                        <p className="font-bold">{formatCurrency(matchedDayReport.averageTicket)}</p>
+                        <p className="font-bold">{money(matchedDayReport.averageTicket)}</p>
                       </div>
                     </div>
                     {matchedDayReport.salesCount > 0 && selectedDate && (

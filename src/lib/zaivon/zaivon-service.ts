@@ -138,9 +138,25 @@ function resolvePlan(month: string, realizedProfit: number, realizedDays: number
 }
 
 function debtType(clientName: string): DebtType {
-  if (/n[ãa]o identificad|n[ãa]o reconhecid|desconhecid/i.test(clientName)) return "investigacao";
+  if (/n[ãa]o identificad|n[ãa]o reconhecid|desconhecid|retirada n[ãa]o identificad/i.test(clientName))
+    return "investigacao";
   if (/meia sola/i.test(clientName)) return "parceiro";
   return "fiado";
+}
+
+/**
+ * Acordos de cobrança diferida (não listar como “Cobrar agora” até a data).
+ * Ana Laura: acumular até o 5º dia útil de novembro / quitação à noite.
+ */
+const COLLECTION_DEFERRED_UNTIL: Record<string, string> = {
+  "Ana Laura": "2026-11-07",
+};
+
+function deferredUntilFor(clientName: string): string | undefined {
+  for (const [name, until] of Object.entries(COLLECTION_DEFERRED_UNTIL)) {
+    if (clientName === name || clientName.startsWith(name + " ")) return until;
+  }
+  return undefined;
 }
 
 function describeItems(items: { product: string; qty: number }[]): string {
@@ -313,15 +329,17 @@ export async function getZaivonData(requestedMonth?: string): Promise<ZaivonData
   const debts: Debt[] = salesData.open.map((s) => {
     const name = s.clientName ?? "Não identificado";
     const type = debtType(name);
+    const person = type === "investigacao" ? "Não identificado" : name;
     return {
       id: s.id,
-      person: type === "investigacao" ? "Não identificado" : name,
+      person,
       type,
       originDate: s.saleDate,
       amount: round2(Number(s.totalAmount) || 0),
       paid: round2(s.paymentStatus === "partial" ? Number(s.amountReceived) || 0 : 0),
       description: describeItems(salesData.items.get(s.id) ?? []),
       status: lost.has(s.id) ? "loss" : "open",
+      deferredUntil: deferredUntilFor(person),
     };
   });
 

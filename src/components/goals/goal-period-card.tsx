@@ -1,7 +1,8 @@
 "use client";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 import { cn } from "@/components/ui/utils";
-import { formatCurrency, formatPercent } from "@/lib/utils";
+import { formatPercent } from "@/lib/utils";
 import { motion } from "framer-motion";
 import type { ProbabilityLevel, SmartGoalPeriod, TrendDirection } from "@/lib/smart-goals-view";
 import { TrendingDown, TrendingUp, Minus, Target } from "lucide-react";
@@ -39,6 +40,7 @@ export function GoalPeriodCard({
   delay = 0,
   extra,
 }: GoalPeriodCardProps) {
+  const money = useFormatMoney();
   const prob = PROBABILITY_STYLES[period.probability];
   const TrendIcon = TREND_ICONS[period.trend];
 
@@ -100,11 +102,11 @@ export function GoalPeriodCard({
           <>
             <div>
               <p className="text-text-muted">Receita</p>
-              <p className="font-semibold text-text-primary">{formatCurrency(period.achievedRevenue)}</p>
+              <p className="font-semibold text-text-primary">{money(period.achievedRevenue)}</p>
             </div>
             <div>
               <p className="text-text-muted">Lucro</p>
-              <p className="font-semibold text-brand-green">{formatCurrency(period.achievedProfit)}</p>
+              <p className="font-semibold text-brand-green">{money(period.achievedProfit)}</p>
             </div>
           </>
         )}

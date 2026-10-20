@@ -15,7 +15,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { formatCurrency } from "@/lib/utils";
+import { useFormatMoney, useMoneyHidden } from "@/hooks/use-hide-money";
 import { HUB_COLORS } from "@/constants/hub-brand";
 
 const COLORS = [HUB_COLORS.purple, HUB_COLORS.cyan, "#22C55E", "#F59E0B", HUB_COLORS.blue];
@@ -33,40 +33,28 @@ interface ChartCardProps {
   compact?: boolean;
 }
 
-function formatTooltipValue(entry: { value: number; name?: string }): string {
-  if (typeof entry.value !== "number") return String(entry.value);
-  if (Math.abs(entry.value) >= 1 && (entry.value > 50 || entry.name?.includes("eceita") || entry.name?.includes("ucro"))) {
-    return formatCurrency(entry.value);
-  }
-  return String(entry.value);
-}
-
-function formatTooltipLine(entry: { value: number; name?: string }): string {
-  const label = entry.name && entry.name !== "value" ? entry.name : null;
-  const formatted = formatTooltipValue(entry);
-  return label ? `${label}: ${formatted}` : formatted;
-}
-
 function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number; name?: string; color?: string }>; label?: string }) {
+  const money = useFormatMoney();
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border border-surface-border bg-surface-card px-3 py-2 shadow-card">
       <p className="mb-1 text-xs text-text-muted">{label}</p>
-      {payload.map((entry, i) => (
-        <p key={i} className="text-sm font-medium text-text-primary">
-          {formatTooltipLine(entry)}
-        </p>
-      ))}
+      {payload.map((entry, i) => {
+        const isMoney =
+          typeof entry.value === "number" &&
+          (Math.abs(entry.value) >= 1 &&
+            (entry.value > 50 || entry.name?.includes("eceita") || entry.name?.includes("ucro")));
+        const formatted = isMoney ? money(entry.value) : String(entry.value);
+        const line =
+          entry.name && entry.name !== "value" ? `${entry.name}: ${formatted}` : formatted;
+        return (
+          <p key={i} className="text-sm font-medium text-text-primary">
+            {line}
+          </p>
+        );
+      })}
     </div>
   );
-}
-
-/** Eixo Y curto: 1.250 vira "1,2k" e cabe nos 32px de largura no celular. */
-function formatAxisValue(value: number): string {
-  if (!Number.isFinite(value)) return "";
-  const abs = Math.abs(value);
-  if (abs >= 1000) return `${(value / 1000).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}k`;
-  return String(Math.round(value));
 }
 
 export function ChartCard({
@@ -80,6 +68,15 @@ export function ChartCard({
 }: ChartCardProps) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+  const money = useFormatMoney();
+  const moneyHidden = useMoneyHidden();
+  const formatAxisValue = (value: number): string => {
+    if (moneyHidden) return "••";
+    if (!Number.isFinite(value)) return "";
+    const abs = Math.abs(value);
+    if (abs >= 1000) return `${(value / 1000).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}k`;
+    return String(Math.round(value));
+  };
 
   const chartData = data.map((d) => ({
     name: d.label,
@@ -221,7 +218,7 @@ export function ChartCard({
                 <span className="h-2 w-2 rounded-full" style={{ background: COLORS[i % COLORS.length] }} />
                 {item.name}
               </span>
-              <span className="font-medium text-text-primary">{formatCurrency(item.value)}</span>
+              <span className="font-medium text-text-primary">{money(item.value)}</span>
             </div>
           ))}
         </div>

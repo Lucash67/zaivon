@@ -1,4 +1,5 @@
 "use client";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 
 import { useState } from "react";
 import { motion } from "framer-motion";
@@ -10,7 +11,7 @@ import {
   AlertOctagon,
   Star,
 } from "lucide-react";
-import { formatCurrency, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { formatSaleShift } from "@/lib/sale-shift";
 import type { DayTimelineGroup } from "@/lib/dashboard-view";
 import { useBusinessScope } from "@/hooks/use-business-scope";
@@ -55,6 +56,7 @@ const STATUS_STYLES = {
 };
 
 export function SalesDayTimeline({ groups, onLoyaltyChange }: SalesDayTimelineProps) {
+  const money = useFormatMoney();
   const { activeBusinessId, canWrite } = useBusinessScope();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
@@ -224,7 +226,7 @@ export function SalesDayTimeline({ groups, onLoyaltyChange }: SalesDayTimelinePr
                             isLoss ? "text-red-400" : styles.amount,
                           )}
                         >
-                          {isLoss ? "—" : formatCurrency(entry.amount)}
+                          {isLoss ? "—" : money(entry.amount)}
                         </p>
                       </div>
                     </div>
