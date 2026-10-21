@@ -11,6 +11,7 @@ import {
   financeTransactions,
   financeWeekSpends,
 } from "@/lib/db/postgres/schema-finance";
+import { buildDiagnosisPlan, parseFinanceContext, type DiagnosisInput, type DiagnosisPlan } from "@/lib/personal-finance/diagnosis";
 import { CHALLENGE_CATALOG, DEFAULT_CATEGORIES } from "@/lib/personal-finance/defaults";
 import { addDays, isMonday, paydayOnOrAfter, todayInTimeZone, yearMonth } from "@/lib/personal-finance/dates";
 import { buildFinanceView, nextRecurringAfter, roundMoney } from "@/lib/personal-finance/engine";
@@ -35,9 +36,9 @@ export class FinanceError extends Error {
 
 const ACCOUNT_KINDS = new Set<AccountKind>(["checking", "savings", "cash", "credit", "investment"]);
 const COLORS: Record<AccountKind, string> = {
-  checking: "#E8B86D",
+  checking: "#B7FF3C",
   savings: "#6EE7B7",
-  cash: "#D6D3D1",
+  cash: "#C8D0DB",
   credit: "#FB7185",
   investment: "#7DD3FC",
 };
@@ -205,6 +206,7 @@ export async function getFinanceSnapshot(userId: string): Promise<FinanceSnapsho
       currency: profile.currency,
       timezone: profile.timezone,
       createdOn: dateOnly(profile.createdAt, profile.timezone),
+      context: parseFinanceContext(profile.context),
     },
     accounts: accounts.map((account) => ({
       id: account.id,
@@ -267,10 +269,15 @@ export async function getFinanceSnapshot(userId: string): Promise<FinanceSnapsho
   };
 }
 
-export async function onboardFinance(
-  userId: string,
-  input: { displayName: string; monthlyIncome: number; payday: number; openingBalance: number; accountName: string },
-): Promise<void> {
+function planFromDiagnosis(input: DiagnosisInput, keepCheckingBalance = false): DiagnosisPlan {
+  try {
+    return buildDiagnosisPlan(input, { keepCheckingBalance });
+  } catch (error) {
+    throw new FinanceError(error instanceof Error ? error.message : "Confere o diagnóstico e tenta de novo.");
+  }
+}
+
+export async function onboardFinance(userId: string, input: DiagnosisInput): Promise<void> {
   const db = await getPostgresDb();
   const existing = await db
     .select({ id: financeProfiles.id })
@@ -279,10 +286,9 @@ export async function onboardFinance(
     .limit(1);
   if (existing.length > 0) throw new FinanceError("Você já começou o Finance.");
 
+  const plan = planFromDiagnosis(input);
   const timezone = "America/Fortaleza";
   const today = todayInTimeZone(timezone);
-  const income = roundMoney(Math.max(0, input.monthlyIncome));
-  const opening = roundMoney(input.openingBalance);
 
   try {
     await db.transaction(async (tx) => {
@@ -290,60 +296,213 @@ export async function onboardFinance(
         .insert(financeProfiles)
         .values({
           userId,
-          displayName: input.displayName,
-          monthlyIncome: income.toFixed(2),
-          payday: input.payday,
+          displayName: input.displayName.trim(),
+          monthlyIncome: plan.monthlyIncome.toFixed(2),
+          payday: plan.payday,
           timezone,
+          context: plan.context,
           onboardingCompletedAt: new Date(),
         })
         .returning({ id: financeProfiles.id });
 
-      const [account] = await tx
-        .insert(financeAccounts)
-        .values({
+      await tx.insert(financeCategories).values(
+        DEFAULT_CATEGORIES.map((category, index) => ({
           profileId: profile.id,
-          name: input.accountName,
-          kind: "checking",
-          balance: opening.toFixed(2),
-          color: COLORS.checking,
-          sortOrder: 0,
-        })
-        .returning({ id: financeAccounts.id });
+          name: category.name,
+          kind: category.kind,
+          groupName: category.group,
+          icon: category.icon,
+          sortOrder: index,
+        })),
+      );
 
-      const categories = await tx
-        .insert(financeCategories)
-        .values(
-          DEFAULT_CATEGORIES.map((category, index) => ({
-            profileId: profile.id,
-            name: category.name,
-            kind: category.kind,
-            groupName: category.group,
-            icon: category.icon,
-            sortOrder: index,
-          })),
-        )
-        .returning({ id: financeCategories.id, name: financeCategories.name });
-
-      if (income > 0) {
-        const salary = categories.find((category) => category.name === "Salário");
-        if (salary) {
-          await tx.insert(financeRecurring).values({
-            profileId: profile.id,
-            accountId: account.id,
-            categoryId: salary.id,
-            direction: "in",
-            amount: income.toFixed(2),
-            name: "Salário",
-            cadence: "monthly",
-            dayOfMonth: input.payday,
-            nextOn: paydayOnOrAfter(today, input.payday),
-          });
-        }
-      }
+      await writeAbsorbedDiagnosis(tx as unknown as Database, profile.id, plan, today);
     });
   } catch (error) {
+    if (error instanceof FinanceError) throw error;
     if (isUniqueViolation(error)) throw new FinanceError("Você já começou o Finance.");
     throw error;
+  }
+}
+
+export async function applyFinanceDiagnosis(userId: string, input: DiagnosisInput): Promise<void> {
+  const db = await getPostgresDb();
+  const profile = await mustProfile(db, userId);
+  const today = todayInTimeZone(profile.timezone);
+  const checking = await db
+    .select({ id: financeAccounts.id })
+    .from(financeAccounts)
+    .where(and(eq(financeAccounts.profileId, profile.id), eq(financeAccounts.kind, "checking")))
+    .limit(1);
+  let keepCheckingBalance = false;
+  if (checking[0]) {
+    const moved = await db
+      .select({ id: financeTransactions.id })
+      .from(financeTransactions)
+      .where(eq(financeTransactions.accountId, checking[0].id))
+      .limit(1);
+    keepCheckingBalance = moved.length > 0;
+  }
+  const plan = planFromDiagnosis(input, keepCheckingBalance);
+
+  await db.transaction(async (tx) => {
+    await tx
+      .update(financeProfiles)
+      .set({
+        displayName: input.displayName.trim(),
+        monthlyIncome: plan.monthlyIncome.toFixed(2),
+        payday: plan.payday,
+        context: plan.context,
+        updatedAt: new Date(),
+      })
+      .where(eq(financeProfiles.id, profile.id));
+    await writeAbsorbedDiagnosis(tx as unknown as Database, profile.id, plan, today);
+  });
+}
+
+async function writeAbsorbedDiagnosis(tx: Database, profileId: string, plan: DiagnosisPlan, today: string) {
+  const accounts = await tx
+    .select()
+    .from(financeAccounts)
+    .where(eq(financeAccounts.profileId, profileId))
+    .orderBy(asc(financeAccounts.sortOrder));
+  const checkingPlan = plan.accounts.find((account) => account.kind === "checking");
+  if (!checkingPlan) throw new FinanceError("O diagnóstico precisa de uma conta principal.");
+
+  let checking = accounts.find((account) => account.kind === "checking") ?? null;
+  if (!checking) {
+    const [created] = await tx
+      .insert(financeAccounts)
+      .values({
+        profileId,
+        name: checkingPlan.name,
+        kind: "checking",
+        balance: checkingPlan.balance.toFixed(2),
+        color: COLORS.checking,
+        sortOrder: 0,
+      })
+      .returning();
+    checking = created ?? null;
+  } else {
+    const moved = await tx
+      .select({ id: financeTransactions.id })
+      .from(financeTransactions)
+      .where(eq(financeTransactions.accountId, checking.id))
+      .limit(1);
+    await tx
+      .update(financeAccounts)
+      .set({
+        name: checkingPlan.name,
+        ...(moved.length === 0 ? { balance: checkingPlan.balance.toFixed(2) } : {}),
+        updatedAt: new Date(),
+      })
+      .where(eq(financeAccounts.id, checking.id));
+  }
+  if (!checking) throw new FinanceError("Não consegui abrir a conta principal.");
+
+  let sort = accounts.length;
+  for (const extra of plan.accounts.filter((account) => account.kind !== "checking")) {
+    if (accounts.some((account) => account.kind === extra.kind)) continue;
+    await tx.insert(financeAccounts).values({
+      profileId,
+      name: extra.name,
+      kind: extra.kind,
+      balance: extra.balance.toFixed(2),
+      color: COLORS[extra.kind],
+      sortOrder: sort,
+    });
+    sort += 1;
+  }
+
+  const categories = await tx
+    .select({ id: financeCategories.id, name: financeCategories.name })
+    .from(financeCategories)
+    .where(eq(financeCategories.profileId, profileId));
+  const rules = await tx
+    .select()
+    .from(financeRecurring)
+    .where(and(eq(financeRecurring.profileId, profileId), eq(financeRecurring.active, true)));
+
+  for (const rule of plan.recurring) {
+    const category = categories.find((item) => item.name === rule.category);
+    if (!category) continue;
+    const nextOn = paydayOnOrAfter(today, rule.dayOfMonth);
+    const existing = rules.find((item) => item.name === rule.name);
+    if (existing) {
+      await tx
+        .update(financeRecurring)
+        .set({
+          accountId: checking.id,
+          categoryId: category.id,
+          direction: rule.direction,
+          amount: rule.amount.toFixed(2),
+          cadence: "monthly",
+          dayOfMonth: rule.dayOfMonth,
+          nextOn,
+        })
+        .where(eq(financeRecurring.id, existing.id));
+      continue;
+    }
+    await tx.insert(financeRecurring).values({
+      profileId,
+      accountId: checking.id,
+      categoryId: category.id,
+      direction: rule.direction,
+      amount: rule.amount.toFixed(2),
+      name: rule.name,
+      cadence: "monthly",
+      dayOfMonth: rule.dayOfMonth,
+      nextOn,
+    });
+  }
+
+  if (plan.spendTarget > 0) {
+    const month = yearMonth(today);
+    const existing = await tx
+      .select()
+      .from(financeMonthSpendTargets)
+      .where(and(eq(financeMonthSpendTargets.profileId, profileId), eq(financeMonthSpendTargets.yearMonth, month)))
+      .limit(1);
+    const target = plan.spendTarget.toFixed(2);
+    if (existing[0]) {
+      await tx
+        .update(financeMonthSpendTargets)
+        .set({ targetAmount: target })
+        .where(eq(financeMonthSpendTargets.id, existing[0].id));
+    } else {
+      await tx.insert(financeMonthSpendTargets).values({
+        profileId,
+        yearMonth: month,
+        targetAmount: target,
+      });
+    }
+  }
+
+  if (plan.goal) {
+    const goals = await tx
+      .select()
+      .from(financeGoals)
+      .where(and(eq(financeGoals.profileId, profileId), eq(financeGoals.status, "active"), eq(financeGoals.name, plan.goal.name)))
+      .limit(1);
+    if (goals[0]) {
+      const current = Math.max(num(goals[0].currentAmount), plan.goal.current);
+      await tx
+        .update(financeGoals)
+        .set({
+          targetAmount: plan.goal.target.toFixed(2),
+          currentAmount: current.toFixed(2),
+          updatedAt: new Date(),
+        })
+        .where(eq(financeGoals.id, goals[0].id));
+    } else {
+      await tx.insert(financeGoals).values({
+        profileId,
+        name: plan.goal.name,
+        targetAmount: plan.goal.target.toFixed(2),
+        currentAmount: plan.goal.current.toFixed(2),
+        status: "active",
+      });
+    }
   }
 }
 

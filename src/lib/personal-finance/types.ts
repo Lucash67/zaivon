@@ -171,6 +171,16 @@ export type PublicGoal = EngineGoal;
 export type PublicBudget = EngineBudget;
 export type PublicChallenge = EngineChallenge;
 
+export type FinanceContext = {
+  version: 1;
+  intent: "organize" | "breathe" | "reserve" | "debt";
+  incomeSource: "salary" | "variable" | "mixed" | "none";
+  fixedMonthly: number;
+  savingsBalance: number | null;
+  cardDebt: number | null;
+  reserveTarget: number | null;
+};
+
 export type PublicProfile = {
   id: string;
   displayName: string;
@@ -179,6 +189,7 @@ export type PublicProfile = {
   currency: string;
   timezone: string;
   createdOn: string;
+  context: FinanceContext | null;
 };
 
 export type FinanceSnapshot =

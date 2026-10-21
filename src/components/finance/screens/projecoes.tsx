@@ -69,12 +69,12 @@ export function ProjecoesScreen() {
       <Panel>
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#A8A29E]">Daqui a 90 dias</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#93A0B1]">Daqui a 90 dias</p>
             <p className="mt-1 text-2xl font-semibold">
               <Money value={view.projection[view.projection.length - 1]?.balance ?? view.available} />
             </p>
           </div>
-          <div className="text-right text-sm text-[#A8A29E]">
+          <div className="text-right text-sm text-[#93A0B1]">
             <p>
               Ponto mais baixo: <Money value={view.lowest.balance} /> em <ShortDate iso={view.lowest.date} />
             </p>
@@ -92,15 +92,15 @@ export function ProjecoesScreen() {
             <AreaChart data={view.projection}>
               <defs>
                 <linearGradient id="financeFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#E8B86D" stopOpacity={0.35} />
-                  <stop offset="100%" stopColor="#E8B86D" stopOpacity={0} />
+                  <stop offset="0%" stopColor="#B7FF3C" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="#B7FF3C" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <XAxis
                 dataKey="date"
                 tickFormatter={(value: string) => formatShort(value)}
                 interval={14}
-                tick={{ fill: "#A8A29E", fontSize: 11 }}
+                tick={{ fill: "#93A0B1", fontSize: 11 }}
                 axisLine={false}
                 tickLine={false}
               />
@@ -108,14 +108,14 @@ export function ProjecoesScreen() {
               <Tooltip
                 formatter={(value) => formatCurrency(Number(value))}
                 labelFormatter={(label) => formatShort(String(label))}
-                contentStyle={{ background: "#16130F", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12 }}
+                contentStyle={{ background: "#10141B", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12 }}
               />
               {view.firstNegative ? <ReferenceLine y={0} stroke="#FB7185" strokeDasharray="4 4" /> : null}
-              <Area type="monotone" dataKey="balance" stroke="#E8B86D" fill="url(#financeFill)" strokeWidth={2} />
+              <Area type="monotone" dataKey="balance" stroke="#B7FF3C" fill="url(#financeFill)" strokeWidth={2} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
-        <p className="mt-2 text-xs leading-relaxed text-[#78716C]">
+        <p className="mt-2 text-xs leading-relaxed text-[#6F7B8C]">
           Parte do disponível de hoje. Soma recorrências e lançamentos futuros. O que já aconteceu está no saldo, não de novo na curva.
           Quando você lança o salário ou o aluguel de verdade, a recorrência correspondente avança.
         </p>
@@ -124,14 +124,14 @@ export function ProjecoesScreen() {
       <Panel>
         <p className="text-sm font-semibold">Recorrências</p>
         {snap.recurring.length === 0 ? (
-          <p className="mt-2 text-sm text-[#A8A29E]">Nada fixo ainda. Salário, aluguel, assinatura — o que se repete mora aqui.</p>
+          <p className="mt-2 text-sm text-[#93A0B1]">Nada fixo ainda. Salário, aluguel, assinatura — o que se repete mora aqui.</p>
         ) : (
           <ul className="mt-3 divide-y divide-white/5">
             {snap.recurring.map((rule) => (
               <li key={rule.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
                 <div>
                   <p className="font-medium">{rule.name}</p>
-                  <p className="text-xs text-[#78716C]">
+                  <p className="text-xs text-[#6F7B8C]">
                     {directionLabel(rule.direction)} · {rule.cadence === "weekly" ? "toda semana" : `dia ${rule.dayOfMonth}`} · próxima{" "}
                     <ShortDate iso={rule.nextOn} />
                   </p>
@@ -140,7 +140,7 @@ export function ProjecoesScreen() {
                   <Money value={rule.amount} tone={rule.direction === "in" ? "in" : rule.direction === "save" ? "save" : "out"} />
                   <button
                     type="button"
-                    className="text-[11px] text-[#78716C] hover:text-rose-300"
+                    className="text-[11px] text-[#6F7B8C] hover:text-rose-300"
                     onClick={() => void act("deactivateRecurring", { recurringId: rule.id })}
                   >
                     Remover

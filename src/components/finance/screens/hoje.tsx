@@ -11,7 +11,7 @@ import { Field, GhostButton, GoldButton, Money, Panel, ShortDate, directionLabel
 
 export function HojeScreen() {
   const snap = useFinanceHome();
-  const { openComposer, act } = useFinance();
+  const { openComposer, openDiagnosis, act } = useFinance();
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState("");
   const [kind, setKind] = useState<AccountKind>("savings");
@@ -45,12 +45,25 @@ export function HojeScreen() {
 
   return (
     <div className="space-y-4">
+      {profile.context ? null : (
+        <Panel>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#B7FF3C]">Diagnóstico</p>
+          <p className="mt-2 text-lg font-semibold tracking-tight">O mês ainda está sem o seu contexto.</p>
+          <p className="mt-2 text-sm leading-relaxed text-[#93A0B1]">
+            Renda, compromissos fixos, reserva e cartão entram na previsão. Leva poucos passos e dá para corrigir depois.
+          </p>
+          <GoldButton type="button" className="mt-4" onClick={openDiagnosis}>
+            Fazer o diagnóstico
+          </GoldButton>
+        </Panel>
+      )}
+
       <div>
-        <p className="text-sm text-[#A8A29E]">
+        <p className="text-sm text-[#93A0B1]">
           {hello}, {first}
         </p>
         <p className="mt-1 max-w-xl text-2xl font-semibold tracking-tight sm:text-3xl">{view.pulse}</p>
-        <p className="mt-2 text-xs text-[#A8A29E]">
+        <p className="mt-2 text-xs text-[#93A0B1]">
           Nível {view.level.level} · {view.level.name}
           <span className="mx-2 text-white/20">/</span>
           {view.level.into} de {view.level.span} XP
@@ -59,27 +72,27 @@ export function HojeScreen() {
 
       <div className="grid gap-3 sm:grid-cols-3">
         <Panel>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#A8A29E]">Disponível</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#93A0B1]">Disponível</p>
           <p className="mt-2 text-2xl font-semibold">
             <Money value={view.available} />
           </p>
-          <p className="mt-1 text-xs text-[#78716C]">Conta, poupança e carteira.</p>
+          <p className="mt-1 text-xs text-[#6F7B8C]">Conta, poupança e carteira.</p>
         </Panel>
         <Panel>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#A8A29E]">Saiu no mês</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#93A0B1]">Saiu no mês</p>
           <p className="mt-2 text-2xl font-semibold">
             <Money value={view.month.expense} tone={view.month.expense > 0 ? "out" : "neutral"} />
           </p>
-          <p className="mt-1 text-xs text-[#78716C]">
+          <p className="mt-1 text-xs text-[#6F7B8C]">
             Ritmo do mês: <Money value={view.month.paceExpense} tone="neutral" className="text-xs" />
           </p>
         </Panel>
         <Panel>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#A8A29E]">Caixa no fim do mês</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#93A0B1]">Caixa no fim do mês</p>
           <p className="mt-2 text-2xl font-semibold">
             <Money value={view.monthEndBalance} />
           </p>
-          <p className="mt-1 text-xs text-[#78716C]">Saldo de hoje mais o que já está previsto.</p>
+          <p className="mt-1 text-xs text-[#6F7B8C]">Saldo de hoje mais o que já está previsto.</p>
         </Panel>
       </div>
 
@@ -91,8 +104,8 @@ export function HojeScreen() {
           <ul className="mt-3 space-y-2">
             {view.firstWeek.items.map((item) => (
               <li key={item.id} className="flex items-center gap-2 text-sm">
-                <span className={item.done ? "text-emerald-300" : "text-[#78716C]"}>{item.done ? "●" : "○"}</span>
-                <span className={item.done ? "text-[#A8A29E] line-through" : ""}>{item.label}</span>
+                <span className={item.done ? "text-emerald-300" : "text-[#6F7B8C]"}>{item.done ? "●" : "○"}</span>
+                <span className={item.done ? "text-[#93A0B1] line-through" : ""}>{item.label}</span>
               </li>
             ))}
           </ul>
@@ -102,14 +115,14 @@ export function HojeScreen() {
       <Panel>
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm font-semibold">Contas</p>
-          <button type="button" className="text-xs font-semibold text-[#E8B86D]" onClick={() => setAdding((open) => !open)}>
+          <button type="button" className="text-xs font-semibold text-[#B7FF3C]" onClick={() => setAdding((open) => !open)}>
             {adding ? "Fechar" : "Nova conta"}
           </button>
         </div>
         <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
           {snap.accounts.map((account) => (
             <div key={account.id} className="min-w-[150px] rounded-2xl border border-white/10 bg-black/20 p-3">
-              <p className="text-[11px] uppercase tracking-wide text-[#A8A29E]">{ACCOUNT_KIND_LABEL[account.kind]}</p>
+              <p className="text-[11px] uppercase tracking-wide text-[#93A0B1]">{ACCOUNT_KIND_LABEL[account.kind]}</p>
               <p className="mt-1 truncate text-sm font-medium">{account.name}</p>
               <p className="mt-2 text-base font-semibold">
                 <Money value={account.balance} />
@@ -148,12 +161,12 @@ export function HojeScreen() {
         <Panel>
           <p className="text-sm font-semibold">Próximos movimentos</p>
           {view.upcoming.length === 0 ? (
-            <p className="mt-3 text-sm text-[#A8A29E]">Nada previsto nas próximas semanas. Recorrências aparecem em Projeções.</p>
+            <p className="mt-3 text-sm text-[#93A0B1]">Nada previsto nas próximas semanas. Recorrências aparecem em Projeções.</p>
           ) : (
             <ul className="mt-3 space-y-2">
               {view.upcoming.map((item, index) => (
                 <li key={`${item.date}-${item.name}-${index}`} className="flex items-center justify-between gap-3 text-sm">
-                  <span className="text-[#A8A29E]">
+                  <span className="text-[#93A0B1]">
                     <ShortDate iso={item.date} /> · {item.name}
                   </span>
                   <Money value={item.direction === "in" ? item.amount : -item.amount} tone={directionTone(item.direction)} />
@@ -163,9 +176,9 @@ export function HojeScreen() {
           )}
         </Panel>
         <Panel>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#E8B86D]">Dica do dia</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#B7FF3C]">Dica do dia</p>
           <p className="mt-2 text-base font-semibold">{view.tip.title}</p>
-          <p className="mt-2 text-sm leading-relaxed text-[#D6D3D1]">{view.tip.body}</p>
+          <p className="mt-2 text-sm leading-relaxed text-[#C8D0DB]">{view.tip.body}</p>
         </Panel>
       </div>
 
@@ -173,17 +186,17 @@ export function HojeScreen() {
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-sm font-semibold">{active ? active.title : "Um desafio deixa o hábito em pé"}</p>
-            <p className="mt-1 text-sm text-[#A8A29E]">{active ? active.detail : "Sete dias, 10% ou uma semana sem delivery."}</p>
+            <p className="mt-1 text-sm text-[#93A0B1]">{active ? active.detail : "Sete dias, 10% ou uma semana sem delivery."}</p>
           </div>
           {active ? (
-            <span className="text-xs font-semibold text-[#E8B86D]">{Math.round(active.ratio * 100)}%</span>
+            <span className="text-xs font-semibold text-[#B7FF3C]">{Math.round(active.ratio * 100)}%</span>
           ) : (
-            <Link href="/finance/desafios" className="text-xs font-semibold text-[#E8B86D]">
+            <Link href="/finance/desafios" className="text-xs font-semibold text-[#B7FF3C]">
               Ver desafios
             </Link>
           )}
         </div>
-        {active ? <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10"><span className="block h-full rounded-full bg-[#E8B86D]" style={{ width: `${Math.round(active.ratio * 100)}%` }} /></div> : null}
+        {active ? <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10"><span className="block h-full rounded-full bg-[#B7FF3C]" style={{ width: `${Math.round(active.ratio * 100)}%` }} /></div> : null}
       </Panel>
 
       <Panel>
@@ -206,7 +219,7 @@ export function TxList({ limit = 8 }: { limit?: number }) {
   if (!snap) return null;
   const rows = [...snap.transactions].sort((a, b) => b.occurredOn.localeCompare(a.occurredOn) || b.id.localeCompare(a.id)).slice(0, limit);
   if (rows.length === 0) {
-    return <p className="mt-3 text-sm text-[#A8A29E]">Nenhum lançamento ainda. O primeiro liga a previsão.</p>;
+    return <p className="mt-3 text-sm text-[#93A0B1]">Nenhum lançamento ainda. O primeiro liga a previsão.</p>;
   }
   return (
     <ul className="mt-3 divide-y divide-white/5">
@@ -216,7 +229,7 @@ export function TxList({ limit = 8 }: { limit?: number }) {
           <li key={tx.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
             <div className="min-w-0">
               <p className="truncate font-medium">{tx.description.trim() || category?.name || directionLabel(tx.direction)}</p>
-              <p className="text-xs text-[#78716C]">
+              <p className="text-xs text-[#6F7B8C]">
                 <ShortDate iso={tx.occurredOn} /> · {category?.name} · {directionLabel(tx.direction)}
               </p>
             </div>
@@ -227,7 +240,7 @@ export function TxList({ limit = 8 }: { limit?: number }) {
               />
               <button
                 type="button"
-                className="text-[11px] text-[#78716C] hover:text-rose-300"
+                className="text-[11px] text-[#6F7B8C] hover:text-rose-300"
                 onClick={() => {
                   if (pending !== tx.id) {
                     setPending(tx.id);

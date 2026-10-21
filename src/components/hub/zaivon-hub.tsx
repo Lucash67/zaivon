@@ -36,11 +36,11 @@ const ACCENT = {
     cta: "bg-gradient-to-r from-emerald-500 to-z-info text-white",
   },
   amber: {
-    border: "border-amber-300/30 hover:border-amber-300/55",
-    glow: "from-amber-400/18 via-transparent to-orange-500/10",
-    icon: "bg-amber-400/15 text-amber-200 ring-amber-300/30",
-    chip: "bg-amber-400/10 text-amber-100",
-    cta: "bg-gradient-to-r from-amber-300 to-orange-400 text-[#1C1408]",
+    border: "border-z-primary/30 hover:border-z-primary/55",
+    glow: "from-z-primary/18 via-transparent to-z-emerald/10",
+    icon: "bg-z-primary/15 text-z-lime-400 ring-z-primary/30",
+    chip: "bg-z-primary/12 text-z-lime-300",
+    cta: "bg-gradient-to-r from-z-primary to-z-emerald text-brand-on",
   },
 } as const;
 

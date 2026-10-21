@@ -86,7 +86,7 @@ export function FinanceComposer() {
           <h2 id="finance-composer-title" className="text-lg font-semibold">
             Novo lançamento
           </h2>
-          <button type="button" onClick={closeComposer} className="rounded-full p-2 text-[#A8A29E] hover:text-white" aria-label="Fechar">
+          <button type="button" onClick={closeComposer} className="rounded-full p-2 text-[#93A0B1] hover:text-white" aria-label="Fechar">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -99,8 +99,8 @@ export function FinanceComposer() {
               onClick={() => setDirection(item.id)}
               className={
                 direction === item.id
-                  ? "rounded-xl bg-[#E8B86D] py-2 text-sm font-semibold text-[#1C1408]"
-                  : "rounded-xl py-2 text-sm text-[#A8A29E]"
+                  ? "rounded-xl bg-[#B7FF3C] py-2 text-sm font-semibold text-[#07110A]"
+                  : "rounded-xl py-2 text-sm text-[#93A0B1]"
               }
             >
               {item.label}

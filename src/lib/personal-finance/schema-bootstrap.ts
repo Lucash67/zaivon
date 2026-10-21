@@ -11,6 +11,7 @@ const STATEMENTS = [
     timezone TEXT NOT NULL DEFAULT 'America/Fortaleza',
     monthly_income NUMERIC(12, 2) NOT NULL DEFAULT 0,
     payday INTEGER NOT NULL DEFAULT 5,
+    context JSONB NOT NULL DEFAULT '{}'::jsonb,
     onboarding_completed_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -22,7 +23,7 @@ const STATEMENTS = [
     name TEXT NOT NULL,
     kind TEXT NOT NULL DEFAULT 'checking',
     balance NUMERIC(14, 2) NOT NULL DEFAULT 0,
-    color TEXT NOT NULL DEFAULT '#E8B86D',
+    color TEXT NOT NULL DEFAULT '#B7FF3C',
     sort_order INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -135,10 +136,14 @@ async function apply(): Promise<void> {
       WHERE table_schema = 'finance' AND table_name = 'week_spends'
       LIMIT 1
     `;
-    if (found.length > 0) return;
-    for (const statement of STATEMENTS) {
-      await sql.unsafe(statement);
+    if (found.length === 0) {
+      for (const statement of STATEMENTS) {
+        await sql.unsafe(statement);
+      }
     }
+    await sql.unsafe(
+      "ALTER TABLE finance.profiles ADD COLUMN IF NOT EXISTS context JSONB NOT NULL DEFAULT '{}'::jsonb",
+    );
   } finally {
     await sql.end({ timeout: 2 });
   }

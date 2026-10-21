@@ -32,10 +32,10 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
             aria-current={active ? "page" : undefined}
             className={cn(
               "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition",
-              active ? "bg-[#E8B86D]/15 text-[#F6F1E7]" : "text-[#A8A29E] hover:bg-white/5 hover:text-white",
+              active ? "bg-[#B7FF3C]/15 text-[#F7F9FC]" : "text-[#93A0B1] hover:bg-white/5 hover:text-white",
             )}
           >
-            <Icon className={cn("h-4 w-4", active && "text-[#E8B86D]")} />
+            <Icon className={cn("h-4 w-4", active && "text-[#B7FF3C]")} />
             {item.label}
           </Link>
         );
@@ -45,11 +45,11 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 export function FinanceGate({ children }: { children: React.ReactNode }) {
-  const { snapshot, loading, error, reload } = useFinance();
+  const { snapshot, loading, error, reload, diagnosisOpen } = useFinance();
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0C0B09] text-[#A8A29E]">
+      <div className="flex min-h-screen items-center justify-center bg-[#0A0D12] text-[#93A0B1]">
         Abrindo seu Finance…
       </div>
     );
@@ -57,16 +57,18 @@ export function FinanceGate({ children }: { children: React.ReactNode }) {
 
   if (error || !snapshot) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[#0C0B09] px-6 text-center text-[#F6F1E7]">
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[#0A0D12] px-6 text-center text-[#F7F9FC]">
         <p>{error || "Não consegui abrir o Finance."}</p>
-        <button type="button" onClick={reload} className="rounded-2xl bg-[#E8B86D] px-4 py-2 text-sm font-semibold text-[#1C1408]">
+        <button type="button" onClick={reload} className="rounded-2xl bg-[#B7FF3C] px-4 py-2 text-sm font-semibold text-[#07110A]">
           Tentar de novo
         </button>
       </div>
     );
   }
 
-  if (snapshot.needsOnboarding) return <FinanceOnboarding />;
+  if (snapshot.needsOnboarding || diagnosisOpen) {
+    return <FinanceOnboarding mode={snapshot.needsOnboarding ? "create" : "apply"} />;
+  }
   return <FinanceShell>{children}</FinanceShell>;
 }
 
@@ -83,16 +85,16 @@ function FinanceShell({ children }: { children: React.ReactNode }) {
   }, [pathname]);
 
   return (
-    <div className="min-h-screen bg-[#0C0B09] text-[#F6F1E7]">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-white/10 bg-[#0C0B09] lg:flex">
+    <div className="min-h-screen bg-[#0A0D12] text-[#F7F9FC]">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-white/10 bg-[#0A0D12] lg:flex">
         <div className="px-4 py-5">
           <Link href="/finance" className="flex items-center gap-2.5">
-            <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#E8B86D] text-[#1C1408]">
+            <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#B7FF3C] text-[#07110A]">
               <Wallet className="h-4 w-4" />
             </span>
             <span>
               <span className="block text-[11px] font-semibold tracking-[0.18em]">{FINANCE_COPY.holdingName}</span>
-              <span className="block text-[11px] font-semibold tracking-[0.14em] text-[#E8B86D]">FINANCE</span>
+              <span className="block text-[11px] font-semibold tracking-[0.14em] text-[#B7FF3C]">FINANCE</span>
             </span>
           </Link>
         </div>
@@ -101,7 +103,7 @@ function FinanceShell({ children }: { children: React.ReactNode }) {
         </div>
         <div className="space-y-3 px-4 py-4">
           {level ? (
-            <p className="text-xs text-[#A8A29E]">
+            <p className="text-xs text-[#93A0B1]">
               Nível {level.level} · {level.name}
             </p>
           ) : null}
@@ -110,17 +112,17 @@ function FinanceShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       <div className="lg:pl-64">
-        <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-white/10 bg-[#0C0B09]/90 px-4 py-3 backdrop-blur lg:px-8">
+        <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-white/10 bg-[#0A0D12]/90 px-4 py-3 backdrop-blur lg:px-8">
           <div className="min-w-0">
             <div className="flex items-center gap-2 lg:hidden">
               <ProductSwitcher compact />
             </div>
             <h1 className="truncate text-lg font-semibold">{meta.title}</h1>
-            <p className="hidden truncate text-xs text-[#A8A29E] sm:block">{meta.subtitle}</p>
+            <p className="hidden truncate text-xs text-[#93A0B1] sm:block">{meta.subtitle}</p>
           </div>
           <div className="flex items-center gap-2">
             {streak > 0 ? (
-              <span className="inline-flex items-center gap-1 rounded-full border border-[#E8B86D]/30 bg-[#E8B86D]/10 px-2.5 py-1 text-xs font-semibold text-[#E8B86D]">
+              <span className="inline-flex items-center gap-1 rounded-full border border-[#B7FF3C]/30 bg-[#B7FF3C]/10 px-2.5 py-1 text-xs font-semibold text-[#B7FF3C]">
                 <Flame className="h-3.5 w-3.5" />
                 {streak}
               </span>
@@ -128,7 +130,7 @@ function FinanceShell({ children }: { children: React.ReactNode }) {
             <button
               type="button"
               onClick={() => openComposer()}
-              className="inline-flex items-center gap-1.5 rounded-2xl bg-[#E8B86D] px-3 py-2 text-sm font-semibold text-[#1C1408]"
+              className="inline-flex items-center gap-1.5 rounded-2xl bg-[#B7FF3C] px-3 py-2 text-sm font-semibold text-[#07110A]"
             >
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline">Lançar</span>
@@ -138,20 +140,20 @@ function FinanceShell({ children }: { children: React.ReactNode }) {
         <main className="mx-auto max-w-5xl px-4 py-5 pb-28 lg:px-8 lg:pb-10">{children}</main>
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-[#0C0B09]/95 px-2 py-2 backdrop-blur lg:hidden" aria-label="Finance móvel">
+      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-[#0A0D12]/95 px-2 py-2 backdrop-blur lg:hidden" aria-label="Finance móvel">
         <div className="grid grid-cols-5 items-end">
           {FINANCE_MOBILE_PRIMARY.slice(0, 2).map((item) => {
             const active = isFinanceNavActive(pathname, item);
             const Icon = item.icon;
             return (
-              <Link key={item.href} href={item.href} className={cn("flex flex-col items-center gap-1 py-1 text-[10px]", active ? "text-[#E8B86D]" : "text-[#A8A29E]")}>
+              <Link key={item.href} href={item.href} className={cn("flex flex-col items-center gap-1 py-1 text-[10px]", active ? "text-[#B7FF3C]" : "text-[#93A0B1]")}>
                 <Icon className="h-5 w-5" />
                 {item.label}
               </Link>
             );
           })}
           <button type="button" onClick={() => openComposer()} className="flex flex-col items-center" aria-label="Lançar">
-            <span className="-mt-5 flex h-12 w-12 items-center justify-center rounded-full bg-[#E8B86D] text-[#1C1408] shadow-lg">
+            <span className="-mt-5 flex h-12 w-12 items-center justify-center rounded-full bg-[#B7FF3C] text-[#07110A] shadow-lg">
               <Plus className="h-5 w-5" />
             </span>
           </button>
@@ -159,13 +161,13 @@ function FinanceShell({ children }: { children: React.ReactNode }) {
             const active = isFinanceNavActive(pathname, item);
             const Icon = item.icon;
             return (
-              <Link key={item.href} href={item.href} className={cn("flex flex-col items-center gap-1 py-1 text-[10px]", active ? "text-[#E8B86D]" : "text-[#A8A29E]")}>
+              <Link key={item.href} href={item.href} className={cn("flex flex-col items-center gap-1 py-1 text-[10px]", active ? "text-[#B7FF3C]" : "text-[#93A0B1]")}>
                 <Icon className="h-5 w-5" />
                 {item.label}
               </Link>
             );
           })}
-          <button type="button" onClick={() => setMoreOpen(true)} className="flex flex-col items-center gap-1 py-1 text-[10px] text-[#A8A29E]">
+          <button type="button" onClick={() => setMoreOpen(true)} className="flex flex-col items-center gap-1 py-1 text-[10px] text-[#93A0B1]">
             <MoreHorizontal className="h-5 w-5" />
             Mais
           </button>
@@ -179,7 +181,7 @@ function FinanceShell({ children }: { children: React.ReactNode }) {
             <div className="mb-3 flex items-center justify-between">
               <p className="text-sm font-semibold">Mais</p>
               <button type="button" onClick={() => setMoreOpen(false)} aria-label="Fechar">
-                <X className="h-4 w-4 text-[#A8A29E]" />
+                <X className="h-4 w-4 text-[#93A0B1]" />
               </button>
             </div>
             <NavLinks onNavigate={() => setMoreOpen(false)} />

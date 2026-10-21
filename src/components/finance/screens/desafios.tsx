@@ -27,14 +27,14 @@ export function DesafiosScreen() {
   return (
     <div className="space-y-4">
       <Panel>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#E8B86D]">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#B7FF3C]">
           Nível {view.level.level}
         </p>
         <p className="mt-1 text-2xl font-semibold">{view.level.name}</p>
-        <p className="mt-2 text-sm text-[#A8A29E]">{view.xp} XP · sequência de {view.streak} dia{view.streak === 1 ? "" : "s"} registrando</p>
+        <p className="mt-2 text-sm text-[#93A0B1]">{view.xp} XP · sequência de {view.streak} dia{view.streak === 1 ? "" : "s"} registrando</p>
         <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
           <span
-            className="block h-full rounded-full bg-[#E8B86D]"
+            className="block h-full rounded-full bg-[#B7FF3C]"
             style={{ width: `${Math.min(100, Math.round((view.level.into / view.level.span) * 100))}%` }}
           />
         </div>
@@ -50,14 +50,14 @@ export function DesafiosScreen() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-base font-semibold">{challenge.title}</p>
-                  <p className="mt-1 text-sm text-[#A8A29E]">{challenge.description}</p>
+                  <p className="mt-1 text-sm text-[#93A0B1]">{challenge.description}</p>
                 </div>
-                <span className="shrink-0 text-xs font-semibold text-[#E8B86D]">+{challenge.xp} XP</span>
+                <span className="shrink-0 text-xs font-semibold text-[#B7FF3C]">+{challenge.xp} XP</span>
               </div>
               <p className="mt-3 text-sm">{challenge.detail}</p>
               {challenge.status !== "available" ? (
                 <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
-                  <span className="block h-full rounded-full bg-[#E8B86D]" style={{ width: `${Math.round(challenge.ratio * 100)}%` }} />
+                  <span className="block h-full rounded-full bg-[#B7FF3C]" style={{ width: `${Math.round(challenge.ratio * 100)}%` }} />
                 </div>
               ) : null}
               <div className="mt-4">
@@ -66,7 +66,7 @@ export function DesafiosScreen() {
                     {pending === challenge.code ? "Aceitando…" : "Aceitar"}
                   </GoldButton>
                 ) : (
-                  <p className="text-xs uppercase tracking-[0.16em] text-[#A8A29E]">
+                  <p className="text-xs uppercase tracking-[0.16em] text-[#93A0B1]">
                     {challenge.status === "done" ? "Completo" : challenge.status === "expired" ? "Encerrado" : "Em curso"}
                   </p>
                 )}

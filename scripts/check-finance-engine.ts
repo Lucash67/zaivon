@@ -2,6 +2,7 @@
  * Confere o motor do ZAIVON Finance sem banco.
  *   npx tsx scripts/check-finance-engine.ts
  */
+import { buildDiagnosisPlan, diagnosisInputFromDraft, emptyFixed } from "../src/lib/personal-finance/diagnosis";
 import { paydayOnOrAfter } from "../src/lib/personal-finance/dates";
 import { buildFinanceView, loggingStreak } from "../src/lib/personal-finance/engine";
 import { buildSpendPlan, splitExact } from "../src/lib/personal-finance/spend-plan";
@@ -147,5 +148,29 @@ const over = buildSpendPlan({
 assert(over.verdict === "over", "repetir 800 passa do alvo");
 assert(over.paceFinal === 2600, `ritmo deveria fechar em 2600, veio ${over.paceFinal}`);
 assert(over.perNextWeek === 200, `para bater, a próxima fica em 200, veio ${over.perNextWeek}`);
+
+const diagnosis = buildDiagnosisPlan(
+  diagnosisInputFromDraft({
+    displayName: "Ana",
+    intent: "reserve",
+    incomeSource: "salary",
+    income: "3.500,00",
+    payday: "5",
+    fixed: { ...emptyFixed(), housing: "1200", bills: "300" },
+    accountName: "Conta",
+    openingBalance: "420",
+    trackSavings: true,
+    savingsBalance: "800",
+    trackCard: true,
+    cardDebt: "250",
+    trackReserve: true,
+    reserveTarget: "5000",
+  }),
+);
+assert(diagnosis.spendTarget === 1500, "compromissos somam o gasto fixo");
+assert(diagnosis.recurring.length === 3, "renda e dois compromissos viram recorrência");
+assert(diagnosis.accounts.some((account) => account.kind === "credit" && account.balance === -250), "cartão entra negativo");
+assert(diagnosis.goal?.target === 5000 && diagnosis.goal.current === 800, "meta nasce com o que já está separado");
+assert(diagnosis.reading.length >= 5, "a leitura explica o que foi absorvido");
 
 console.log("finance engine ok");

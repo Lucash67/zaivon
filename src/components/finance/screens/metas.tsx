@@ -42,7 +42,7 @@ export function MetasScreen() {
       {snap.view.goals.length === 0 ? (
         <Panel>
           <p className="text-lg font-semibold">Nenhuma meta ainda.</p>
-          <p className="mt-2 text-sm leading-relaxed text-[#A8A29E]">
+          <p className="mt-2 text-sm leading-relaxed text-[#93A0B1]">
             Reserva de emergência, viagem, entrada. Com data, o Finance diz quanto por semana falta separar.
           </p>
         </Panel>
@@ -53,12 +53,12 @@ export function MetasScreen() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-base font-semibold">{goal.name}</p>
-                  <p className="mt-1 text-sm text-[#A8A29E]">{goal.note}</p>
+                  <p className="mt-1 text-sm text-[#93A0B1]">{goal.note}</p>
                 </div>
-                <p className="text-sm font-semibold tabular-nums text-[#E8B86D]">{Math.round(goal.ratio * 100)}%</p>
+                <p className="text-sm font-semibold tabular-nums text-[#B7FF3C]">{Math.round(goal.ratio * 100)}%</p>
               </div>
               <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
-                <span className="block h-full rounded-full bg-[#E8B86D]" style={{ width: `${Math.round(goal.ratio * 100)}%` }} />
+                <span className="block h-full rounded-full bg-[#B7FF3C]" style={{ width: `${Math.round(goal.ratio * 100)}%` }} />
               </div>
               <p className="mt-3 text-sm">
                 <Money value={goal.current} tone="save" /> de <Money value={goal.target} tone="neutral" />
