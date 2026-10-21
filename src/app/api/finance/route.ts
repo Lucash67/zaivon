@@ -12,6 +12,7 @@ import {
   deactivateFinanceRecurring,
   deleteFinanceTransaction,
   getFinanceSnapshot,
+  applyFinanceDiagnosis,
   onboardFinance,
   setFinanceBudget,
   setMonthSpendTarget,
@@ -29,6 +30,26 @@ const yearMonth = z.string().regex(/^\d{4}-\d{2}$/);
 const id = z.string().uuid();
 const direction = z.enum(["in", "out", "save"]);
 const label = z.string().trim().min(1).max(40);
+const diagnosisPayload = z.object({
+  displayName: label,
+  intent: z.enum(["organize", "breathe", "reserve", "debt"]),
+  incomeSource: z.enum(["salary", "variable", "mixed", "none"]),
+  monthlyIncome: z.number().finite().min(0).max(1_000_000_000),
+  payday: z.number().int().min(1).max(28),
+  fixed: z
+    .array(
+      z.object({
+        category: z.enum(["Moradia", "Contas", "Mercado", "Transporte", "Assinaturas"]),
+        amount: z.number().finite().positive().max(1_000_000_000),
+      }),
+    )
+    .max(5),
+  accountName: label,
+  openingBalance: signedMoney,
+  savingsBalance: z.number().finite().min(0).max(1_000_000_000).nullable(),
+  cardDebt: z.number().finite().positive().max(1_000_000_000).nullable(),
+  reserveTarget: z.number().finite().positive().max(1_000_000_000).nullable(),
+});
 
 export async function GET() {
   const auth = await requireApiSession();
@@ -76,19 +97,11 @@ export async function POST(request: Request) {
 async function dispatch(userId: string, action: string, payload: unknown) {
   switch (action) {
     case "onboard": {
-      const data = z
-        .object({
-          displayName: label,
-          monthlyIncome: z.number().finite().min(0).max(1_000_000_000),
-          payday: z.number().int().min(1).max(28),
-          openingBalance: signedMoney,
-          accountName: label.optional(),
-        })
-        .parse(payload);
-      await onboardFinance(userId, {
-        ...data,
-        accountName: data.accountName || "Conta principal",
-      });
+      await onboardFinance(userId, diagnosisPayload.parse(payload));
+      return;
+    }
+    case "applyDiagnosis": {
+      await applyFinanceDiagnosis(userId, diagnosisPayload.parse(payload));
       return;
     }
     case "addTransaction": {

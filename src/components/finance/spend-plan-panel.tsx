@@ -49,12 +49,12 @@ export function SpendPlanPanel() {
     }
   }
 
-  const tone = plan.verdict === "hit" ? "text-emerald-300" : plan.verdict === "under" ? "text-sky-300" : plan.verdict === "unset" ? "text-[#A8A29E]" : "text-rose-300";
+  const tone = plan.verdict === "hit" ? "text-emerald-300" : plan.verdict === "under" ? "text-sky-300" : plan.verdict === "unset" ? "text-[#93A0B1]" : "text-rose-300";
 
   return (
     <Panel>
-      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#E8B86D]">Projeção de gasto</p>
-      <p className="mt-1 text-sm text-[#A8A29E]">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#B7FF3C]">Projeção de gasto</p>
+      <p className="mt-1 text-sm text-[#93A0B1]">
         Um valor fixo para o mês e o que sai na semana. O resto vira quanto ainda dá para gastar, e se o mês bate.
       </p>
 
@@ -77,11 +77,11 @@ export function SpendPlanPanel() {
       {plan.target != null ? (
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#A8A29E]">Pode gastar nas próximas</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#93A0B1]">Pode gastar nas próximas</p>
             <p className="mt-2 text-xl font-semibold">
               {plan.perNextWeek == null ? "—" : <Money value={plan.perNextWeek} tone="neutral" />}
             </p>
-            <p className="mt-1 text-xs text-[#78716C]">
+            <p className="mt-1 text-xs text-[#6F7B8C]">
               {plan.nextWeekCount === 0
                 ? "Não há outra semana neste mês."
                 : plan.nextWeekCount === 1
@@ -90,14 +90,14 @@ export function SpendPlanPanel() {
             </p>
           </div>
           <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#A8A29E]">Valor final se seguir</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#93A0B1]">Valor final se seguir</p>
             <p className="mt-2 text-xl font-semibold">
               <Money value={plan.finalIfFollow ?? plan.target} tone="neutral" />
             </p>
-            <p className="mt-1 text-xs text-[#78716C]">Exato, se as próximas respeitarem a cota.</p>
+            <p className="mt-1 text-xs text-[#6F7B8C]">Exato, se as próximas respeitarem a cota.</p>
           </div>
           <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#A8A29E]">Se repetir esta semana</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#93A0B1]">Se repetir esta semana</p>
             <p className="mt-2 text-xl font-semibold">
               <Money value={plan.paceFinal ?? 0} tone="neutral" />
             </p>
@@ -106,7 +106,7 @@ export function SpendPlanPanel() {
         </div>
       ) : null}
 
-      <p className="mt-4 text-sm leading-relaxed text-[#D6D3D1]">{plan.note}</p>
+      <p className="mt-4 text-sm leading-relaxed text-[#C8D0DB]">{plan.note}</p>
 
       <ul className="mt-4 space-y-3">
         {plan.weeks.map((week) => (
@@ -152,19 +152,19 @@ function WeekRow({ week }: { week: SpendWeek }) {
   return (
     <li className="grid gap-2 border-t border-white/10 pt-3 sm:grid-cols-[140px_1fr_160px] sm:items-center">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#A8A29E]">{status}</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#93A0B1]">{status}</p>
         <p className="text-sm tabular-nums">{week.label}</p>
       </div>
       {week.status === "next" && week.declared == null ? (
         week.allowance == null ? (
-          <p className="text-sm text-[#78716C]">A cota aparece depois que o mês tiver um valor.</p>
+          <p className="text-sm text-[#6F7B8C]">A cota aparece depois que o mês tiver um valor.</p>
         ) : (
           <p className="text-sm">
             Pode gastar <Money value={week.allowance} tone="neutral" />
           </p>
         )
       ) : (
-        <p className="text-xs text-[#78716C]">
+        <p className="text-xs text-[#6F7B8C]">
           Lançamentos nesta semana: <Money value={week.fromTransactions} tone="neutral" className="text-xs" />
           {week.declared == null ? ". Em branco, a conta usa esse valor." : ". Este valor substitui os lançamentos."}
         </p>
@@ -200,10 +200,10 @@ export function SpendPlanSummary() {
     return (
       <Panel>
         <p className="text-sm font-semibold">Projeção de gasto</p>
-        <p className="mt-1 text-sm text-[#A8A29E]">
+        <p className="mt-1 text-sm text-[#93A0B1]">
           Defina quanto precisa gastar no mês e o que sai na semana. As próximas semanas ganham um valor exato.
         </p>
-        <Link href="/finance/projecoes" className="mt-3 inline-flex text-sm font-semibold text-[#E8B86D]">
+        <Link href="/finance/projecoes" className="mt-3 inline-flex text-sm font-semibold text-[#B7FF3C]">
           Montar a projeção
         </Link>
       </Panel>
@@ -216,34 +216,34 @@ export function SpendPlanSummary() {
     <Panel>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#E8B86D]">Projeção de gasto</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#B7FF3C]">Projeção de gasto</p>
           <p className={`mt-1 text-sm font-semibold ${tone}`}>{VERDICT[plan.verdict]}</p>
         </div>
-        <Link href="/finance/projecoes" className="text-xs font-semibold text-[#E8B86D]">
+        <Link href="/finance/projecoes" className="text-xs font-semibold text-[#B7FF3C]">
           Ajustar
         </Link>
       </div>
       <div className="mt-3 grid gap-3 sm:grid-cols-3">
         <div>
-          <p className="text-[11px] uppercase tracking-[0.14em] text-[#A8A29E]">Próximas semanas</p>
+          <p className="text-[11px] uppercase tracking-[0.14em] text-[#93A0B1]">Próximas semanas</p>
           <p className="mt-1 text-lg font-semibold">
             {plan.perNextWeek == null ? "—" : <Money value={plan.perNextWeek} />}
           </p>
         </div>
         <div>
-          <p className="text-[11px] uppercase tracking-[0.14em] text-[#A8A29E]">Valor final</p>
+          <p className="text-[11px] uppercase tracking-[0.14em] text-[#93A0B1]">Valor final</p>
           <p className="mt-1 text-lg font-semibold">
             <Money value={plan.finalIfFollow ?? plan.spent} />
           </p>
         </div>
         <div>
-          <p className="text-[11px] uppercase tracking-[0.14em] text-[#A8A29E]">Se repetir a semana</p>
+          <p className="text-[11px] uppercase tracking-[0.14em] text-[#93A0B1]">Se repetir a semana</p>
           <p className="mt-1 text-lg font-semibold">
             <Money value={plan.paceFinal ?? 0} />
           </p>
         </div>
       </div>
-      <p className="mt-3 text-sm leading-relaxed text-[#D6D3D1]">{plan.note}</p>
+      <p className="mt-3 text-sm leading-relaxed text-[#C8D0DB]">{plan.note}</p>
     </Panel>
   );
 }

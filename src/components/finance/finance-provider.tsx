@@ -19,6 +19,9 @@ type FinanceContextValue = {
   composer: ComposerSeed | null;
   openComposer: (seed?: Partial<ComposerSeed>) => void;
   closeComposer: () => void;
+  diagnosisOpen: boolean;
+  openDiagnosis: () => void;
+  closeDiagnosis: () => void;
   act: (action: string, payload?: unknown) => Promise<void>;
   reload: () => void;
 };
@@ -38,6 +41,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
   const query = useQuery({ queryKey: FINANCE_KEY, queryFn: fetchSnapshot });
   const [composer, setComposer] = useState<ComposerSeed | null>(null);
+  const [diagnosisOpen, setDiagnosisOpen] = useState(false);
 
   const act = useCallback(
     async (action: string, payload?: unknown) => {
@@ -66,6 +70,9 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         token: Date.now(),
       }),
     closeComposer: () => setComposer(null),
+    diagnosisOpen,
+    openDiagnosis: () => setDiagnosisOpen(true),
+    closeDiagnosis: () => setDiagnosisOpen(false),
     act,
     reload: () => {
       void query.refetch();

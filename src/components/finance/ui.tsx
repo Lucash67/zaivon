@@ -13,7 +13,7 @@ export function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <section className={cn("rounded-3xl border border-white/10 bg-[#16130F]/90 p-4 sm:p-5", className)}>
+    <section className={cn("rounded-3xl border border-white/10 bg-[#10141B]/90 p-4 sm:p-5", className)}>
       {children}
     </section>
   );
@@ -36,10 +36,10 @@ export function Money({
         : tone === "save"
           ? "text-sky-300"
           : tone === "neutral"
-            ? "text-[#F6F1E7]"
+            ? "text-[#F7F9FC]"
             : value < 0
               ? "text-rose-300"
-              : "text-[#F6F1E7]";
+              : "text-[#F7F9FC]";
   return <span className={cn("tabular-nums", color, className)}>{formatCurrency(value)}</span>;
 }
 
@@ -64,15 +64,15 @@ export function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#A8A29E]">{label}</span>
+      <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#93A0B1]">{label}</span>
       <div className="mt-1.5">{children}</div>
-      {hint ? <span className="mt-1 block text-xs text-[#78716C]">{hint}</span> : null}
+      {hint ? <span className="mt-1 block text-xs text-[#6F7B8C]">{hint}</span> : null}
     </label>
   );
 }
 
 export const fieldClass =
-  "w-full rounded-2xl border border-white/10 bg-[#0C0B09] px-3 py-3 text-sm text-[#F6F1E7] outline-none transition placeholder:text-[#78716C] focus:border-[#E8B86D]/70";
+  "w-full rounded-2xl border border-white/10 bg-[#0A0D12] px-3 py-3 text-sm text-[#F7F9FC] outline-none transition placeholder:text-[#6F7B8C] focus:border-[#B7FF3C]/70";
 
 export function GoldButton({
   children,
@@ -83,7 +83,7 @@ export function GoldButton({
     <button
       {...props}
       className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-2xl bg-[#E8B86D] px-4 py-3 text-sm font-semibold text-[#1C1408] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50",
+        "inline-flex items-center justify-center gap-2 rounded-2xl bg-[#B7FF3C] px-4 py-3 text-sm font-semibold text-[#07110A] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50",
         className,
       )}
     >
