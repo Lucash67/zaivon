@@ -2,10 +2,11 @@ import {
   BriefcaseBusiness,
   CalendarDays,
   Kanban,
+  Wallet,
   type LucideIcon,
 } from "lucide-react";
 
-export type ZaivonProductId = "business" | "schedule" | "crm";
+export type ZaivonProductId = "business" | "schedule" | "crm" | "finance";
 
 export type ZaivonProductStatus = "available" | "coming_soon";
 
@@ -20,7 +21,7 @@ export interface ZaivonProduct {
   status: ZaivonProductStatus;
   icon: LucideIcon;
   /** Accent hint for card differentiation (same ZAIVON DNA). */
-  accent: "purple" | "cyan" | "emerald";
+  accent: "purple" | "cyan" | "emerald" | "amber";
 }
 
 /**
@@ -49,7 +50,7 @@ export const ZAIVON_PRODUCTS: ZaivonProduct[] = [
     highlights: ["Agenda", "Clientes", "Serviços", "Equipe"],
     href: "/schedule",
     cta: "Acessar Schedule",
-    status: "available",
+    status: "coming_soon",
     icon: CalendarDays,
     accent: "cyan",
   },
@@ -61,13 +62,29 @@ export const ZAIVON_PRODUCTS: ZaivonProduct[] = [
     highlights: ["Pipeline", "Contatos", "Negócios", "Funil"],
     href: "/crm",
     cta: "Acessar CRM",
-    status: "available",
+    status: "coming_soon",
     icon: Kanban,
     accent: "emerald",
+  },
+  {
+    id: "finance",
+    name: "ZAIVON Finance",
+    shortName: "Finance",
+    description: "Controle pessoal, previsão de caixa, metas e desafios.",
+    highlights: ["Caixa", "Projeções", "Metas", "Desafios"],
+    href: "/finance",
+    cta: "Acessar Finance",
+    status: "available",
+    icon: Wallet,
+    accent: "amber",
   },
 ];
 
 export const ZAIVON_HUB_PATH = "/hub";
+
+/** Aviso único enquanto Schedule e CRM ficam fora do ar. */
+export const ZAIVON_IN_DEVELOPMENT_NOTICE =
+  "Em desenvolvimento. Logo mais entra no ar.";
 
 export function listAvailableProducts(
   products: ZaivonProduct[] = ZAIVON_PRODUCTS,

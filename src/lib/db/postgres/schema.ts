@@ -679,3 +679,4 @@ export * from "./schema-engine";
 export * from "./schema-crm";
 export * from "./schema-schedule";
 export * from "./schema-loyalty";
+export * from "./schema-finance";

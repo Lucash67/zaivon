@@ -4,6 +4,7 @@ import { AUTH_COOKIE, LEGACY_AUTH_COOKIE, verifySessionToken } from "@/lib/auth/
 import { ZAIVON_HUB_PATH } from "@/constants/zaivon-products";
 import { ZAIVON_ONBOARDING_PATH } from "@/lib/zaivon-onboarding";
 import { resolvePostLoginPath } from "@/lib/auth/safe-next-path";
+import { isSharedZaivonPath, isZaivonOwner } from "@/lib/auth/zaivon-owner";
 
 const ZAIVON_HOST = "zaivon.vercel.app";
 const LEGACY_HOSTS = new Set([
@@ -74,6 +75,16 @@ export async function middleware(request: NextRequest) {
       loginUrl.searchParams.set("next", pathname + request.nextUrl.search);
     }
     return NextResponse.redirect(loginUrl);
+  }
+
+  if (!isZaivonOwner(session.email) && !isSharedZaivonPath(pathname)) {
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json(
+        { error: "ZAIVON Business está em desenvolvimento." },
+        { status: 403 },
+      );
+    }
+    return NextResponse.redirect(new URL("/em-breve", request.url));
   }
 
   return NextResponse.next();
