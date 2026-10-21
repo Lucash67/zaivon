@@ -18,11 +18,14 @@ export function ProductSwitcher({
   compact?: boolean;
 }) {
   const pathname = usePathname();
-  const current = pathname.startsWith("/crm")
-    ? ZAIVON_PRODUCTS.find((p) => p.id === "crm")
-    : pathname.startsWith("/schedule")
-      ? ZAIVON_PRODUCTS.find((p) => p.id === "schedule")
-      : ZAIVON_PRODUCTS.find((p) => p.id === "business");
+  const current =
+    pathname === "/finance" || pathname.startsWith("/finance/")
+      ? ZAIVON_PRODUCTS.find((p) => p.id === "finance")
+      : pathname.startsWith("/crm")
+        ? ZAIVON_PRODUCTS.find((p) => p.id === "crm")
+        : pathname.startsWith("/schedule")
+          ? ZAIVON_PRODUCTS.find((p) => p.id === "schedule")
+          : ZAIVON_PRODUCTS.find((p) => p.id === "business");
 
   return (
     <div className={cn("flex items-center gap-1.5", className)}>

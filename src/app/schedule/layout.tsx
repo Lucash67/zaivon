@@ -1,3 +1,6 @@
+import { ProductInDevelopment } from "@/components/hub/product-in-development";
+
 export default function ScheduleLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  void children;
+  return <ProductInDevelopment productId="schedule" />;
 }

@@ -279,11 +279,7 @@ export default function ConfiguracoesPage() {
                 <strong className="text-text-primary">ZAIVON Business</strong>
               </p>
               <p className="text-xs text-z-primary">
-                Business (produção) ·{" "}
-                <a href="/schedule" className="underline hover:text-z-emerald">
-                  Schedule
-                </a>
-                {" · "}
+                Business e Finance no ar · Schedule e CRM em desenvolvimento, logo mais no ar ·{" "}
                 <a href="/hub" className="underline hover:text-z-emerald">
                   Hub
                 </a>

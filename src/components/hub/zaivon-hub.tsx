@@ -5,7 +5,8 @@ import { ArrowRight, LayoutGrid, LogOut, Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { ZaivonLogo } from "@/components/hub/zaivon-logo";
 import { useSessionUser } from "@/hooks/use-session-user";
-import { listAvailableProducts, type ZaivonProduct } from "@/constants/zaivon-products";
+import { ZAIVON_IN_DEVELOPMENT_NOTICE, ZAIVON_PRODUCTS, type ZaivonProduct } from "@/constants/zaivon-products";
+import { isZaivonOwner } from "@/lib/auth/zaivon-owner";
 import { cn } from "@/lib/utils";
 import { ZAIVON_ONBOARDING_PATH } from "@/lib/zaivon-onboarding";
 import { clearHubSession } from "@/lib/hub-session";
@@ -34,25 +35,27 @@ const ACCENT = {
     chip: "bg-emerald-500/10 text-emerald-200",
     cta: "bg-gradient-to-r from-emerald-500 to-z-info text-white",
   },
+  amber: {
+    border: "border-amber-300/30 hover:border-amber-300/55",
+    glow: "from-amber-400/18 via-transparent to-orange-500/10",
+    icon: "bg-amber-400/15 text-amber-200 ring-amber-300/30",
+    chip: "bg-amber-400/10 text-amber-100",
+    cta: "bg-gradient-to-r from-amber-300 to-orange-400 text-[#1C1408]",
+  },
 } as const;
 
 function ProductCard({ product }: { product: ZaivonProduct }) {
   const styles = ACCENT[product.accent];
   const Icon = product.icon;
+  const soon = product.status === "coming_soon";
 
-  return (
-    <Link
-      href={product.href}
-      className={cn(
-        "group relative flex flex-col overflow-hidden rounded-3xl border bg-[#12141c]/90 p-5 transition duration-300 sm:p-6",
-        "shadow-[0_8px_40px_rgba(0,0,0,0.35)] hover:-translate-y-0.5 hover:shadow-[0_16px_48px_rgb(var(--z-primary-rgb)/0.18)]",
-        styles.border,
-      )}
-    >
+  const body = (
+    <>
       <div
         className={cn(
           "pointer-events-none absolute inset-0 bg-gradient-to-br opacity-90",
           styles.glow,
+          soon && "opacity-40",
         )}
         aria-hidden
       />
@@ -61,13 +64,14 @@ function ProductCard({ product }: { product: ZaivonProduct }) {
           className={cn(
             "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ring-1",
             styles.icon,
+            soon && "opacity-70",
           )}
         >
           <Icon className="h-5 w-5" />
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#737373]">
-            Produto ZAIVON
+            {soon ? "Em desenvolvimento" : "Produto ZAIVON"}
           </p>
           <h2 className="mt-1 text-xl font-bold tracking-tight text-white sm:text-2xl">
             {product.name}
@@ -83,6 +87,7 @@ function ProductCard({ product }: { product: ZaivonProduct }) {
             className={cn(
               "rounded-full px-2.5 py-1 text-[11px] font-medium",
               styles.chip,
+              soon && "opacity-70",
             )}
           >
             {h}
@@ -90,15 +95,45 @@ function ProductCard({ product }: { product: ZaivonProduct }) {
         ))}
       </div>
 
+      {soon ? (
+        <p className="relative mt-6 rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm leading-relaxed text-[#E7E5E4]">
+          {ZAIVON_IN_DEVELOPMENT_NOTICE}
+        </p>
+      ) : (
+        <div
+          className={cn(
+            "relative mt-6 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition group-hover:brightness-110",
+            styles.cta,
+          )}
+        >
+          {product.cta}
+          <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+        </div>
+      )}
+    </>
+  );
+
+  if (soon) {
+    return (
       <div
-        className={cn(
-          "relative mt-6 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition group-hover:brightness-110",
-          styles.cta,
-        )}
+        aria-disabled="true"
+        className="relative flex flex-col overflow-hidden rounded-3xl border border-dashed border-white/15 bg-[#12141c]/70 p-5 sm:p-6"
       >
-        {product.cta}
-        <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+        {body}
       </div>
+    );
+  }
+
+  return (
+    <Link
+      href={product.href}
+      className={cn(
+        "group relative flex flex-col overflow-hidden rounded-3xl border bg-[#12141c]/90 p-5 transition duration-300 sm:p-6",
+        "shadow-[0_8px_40px_rgba(0,0,0,0.35)] hover:-translate-y-0.5 hover:shadow-[0_16px_48px_rgb(var(--z-primary-rgb)/0.18)]",
+        styles.border,
+      )}
+    >
+      {body}
     </Link>
   );
 }
@@ -107,8 +142,12 @@ export function ZaivonHub() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const resetBusinessContext = useBusinessContextStore((s) => s.resetBusinessContext);
-  const { data: user } = useSessionUser();
-  const products = listAvailableProducts();
+  const { data: user, isFetched } = useSessionUser();
+  const sessionReady = isFetched || Boolean(user?.email);
+  const businessOpen = isZaivonOwner(user?.email);
+  const products = ZAIVON_PRODUCTS.map((product) =>
+    product.id === "business" && !businessOpen ? { ...product, status: "coming_soon" as const } : product,
+  );
 
   async function handleLogout() {
     try {
@@ -138,13 +177,15 @@ export function ZaivonHub() {
             <p className="text-sm font-medium text-white">{user?.name ?? "…"}</p>
             <p className="text-[11px] text-[#737373]">{user?.email}</p>
           </div>
-          <Link
-            href="/configuracoes"
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-[#A3A3A3] transition hover:border-z-primary/40 hover:text-white"
-            aria-label="Configurações"
-          >
-            <Settings className="h-4 w-4" />
-          </Link>
+          {businessOpen ? (
+            <Link
+              href="/configuracoes"
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-[#A3A3A3] transition hover:border-z-primary/40 hover:text-white"
+              aria-label="Configurações"
+            >
+              <Settings className="h-4 w-4" />
+            </Link>
+          ) : null}
           <button
             type="button"
             onClick={() => void handleLogout()}
@@ -174,11 +215,15 @@ export function ZaivonHub() {
           </div>
         </div>
 
-        <div className="grid gap-4 sm:gap-5 lg:grid-cols-2 xl:grid-cols-3">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        {sessionReady ? (
+          <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-[#A3A3A3]">Abrindo seus produtos…</p>
+        )}
       </main>
     </div>
   );

@@ -20,7 +20,7 @@ const STEPS = [
   },
   {
     title: "Escolha o sistema",
-    body: "No Hub você seleciona Business, Schedule ou futuros produtos.",
+    body: "No Hub você entra no Finance. Business, Schedule e CRM aparecem em desenvolvimento.",
   },
 ] as const;
 
@@ -100,13 +100,13 @@ export default function PublicOnboardingPage() {
             <LayoutGrid className="h-3 w-3" />
             Hub
           </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-z-primary/25 bg-z-primary/10 px-3 py-1 text-[11px] font-medium text-z-lime-300">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-medium text-[#A3A3A3]">
             <Sparkles className="h-3 w-3" />
-            Business
+            Business · em breve
           </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-z-emerald/25 bg-z-emerald/10 px-3 py-1 text-[11px] font-medium text-[#7FE6C8]">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-medium text-[#A3A3A3]">
             <CalendarDays className="h-3 w-3" />
-            Schedule
+            Schedule · em breve
           </span>
         </div>
 

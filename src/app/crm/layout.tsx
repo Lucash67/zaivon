@@ -1,5 +1,6 @@
-import { CrmShell } from "@/components/crm/crm-shell";
+import { ProductInDevelopment } from "@/components/hub/product-in-development";
 
 export default function CrmLayout({ children }: { children: React.ReactNode }) {
-  return <CrmShell>{children}</CrmShell>;
+  void children;
+  return <ProductInDevelopment productId="crm" />;
 }
