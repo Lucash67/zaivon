@@ -123,13 +123,17 @@ function Ready({ data, selectMonth, children }: { data: ZaivonData; selectMonth:
 
 export function ZaivonProvider({ children }: { children: ReactNode }) {
   const [month, setMonth] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
   const q = useQuery({
     queryKey: [QUERY_KEY, month],
     queryFn: () => fetchZaivon(month),
     staleTime: 30_000,
     placeholderData: (prev) => prev,
   });
-  if (q.isLoading) {
+  useEffect(() => setReady(true), []);
+  // A primeira pintura precisa ser igual no servidor e no cliente.
+  // O React Query muda isLoading só depois da hidratação.
+  if (!ready || q.isLoading) {
     return (
       <div className="grid min-h-[60vh] place-items-center gap-2 px-4 text-center text-sm text-o-muted-foreground">
         <p>Carregando a ZAIVON…</p>

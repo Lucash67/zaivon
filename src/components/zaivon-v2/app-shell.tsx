@@ -178,7 +178,7 @@ function DayStrip() {
                 {weekday(d)} {ddmm(d)}
                 {provisional ? " · P" : ""}
               </div>
-              <div className={cn("num text-xs font-semibold", p == null ? "text-o-muted-foreground" : provisional ? "text-o-pending" : "text-o-ok")}>
+              <div className={cn("num text-xs font-semibold", hidden || p == null ? "text-o-muted-foreground" : provisional ? "text-o-pending" : "text-o-ok")}>
                 {hol ? "feriado" : p == null ? "—" : hidden ? mask : `R$ ${Math.round(p)}`}
               </div>
             </button>

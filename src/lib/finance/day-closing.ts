@@ -658,3 +658,78 @@ export const CLOSING_2026_10_19 = buildDayClosing({
   },
 });
 
+/**
+ * Fechamento 20/10/2026 — competência confirmada, com ressalvas explícitas.
+ * ownCost = 50 (pago ao fornecedor). Custo teórico 107 fica só na nota.
+ * bankYield = 0. Δ +2,19 (5089,61 esperado × 5091,80 informado) não é rendimento.
+ * Abertura = último saldo confirmado de 19/10 (4974,61). Não grava 4976,80.
+ */
+export const CLOSING_2026_10_20 = buildDayClosing({
+  date: "2026-10-20",
+  competenceStatus: "confirmed",
+  competenceRevenue: 172,
+  salesReceived: 140,
+  priorSettlements: 10,
+  otherInflows: 15,
+  ownCost: 50,
+  thirdPartyCost: 0,
+  newCredit: 32,
+  lossesAmount: 0,
+  lossesUnits: 0,
+  stockRemainingUnits: 2,
+  piggyOpening: 4974.61,
+  piggyDeposit: 115,
+  bankYield: 0,
+  piggyClosing: 5091.8,
+  ownCostPaymentDates: [
+    {
+      date: "2026-10-20",
+      amount: 50,
+      note: "Custo real próprio pago ao fornecedor, uma única vez. Teórico R$107 (93+14) é referência e não entra como saída. Diferença R$57 não é dívida.",
+    },
+  ],
+  cashAtClose: {
+    diaryCash: 165,
+    daySalesPaidAtClose: 140,
+    priorSettlements: 10,
+    reconstructedCash: 165,
+    currentPaidSnapshot: 140,
+    gaps: [
+      "Caixa 165 = vendas pagas 140 + quitações não vinculadas 10 + bônus 15.",
+      "Raimunda Pix 09:58 R$20 = quitação R$5 de 19/10 sem linha nominal + bônus R$15. Não é venda.",
+      "João Pedro Pix 15:51 R$15 = venda R$10 (2 salgados) + quitação presumida R$5 sem dívida. Um recebimento, duas destinações.",
+      "Cofrinho: 4974,61 + 115 = 5089,61. Informado 5091,80. Δ +2,19 variação não classificada. bankYield=0.",
+    ],
+  },
+  extraNotes: [
+    "Status: FINANCEIRO CONCILIADO — RESSALVAS R1–R6 — VARIAÇÃO BANCÁRIA +R$2,19 NÃO CLASSIFICADA.",
+    "R1 João Pedro 15:51 Pix R$15: R$10 em 2 salgados Acal de 20/10 (inferência aprovada pelo proprietário em 20/10, não confirmada pelo pagador) e R$5 quitação presumida sem cliente, dívida ou data. Não liquida as 5 saídas sem nome da Acal em 19/10.",
+    "R2 Raimunda 09:58 Pix R$20: R$5 quitação confirmada de 19/10 sem linha nominal no sistema + R$15 bônus. Não é venda e não baixa fiado de outra pessoa.",
+    "R3 Fiados novos R$32 ainda não recebidos: João Victor R$5, Gabriela R$5, Luiza R$8, Mikelly R$7 + R$7. Cobrança futura não é faturamento novo. Não reativar a baixa de R$7 da Mikelly (14/10).",
+    "R4 Dois sanduíches na geladeira às 16:40 permanecem em estoque. Sem venda, perda ou fiado.",
+    "R5 Custo teórico R$107 é referência. Custo real do dia R$50. Diferença R$57 não é saldo a pagar.",
+    "R6 Depósito R$115. Saldo informado R$5.091,80. Abertura usada = 4.974,61 (fechamento de 19/10, não reescrito). 4.976,80 não foi gravado.",
+    "Transferências Unifor→Acal (3 salgados e 1 sanduíche) são estoque, não venda.",
+    "Bônus R$15 está em cash.otherInflows. bonusIncome do diário fica 0 para não somar o bônus duas vezes.",
+    "Horários de fiado sem relógio na nota 2 usam 16:40 só como âncora técnica do fechamento físico, não como hora da retirada.",
+  ],
+  operationalAudit: {
+    salgados: {
+      initial: 27,
+      paidUnits: 25,
+      lostUnits: 0,
+      final: 0,
+      status: "ok",
+      note: "27 = 25 pagos + 2 fiados (JV e Gabriela). 3 transferidos Unifor→Acal não são venda extra. 2 dos 13 da Acal são alocação inferida do João Pedro.",
+    },
+    sandwiches: {
+      initial: 7,
+      ownConsumption: 0,
+      countedAt: "16:40",
+      counted: 2,
+      status: "ok",
+      note: "7 produzidos = 2 pagos + 3 fiados + 2 na geladeira às 16:40. Os 2 restantes não são venda nem perda.",
+    },
+  },
+});
+

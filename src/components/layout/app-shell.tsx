@@ -18,11 +18,16 @@ interface AppShellProps {
 
 export function AppShell({ children, title, subtitle, actions }: AppShellProps) {
   const { theme } = useTheme();
-  const isBrand = resolveTheme(theme) === "brand";
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [themeReady, setThemeReady] = useState(false);
+  // next-themes só resolve o tema no cliente. Sem esta espera o shell
+  // pinta os divs da marca depois do HTML do servidor e quebra a hidratação.
+  const isBrand = themeReady && resolveTheme(theme) === "brand";
 
   const closeMenu = useCallback(() => setMenuOpen(false), []);
+
+  useEffect(() => setThemeReady(true), []);
 
   // Navegar fecha o drawer; sem isso o menu fica aberto sobre a página nova.
   useEffect(() => setMenuOpen(false), [pathname]);

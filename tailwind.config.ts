@@ -12,10 +12,28 @@ const config: Config = {
         zaivon: ["var(--font-sora)", "Sora", "system-ui", "sans-serif"],
       },
       opacity: {
+        8: "0.08",
         12: "0.12",
         14: "0.14",
       },
       colors: {
+        /* Dashboard Aurora (/v2/aurora). Variáveis só em .aurora. */
+        aur: {
+          bg: "oklch(var(--aur-bg) / <alpha-value>)",
+          fg: "oklch(var(--aur-fg) / <alpha-value>)",
+          muted: "oklch(var(--aur-muted) / <alpha-value>)",
+          panel: "oklch(var(--aur-panel) / <alpha-value>)",
+          panel2: "oklch(var(--aur-panel-2) / <alpha-value>)",
+          panel3: "oklch(var(--aur-panel-3) / <alpha-value>)",
+          line: "oklch(var(--aur-line) / <alpha-value>)",
+          lime: "oklch(var(--aur-lime) / <alpha-value>)",
+          cyan: "oklch(var(--aur-cyan) / <alpha-value>)",
+          emerald: "oklch(var(--aur-emerald) / <alpha-value>)",
+          azure: "oklch(var(--aur-azure) / <alpha-value>)",
+          amber: "oklch(var(--aur-amber) / <alpha-value>)",
+          coral: "oklch(var(--aur-coral) / <alpha-value>)",
+          ink: "oklch(var(--aur-ink) / <alpha-value>)",
+        },
         /* ZAIVON v2 (/v2): variáveis definidas só dentro de .zaivon2 em globals.css. */
         o: {
           background: "oklch(var(--o-background) / <alpha-value>)",

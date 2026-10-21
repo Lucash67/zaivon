@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { AppShell } from "@/components/layout/app-shell";
@@ -13,7 +13,9 @@ import { cn } from "@/lib/utils";
 export function ZaivonRoot({ children }: { children: ReactNode }) {
   const path = usePathname();
   const { theme } = useTheme();
-  const light = resolveTheme(theme) === "light";
+  const [themeReady, setThemeReady] = useState(false);
+  useEffect(() => setThemeReady(true), []);
+  const light = themeReady && resolveTheme(theme) === "light";
   const page = ZAIVON_V2_NAV.find((n) => n.href === path)?.label ?? "Hoje";
 
   return (

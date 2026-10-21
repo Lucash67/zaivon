@@ -5,6 +5,7 @@ import { FINANCE_LABELS, PROVISIONAL_HINT } from "@/lib/finance/labels";
 import type { DayFinance } from "@/lib/zaivon/finance/day";
 import { Panel, Pill } from "@/components/zaivon-v2/ui";
 import { useScreenHideMoney } from "@/components/zaivon-v2/hide-money";
+import { maskSensitiveText, redactPatrimonyText } from "@/lib/privacy/money-visibility";
 
 type Props = {
   finance: DayFinance;
@@ -16,8 +17,8 @@ type Props = {
  * Explica por que faturamento, caixa, lucros e depósito/cofrinho diferem —
  * sem forçar os indicadores a coincidir.
  */
-export function DayReconciliationPanel({ finance, dayClosing, cofrinhoEnd }: Props) {
-  const { money } = useScreenHideMoney();
+export function DayReconciliationPanel({ finance, dayClosing }: Props) {
+  const { money, hidden } = useScreenHideMoney();
   const dc = dayClosing;
   const provisional = finance.competenceStatus === "provisional" || dc?.competenceStatus === "provisional";
   const deposit = dc?.piggyBank.deposit;
@@ -55,12 +56,7 @@ export function DayReconciliationPanel({ finance, dayClosing, cofrinhoEnd }: Pro
     {
       label: FINANCE_LABELS.piggyDeposit.short,
       value: deposit != null ? money(deposit) : "—",
-      note: deposit != null ? "Transferência efetiva registrada no dayClosing." : "Sem depósito explícito neste snapshot.",
-    },
-    {
-      label: FINANCE_LABELS.piggyBalance.short,
-      value: cofrinhoEnd != null ? money(cofrinhoEnd) : "—",
-      note: "Saldo informado no Mercado Pago.",
+      note: deposit != null ? "Transferência efetiva registrada no dayClosing. Não é saldo." : "Sem depósito explícito neste snapshot.",
     },
   ];
 
@@ -127,7 +123,7 @@ export function DayReconciliationPanel({ finance, dayClosing, cofrinhoEnd }: Pro
             {money(dc.provisionalCompetence.fromIdentifiedSales.profit)} ·{" "}
             {dc.provisionalCompetence.fromIdentifiedSales.formula}
           </p>
-          <p className="mt-1 font-medium text-o-pending">Δ R$ {dc.provisionalCompetence.gap.toFixed(0)} PENDENTE</p>
+          <p className="mt-1 font-medium text-o-pending">Δ {money(dc.provisionalCompetence.gap)} pendente</p>
         </div>
       )}
 
@@ -147,7 +143,7 @@ export function DayReconciliationPanel({ finance, dayClosing, cofrinhoEnd }: Pro
           <summary className="cursor-pointer">Notas de conciliação</summary>
           <ul className="mt-2 list-disc space-y-1 pl-4">
             {dc.reconciliation.notes.map((n) => (
-              <li key={n}>{n}</li>
+              <li key={n}>{maskSensitiveText(redactPatrimonyText(n), hidden)}</li>
             ))}
           </ul>
         </details>

@@ -3,15 +3,25 @@
 import { usePathname } from "next/navigation";
 import { useCallback, useMemo, useSyncExternalStore } from "react";
 import { formatCurrency } from "@/lib/utils";
+import {
+  INITIAL_MONEY_VISIBILITY,
+  MONEY_MASK,
+  allMoneyHidden,
+  hideAllMoney,
+  isLegacyVisibilityKey,
+  isMoneyHidden,
+  toggleGlobalMoney,
+  toggleScreenMoney,
+  type MoneyVisibility,
+} from "@/lib/privacy/money-visibility";
 
-export const MONEY_MASK = "R$ ••••";
-const KEY_PREFIX = "zaivon-hide-money:";
-const GLOBAL_KEY = `${KEY_PREFIX}global`;
+export { MONEY_MASK };
 
-/** Telas com olhinho próprio (localStorage isolado). */
+/** Telas com olhinho próprio. O estado vive só na memória desta aba. */
 export type HideMoneyScreen =
   | "dashboard"
   | "v2-hoje"
+  | "v2-aurora"
   | "v2-dinheiro"
   | "v2-desempenho"
   | "v2-planejamento"
@@ -45,6 +55,7 @@ export type HideMoneyScreen =
 export const HIDE_MONEY_SCREENS: HideMoneyScreen[] = [
   "dashboard",
   "v2-hoje",
+  "v2-aurora",
   "v2-dinheiro",
   "v2-desempenho",
   "v2-planejamento",
@@ -80,6 +91,7 @@ export function hideMoneyScreenFromPath(pathname: string): HideMoneyScreen {
   if (pathname === "/" || pathname.startsWith("/dashboard")) return "dashboard";
   if (pathname.startsWith("/v2")) {
     if (pathname === "/v2" || pathname === "/v2/") return "v2-hoje";
+    if (pathname.startsWith("/v2/aurora")) return "v2-aurora";
     if (pathname.startsWith("/v2/dinheiro")) return "v2-dinheiro";
     if (pathname.startsWith("/v2/desempenho")) return "v2-desempenho";
     if (pathname.startsWith("/v2/planejamento")) return "v2-planejamento";
@@ -113,13 +125,26 @@ export function hideMoneyScreenFromPath(pathname: string): HideMoneyScreen {
   return "other";
 }
 
-function storageKey(screenId: string) {
-  return `${KEY_PREFIX}${screenId}`;
-}
-
 const CHANGE_EVENT = "zaivon-hide-money-change";
 let version = 0;
+let visibility: MoneyVisibility = INITIAL_MONEY_VISIBILITY;
 const listeners = new Set<() => void>();
+
+function purgeLegacyVisibility() {
+  if (typeof window === "undefined") return;
+  try {
+    const drop: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && isLegacyVisibilityKey(key)) drop.push(key);
+    }
+    for (const key of drop) localStorage.removeItem(key);
+  } catch {
+    /* storage indisponível */
+  }
+}
+
+purgeLegacyVisibility();
 
 function emitChange() {
   version += 1;
@@ -148,54 +173,13 @@ function getVersion() {
   return version;
 }
 
-function readRaw(key: string): boolean {
-  try {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem(key) === "1";
-  } catch {
-    return false;
-  }
-}
-
-function writeRaw(key: string, hidden: boolean) {
-  try {
-    if (typeof window === "undefined") return;
-    localStorage.setItem(key, hidden ? "1" : "0");
-  } catch {
-    /* ignore */
-  }
-}
-
-function readGlobalHidden(): boolean {
-  return readRaw(GLOBAL_KEY);
-}
-
-function readHidden(screenId: HideMoneyScreen): boolean {
-  if (readRaw(storageKey(screenId))) return true;
-  // Dashboard legado usava uma chave global.
-  if (screenId === "dashboard" && readRaw("lbo-hide-money")) return true;
-  return false;
-}
-
-function writeHidden(screenId: HideMoneyScreen, hidden: boolean) {
-  writeRaw(storageKey(screenId), hidden);
-}
-
 function readEffectiveHidden(screenId?: HideMoneyScreen | null): boolean {
-  if (readGlobalHidden()) return true;
-  if (screenId) return readHidden(screenId);
-  return false;
+  return isMoneyHidden(visibility, screenId);
 }
 
-function readAllHidden(): boolean {
-  if (readGlobalHidden()) return true;
-  return HIDE_MONEY_SCREENS.every((id) => readHidden(id));
-}
-
-/** Liga/desliga todas as telas de uma vez (olhinho geral). */
+/** Liga/desliga todas as telas nesta aba. Não grava a escolha. */
 export function setAllHideMoney(hidden: boolean) {
-  writeRaw(GLOBAL_KEY, hidden);
-  for (const id of HIDE_MONEY_SCREENS) writeHidden(id, hidden);
+  visibility = hidden ? hideAllMoney() : { globalRevealed: true, revealedScreens: [] };
   emitChange();
 }
 
@@ -211,14 +195,7 @@ export function useHideMoney(screenId: HideMoneyScreen) {
   }, [snap, screenId]);
 
   const toggle = useCallback(() => {
-    const next = !readEffectiveHidden(screenId);
-    // Se o geral está ligado, o toggle da tela desliga o geral e a tela.
-    if (readGlobalHidden() && !next) {
-      writeRaw(GLOBAL_KEY, false);
-      for (const id of HIDE_MONEY_SCREENS) writeHidden(id, false);
-    } else {
-      writeHidden(screenId, next);
-    }
+    visibility = toggleScreenMoney(visibility, screenId, HIDE_MONEY_SCREENS);
     emitChange();
   }, [screenId]);
 
@@ -273,11 +250,12 @@ export function useGlobalHideMoney() {
   const snap = useSyncExternalStore(subscribe, getVersion, () => 0);
   const allHidden = useMemo(() => {
     void snap;
-    return readAllHidden();
+    return allMoneyHidden(visibility);
   }, [snap]);
 
   const toggle = useCallback(() => {
-    setAllHideMoney(!readAllHidden());
+    visibility = toggleGlobalMoney(visibility);
+    emitChange();
   }, []);
 
   return { allHidden, toggle };
