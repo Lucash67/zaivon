@@ -1,7 +1,14 @@
-"use client";
+import { Inter, Space_Grotesk } from "next/font/google";
+import { AuroraDashboard } from "@/components/zaivon-aurora/dashboard";
+import "./aurora/aurora.css";
 
-import { Hoje } from "@/components/zaivon-v2/screens/hoje";
+const inter = Inter({ subsets: ["latin"], variable: "--font-aurora-sans", display: "swap" });
+const grotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-aurora-display", display: "swap" });
 
 export default function HojePage() {
-  return <Hoje />;
+  return (
+    <div className={`${inter.variable} ${grotesk.variable} aurora relative overflow-hidden rounded-3xl`}>
+      <AuroraDashboard />
+    </div>
+  );
 }

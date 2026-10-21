@@ -6,8 +6,8 @@ import { ArrowRight } from "lucide-react";
 import { useZaivon } from "@/components/zaivon-v2/store";
 import { dayChecks, dayFinance, daysOpen, recovery } from "@/lib/zaivon/finance/day";
 import { monthSummary } from "@/lib/zaivon/finance/month";
-import { dayLabel, ddmm, pctFmt } from "@/lib/zaivon/format";
-import { CheckRow, Kpi, PageHeader, Panel, Pill, Progress, RegisteredSalesList } from "@/components/zaivon-v2/ui";
+import { dayLabel, ddmm } from "@/lib/zaivon/format";
+import { CheckRow, Kpi, PageHeader, Panel, Pill, RegisteredSalesList } from "@/components/zaivon-v2/ui";
 import { DayReconciliationPanel } from "@/components/zaivon-v2/day-reconciliation";
 import { buttonClass } from "@/components/zaivon-v2/primitives";
 import { ZAIVON_BASE } from "@/components/zaivon-v2/app-shell";
@@ -15,6 +15,7 @@ import { HideMoneyScope, ScreenHideMoneyButton, useScreenHideMoney } from "@/com
 import { ZaivonPulse } from "@/components/dashboard/zaivon-pulse";
 import { buildZaivonPulse } from "@/lib/zaivon-pulse";
 import { FINANCE_LABELS, PROVISIONAL_HINT } from "@/lib/finance/labels";
+import { maskSensitiveText, redactPatrimonyText } from "@/lib/privacy/money-visibility";
 
 const closureLabel = {
   closed: ["Fechado ✓", "ok"],
@@ -34,7 +35,7 @@ export function Hoje() {
 
 function HojeBody() {
   const o = useZaivon();
-  const { money } = useScreenHideMoney();
+  const { money, hidden } = useScreenHideMoney();
   const day = o.selectedDay;
   const exists = o.days.some((d) => d.date === day.date);
   const f = dayFinance(day, o.settlements);
@@ -194,20 +195,13 @@ function HojeBody() {
                 }
               />
               <Kpi label="Meu custo" tone="third" value={money(f.ownCost)} formula="O que saiu do meu bolso hoje (terceiros não entram)" explain={`Terceiros: ${money(f.thirdPartyCost)}`} />
-              <Kpi label="A recuperar" tone="pending" value={money(rec.total)} formula="Fiados + parceiros + investigação (em aberto)" explain={`${money(rec.identified)} identificados + ${money(rec.investigacao)} investigação`} />
               <Kpi
-                label={FINANCE_LABELS.piggyBalance.short}
-                tone="info"
-                value={day.cofrinhoEnd != null ? money(day.cofrinhoEnd) : "—"}
-                formula={FINANCE_LABELS.piggyBalance.formula}
-                explain={
-                  day.dayClosing?.piggyBank.deposit != null
-                    ? `Depósito do dia: ${money(day.dayClosing.piggyBank.deposit)}`
-                    : day.cofrinhoEnd != null
-                      ? "Informado no fechamento"
-                      : "Ainda não informado"
-                }
+                label={FINANCE_LABELS.piggyDeposit.short}
+                value={day.dayClosing ? money(day.dayClosing.piggyBank.deposit) : "—"}
+                formula="Transferência do dia. Não é o saldo do cofrinho."
+                explain="O saldo patrimonial fica só no módulo Cofrinho."
               />
+              <Kpi label="A recuperar" tone="pending" value={money(rec.total)} formula="Fiados + parceiros + investigação (em aberto)" explain={`${money(rec.identified)} identificados + ${money(rec.investigacao)} investigação`} />
             </div>
           </div>
 
@@ -223,18 +217,26 @@ function HojeBody() {
               }
               className="lg:col-span-2"
             >
-              <div className="grid gap-2">{checks.map((c) => <CheckRow key={c.id} c={c} />)}</div>
+              <div className="grid gap-2">
+                {checks.map((c) => (
+                  <CheckRow
+                    key={c.id}
+                    c={{
+                      ...c,
+                      detail: maskSensitiveText(
+                        c.id === "cofrinho" ? redactPatrimonyText(c.detail) : c.detail,
+                        hidden,
+                      ),
+                    }}
+                  />
+                ))}
+              </div>
             </Panel>
             <Panel title="Ritmo da meta" subtitle={`${o.plan.label} · ${ms.closedDays} de ${ms.totalDays} dias de venda`}>
-              <div className="num text-2xl font-semibold">{money(ms.bank)} <span className="text-sm text-o-muted-foreground">de {money(o.plan.goal)}</span></div>
-              <div className="my-3"><Progress value={ms.pctGoal} tone="ok" /></div>
-              <p className="text-xs text-o-muted-foreground">
-                {pctFmt(ms.pctGoal, false)} da meta no <strong className="text-o-foreground">banco do mês</strong>{" "}
-                (último cofrinho − início do mês). Precisa de{" "}
-                <strong className="text-o-foreground">{money(ms.neededPerDay)}/dia</strong> nos {ms.remainingDays} dias
-                restantes (alvo {money(o.plan.dailyTarget)}). Não usa lucro por competência nem o caixa de um único dia.
+              <p className="text-sm text-o-muted-foreground">
+                O banco do mês usa o saldo do cofrinho, então ele fica só no módulo Cofrinho. A meta diária e os cenários continuam no planejamento.
               </p>
-              <Link href={`${ZAIVON_BASE}/planejamento`} className={buttonClass("link", "default", "mt-1 h-auto p-0")}>Ver planejamento <ArrowRight className="size-3" /></Link>
+              <Link href={`${ZAIVON_BASE}/planejamento`} className={buttonClass("link", "default", "mt-3 h-auto p-0")}>Ver planejamento <ArrowRight className="size-3" /></Link>
             </Panel>
           </div>
 
@@ -246,11 +248,17 @@ function HojeBody() {
                 ))}
               </ul>
             ) : <p className="text-sm text-o-muted-foreground">Tudo em dia.</p>}
-            {day.closureNote && <p className="mt-3 text-xs text-o-pending">Ressalva: {day.closureNote}</p>}
+            {day.closureNote && (
+              <p className="mt-3 text-xs text-o-pending">
+                Ressalva: {maskSensitiveText(redactPatrimonyText(day.closureNote), hidden)}
+              </p>
+            )}
             {day.observations && (
               <details className="mt-3 text-xs text-o-muted-foreground">
                 <summary className="cursor-pointer">Notas do dia</summary>
-                <p className="mt-2 whitespace-pre-line">{day.observations}</p>
+                <p className="mt-2 whitespace-pre-line">
+                  {maskSensitiveText(redactPatrimonyText(day.observations), hidden)}
+                </p>
               </details>
             )}
           </Panel>

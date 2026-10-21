@@ -152,7 +152,8 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
     }
   }
 
-  const current = resolveTheme(theme);
+  // O tema real só existe no cliente. Antes disso, o rótulo fica no padrão do servidor.
+  const current = mounted ? resolveTheme(theme) : "dark";
   const themeMeta = THEME_META[current];
   const ThemeIcon = themeMeta.icon;
   const isBrand = current === "brand";
