@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { formatCurrency } from "@/lib/utils";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 import { formatShort } from "@/lib/personal-finance/dates";
 import type { Direction } from "@/lib/personal-finance/types";
 
@@ -28,6 +28,7 @@ export function Money({
   className?: string;
   tone?: "auto" | "in" | "out" | "save" | "neutral";
 }) {
+  const formatMoney = useFormatMoney("finance");
   const color =
     tone === "in"
       ? "text-emerald-300"
@@ -40,7 +41,7 @@ export function Money({
             : value < 0
               ? "text-rose-300"
               : "text-[#F7F9FC]";
-  return <span className={cn("tabular-nums", color, className)}>{formatCurrency(value)}</span>;
+  return <span className={cn("tabular-nums", color, className)}>{formatMoney(value)}</span>;
 }
 
 export function directionTone(direction: Direction): "in" | "out" | "save" {

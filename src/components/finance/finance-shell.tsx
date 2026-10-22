@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Flame, MoreHorizontal, Plus, Wallet, X } from "lucide-react";
+import { HideMoneyButton } from "@/components/ui/hide-money-button";
 import { ProductSwitcher } from "@/components/hub/product-switcher";
 import { FinanceComposer } from "@/components/finance/composer";
 import { FinanceOnboarding } from "@/components/finance/onboarding";
@@ -15,6 +16,7 @@ import {
   FINANCE_PAGE_META,
   isFinanceNavActive,
 } from "@/constants/finance-brand";
+import { useHideMoney } from "@/hooks/use-hide-money";
 import { cn } from "@/lib/utils";
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
@@ -79,6 +81,10 @@ function FinanceShell({ children }: { children: React.ReactNode }) {
   const meta = FINANCE_PAGE_META[pathname] ?? FINANCE_PAGE_META["/finance"];
   const level = snapshot && !snapshot.needsOnboarding ? snapshot.view.level : null;
   const streak = snapshot && !snapshot.needsOnboarding ? snapshot.view.streak : 0;
+  const today = snapshot && !snapshot.needsOnboarding ? snapshot.view.today : null;
+  const { hidden, toggle } = useHideMoney("finance");
+  const title = pathname === "/finance" && today ? `Hoje · ${weekdayLabel(today)}` : meta.title;
+  const subtitle = pathname === "/finance" ? "Como está o seu dinheiro agora." : meta.subtitle;
 
   useEffect(() => {
     setMoreOpen(false);
@@ -117,10 +123,17 @@ function FinanceShell({ children }: { children: React.ReactNode }) {
             <div className="flex items-center gap-2 lg:hidden">
               <ProductSwitcher compact />
             </div>
-            <h1 className="truncate text-lg font-semibold">{meta.title}</h1>
-            <p className="hidden truncate text-xs text-[#93A0B1] sm:block">{meta.subtitle}</p>
+            <h1 className="truncate text-lg font-semibold capitalize">{title}</h1>
+            <p className="hidden truncate text-xs text-[#93A0B1] sm:block">{subtitle}</p>
           </div>
           <div className="flex items-center gap-2">
+            <HideMoneyButton
+              hidden={hidden}
+              onToggle={toggle}
+              labelHide="Ocultar valores"
+              labelShow="Mostrar valores"
+              className="h-10 w-10 rounded-full border-white/10 bg-white/5 text-[#C8D0DB] hover:text-[#B7FF3C]"
+            />
             {streak > 0 ? (
               <span className="inline-flex items-center gap-1 rounded-full border border-[#B7FF3C]/30 bg-[#B7FF3C]/10 px-2.5 py-1 text-xs font-semibold text-[#B7FF3C]">
                 <Flame className="h-3.5 w-3.5" />
@@ -177,7 +190,7 @@ function FinanceShell({ children }: { children: React.ReactNode }) {
       {moreOpen ? (
         <div className="fixed inset-0 z-40 lg:hidden">
           <button type="button" className="absolute inset-0 bg-black/70" aria-label="Fechar menu" onClick={() => setMoreOpen(false)} />
-          <div className="absolute inset-x-0 bottom-0 rounded-t-3xl border border-white/10 bg-[#120F0C] p-4 pb-8">
+          <div className="absolute inset-x-0 bottom-0 rounded-t-3xl border border-white/10 bg-[#10141B] p-4 pb-8">
             <div className="mb-3 flex items-center justify-between">
               <p className="text-sm font-semibold">Mais</p>
               <button type="button" onClick={() => setMoreOpen(false)} aria-label="Fechar">
@@ -195,4 +208,11 @@ function FinanceShell({ children }: { children: React.ReactNode }) {
       {composer ? <FinanceComposer key={composer.token} /> : null}
     </div>
   );
+}
+
+function weekdayLabel(iso: string): string {
+  const [year, month, day] = iso.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  const name = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"][date.getUTCDay()];
+  return `${name} ${String(day).padStart(2, "0")}/${String(month).padStart(2, "0")}`;
 }

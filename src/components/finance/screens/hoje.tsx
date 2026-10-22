@@ -7,6 +7,7 @@ import { parseMoney } from "@/lib/personal-finance/money";
 import type { AccountKind } from "@/lib/personal-finance/types";
 import { useFinance, useFinanceHome } from "@/components/finance/finance-provider";
 import { SpendPlanSummary } from "@/components/finance/spend-plan-panel";
+import { FinancePulse } from "@/components/finance/pulse";
 import { Field, GhostButton, GoldButton, Money, Panel, ShortDate, directionLabel, directionTone, fieldClass } from "@/components/finance/ui";
 
 export function HojeScreen() {
@@ -20,8 +21,6 @@ export function HojeScreen() {
 
   if (!snap) return null;
   const { view, profile } = snap;
-  const hour = new Date().getHours();
-  const hello = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
   const first = profile.displayName.split(/\s+/)[0];
   const active = view.challenges.find((challenge) => challenge.status === "active");
 
@@ -58,43 +57,7 @@ export function HojeScreen() {
         </Panel>
       )}
 
-      <div>
-        <p className="text-sm text-[#93A0B1]">
-          {hello}, {first}
-        </p>
-        <p className="mt-1 max-w-xl text-2xl font-semibold tracking-tight sm:text-3xl">{view.pulse}</p>
-        <p className="mt-2 text-xs text-[#93A0B1]">
-          Nível {view.level.level} · {view.level.name}
-          <span className="mx-2 text-white/20">/</span>
-          {view.level.into} de {view.level.span} XP
-        </p>
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-3">
-        <Panel>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#93A0B1]">Disponível</p>
-          <p className="mt-2 text-2xl font-semibold">
-            <Money value={view.available} />
-          </p>
-          <p className="mt-1 text-xs text-[#6F7B8C]">Conta, poupança e carteira.</p>
-        </Panel>
-        <Panel>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#93A0B1]">Saiu no mês</p>
-          <p className="mt-2 text-2xl font-semibold">
-            <Money value={view.month.expense} tone={view.month.expense > 0 ? "out" : "neutral"} />
-          </p>
-          <p className="mt-1 text-xs text-[#6F7B8C]">
-            Ritmo do mês: <Money value={view.month.paceExpense} tone="neutral" className="text-xs" />
-          </p>
-        </Panel>
-        <Panel>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#93A0B1]">Caixa no fim do mês</p>
-          <p className="mt-2 text-2xl font-semibold">
-            <Money value={view.monthEndBalance} />
-          </p>
-          <p className="mt-1 text-xs text-[#6F7B8C]">Saldo de hoje mais o que já está previsto.</p>
-        </Panel>
-      </div>
+      <FinancePulse view={view} name={first} />
 
       <SpendPlanSummary />
 
@@ -103,9 +66,8 @@ export function HojeScreen() {
           <p className="text-sm font-semibold">Primeiros dias</p>
           <ul className="mt-3 space-y-2">
             {view.firstWeek.items.map((item) => (
-              <li key={item.id} className="flex items-center gap-2 text-sm">
-                <span className={item.done ? "text-emerald-300" : "text-[#6F7B8C]"}>{item.done ? "●" : "○"}</span>
-                <span className={item.done ? "text-[#93A0B1] line-through" : ""}>{item.label}</span>
+              <li key={item.id}>
+                <FirstStep item={item} onLaunch={() => openComposer()} />
               </li>
             ))}
           </ul>
@@ -176,9 +138,19 @@ export function HojeScreen() {
           )}
         </Panel>
         <Panel>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#B7FF3C]">Dica do dia</p>
-          <p className="mt-2 text-base font-semibold">{view.tip.title}</p>
-          <p className="mt-2 text-sm leading-relaxed text-[#C8D0DB]">{view.tip.body}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#B7FF3C]">Para onde ir agora</p>
+          <p className="mt-2 text-base font-semibold">O pulso resume. As telas explicam.</p>
+          <div className="mt-3 grid gap-2 text-sm">
+            <Link href="/finance/mes" className="rounded-2xl border border-white/10 px-3 py-2 text-[#C8D0DB] hover:border-[#B7FF3C]/40">
+              Mês — o que entrou, o que saiu e o teto de cada categoria.
+            </Link>
+            <Link href="/finance/projecoes" className="rounded-2xl border border-white/10 px-3 py-2 text-[#C8D0DB] hover:border-[#B7FF3C]/40">
+              Projeções — a cota de cada semana e o caixa dos próximos 90 dias.
+            </Link>
+            <Link href="/finance/metas" className="rounded-2xl border border-white/10 px-3 py-2 text-[#C8D0DB] hover:border-[#B7FF3C]/40">
+              Metas — um número, uma data e quanto falta por semana.
+            </Link>
+          </div>
         </Panel>
       </div>
 
@@ -209,6 +181,32 @@ export function HojeScreen() {
         <TxList />
       </Panel>
     </div>
+  );
+}
+
+function FirstStep({
+  item,
+  onLaunch,
+}: {
+  item: { id: string; label: string; done: boolean };
+  onLaunch: () => void;
+}) {
+  const className = `flex w-full items-center gap-2 text-left text-sm ${item.done ? "text-[#93A0B1] line-through" : "hover:text-[#B7FF3C]"}`;
+  const mark = <span className={item.done ? "text-emerald-300" : "text-[#6F7B8C]"}>{item.done ? "●" : "○"}</span>;
+  if (item.id === "tx") {
+    return (
+      <button type="button" className={className} onClick={onLaunch}>
+        {mark}
+        {item.label}
+      </button>
+    );
+  }
+  const href = item.id === "goal" ? "/finance/metas" : item.id === "budget" ? "/finance/mes" : "/finance/desafios";
+  return (
+    <Link href={href} className={className}>
+      {mark}
+      {item.label}
+    </Link>
   );
 }
 

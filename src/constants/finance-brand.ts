@@ -30,7 +30,7 @@ export const FINANCE_MOBILE_PRIMARY = [
 ] as const;
 
 export const FINANCE_PAGE_META: Record<string, { title: string; subtitle: string }> = {
-  "/finance": { title: "Hoje", subtitle: "O que o seu dinheiro está fazendo agora." },
+  "/finance": { title: "Hoje", subtitle: "Como está o seu dinheiro agora." },
   "/finance/mes": { title: "Mês", subtitle: "O que entrou, o que saiu e o teto de cada categoria." },
   "/finance/projecoes": {
     title: "Projeções",

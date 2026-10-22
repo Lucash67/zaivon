@@ -5,7 +5,7 @@ import { Area, AreaChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YA
 import { formatShort } from "@/lib/personal-finance/dates";
 import { parseMoney } from "@/lib/personal-finance/money";
 import type { Cadence, Direction } from "@/lib/personal-finance/types";
-import { formatCurrency } from "@/lib/utils";
+import { useFormatMoney } from "@/hooks/use-hide-money";
 import { useFinance, useFinanceHome } from "@/components/finance/finance-provider";
 import { SpendPlanPanel } from "@/components/finance/spend-plan-panel";
 import { Field, GoldButton, Money, Panel, ShortDate, directionLabel, fieldClass } from "@/components/finance/ui";
@@ -13,6 +13,7 @@ import { Field, GoldButton, Money, Panel, ShortDate, directionLabel, fieldClass 
 export function ProjecoesScreen() {
   const snap = useFinanceHome();
   const { act } = useFinance();
+  const formatMoney = useFormatMoney("finance");
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
   const [direction, setDirection] = useState<Direction>("out");
@@ -106,7 +107,7 @@ export function ProjecoesScreen() {
               />
               <YAxis hide domain={["auto", "auto"]} />
               <Tooltip
-                formatter={(value) => formatCurrency(Number(value))}
+                formatter={(value) => formatMoney(Number(value))}
                 labelFormatter={(label) => formatShort(String(label))}
                 contentStyle={{ background: "#10141B", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12 }}
               />

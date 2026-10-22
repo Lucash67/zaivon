@@ -5,6 +5,14 @@ import { useCallback, useMemo, useSyncExternalStore } from "react";
 import { formatCurrency } from "@/lib/utils";
 
 export const MONEY_MASK = "R$ ••••";
+
+const MONEY_IN_TEXT = /R\$\s?-?[\d.]+,\d{2}/g;
+
+/** Troca valores escritos dentro de uma frase quando o olho está fechado. */
+export function maskMoneyInText(text: string, hidden: boolean): string {
+  if (!hidden) return text;
+  return text.replace(MONEY_IN_TEXT, MONEY_MASK);
+}
 const KEY_PREFIX = "zaivon-hide-money:";
 const GLOBAL_KEY = `${KEY_PREFIX}global`;
 
@@ -40,6 +48,7 @@ export type HideMoneyScreen =
   | "notas"
   | "galeria"
   | "configuracoes"
+  | "finance"
   | "other";
 
 export const HIDE_MONEY_SCREENS: HideMoneyScreen[] = [
@@ -73,10 +82,12 @@ export const HIDE_MONEY_SCREENS: HideMoneyScreen[] = [
   "notas",
   "galeria",
   "configuracoes",
+  "finance",
   "other",
 ];
 
 export function hideMoneyScreenFromPath(pathname: string): HideMoneyScreen {
+  if (pathname === "/finance" || pathname.startsWith("/finance/")) return "finance";
   if (pathname === "/" || pathname.startsWith("/dashboard")) return "dashboard";
   if (pathname.startsWith("/v2")) {
     if (pathname === "/v2" || pathname === "/v2/") return "v2-hoje";

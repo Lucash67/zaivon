@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { maskMoneyInText, useMoneyHidden } from "@/hooks/use-hide-money";
 import { parseMoney } from "@/lib/personal-finance/money";
 import { useFinance, useFinanceHome } from "@/components/finance/finance-provider";
 import { Field, GhostButton, GoldButton, Money, Panel, ShortDate, fieldClass } from "@/components/finance/ui";
 
 export function MetasScreen() {
   const snap = useFinanceHome();
+  const moneyHidden = useMoneyHidden("finance");
   const { act, openComposer } = useFinance();
   const [name, setName] = useState("");
   const [target, setTarget] = useState("");
@@ -53,7 +55,7 @@ export function MetasScreen() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-base font-semibold">{goal.name}</p>
-                  <p className="mt-1 text-sm text-[#93A0B1]">{goal.note}</p>
+                  <p className="mt-1 text-sm text-[#93A0B1]">{maskMoneyInText(goal.note, moneyHidden)}</p>
                 </div>
                 <p className="text-sm font-semibold tabular-nums text-[#B7FF3C]">{Math.round(goal.ratio * 100)}%</p>
               </div>
