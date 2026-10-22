@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { maskMoneyInText, useMoneyHidden } from "@/hooks/use-hide-money";
 import { parseMoney } from "@/lib/personal-finance/money";
 import type { SpendVerdict, SpendWeek } from "@/lib/personal-finance/spend-plan";
 import { useFinance, useFinanceHome } from "@/components/finance/finance-provider";
@@ -23,6 +24,7 @@ function asInput(value: number | null): string {
 export function SpendPlanPanel() {
   const snap = useFinanceHome();
   const { act } = useFinance();
+  const moneyHidden = useMoneyHidden("finance");
   const plan = snap?.view.spendPlan;
   const [target, setTarget] = useState(plan?.target ? asInput(plan.target) : "");
   const [error, setError] = useState<string | null>(null);
@@ -106,7 +108,7 @@ export function SpendPlanPanel() {
         </div>
       ) : null}
 
-      <p className="mt-4 text-sm leading-relaxed text-[#C8D0DB]">{plan.note}</p>
+      <p className="mt-4 text-sm leading-relaxed text-[#C8D0DB]">{maskMoneyInText(plan.note, moneyHidden)}</p>
 
       <ul className="mt-4 space-y-3">
         {plan.weeks.map((week) => (
@@ -119,6 +121,7 @@ export function SpendPlanPanel() {
 
 function WeekRow({ week }: { week: SpendWeek }) {
   const { act } = useFinance();
+  const moneyHidden = useMoneyHidden("finance");
   const [value, setValue] = useState(asInput(week.declared));
   const [error, setError] = useState<string | null>(null);
   const status = week.status === "current" ? "Esta semana" : week.status === "past" ? "Já foi" : "Próxima";
@@ -173,11 +176,14 @@ function WeekRow({ week }: { week: SpendWeek }) {
         <input
           className={fieldClass}
           inputMode="decimal"
-          placeholder={week.status === "next" ? "fixar" : asInput(week.fromTransactions)}
-          value={value}
+          placeholder={moneyHidden ? "••••" : week.status === "next" ? "fixar" : asInput(week.fromTransactions)}
+          value={moneyHidden ? "" : value}
+          readOnly={moneyHidden}
           aria-label={`Gasto da semana ${week.label}`}
           onChange={(event) => setValue(event.target.value)}
-          onBlur={() => void save()}
+          onBlur={() => {
+            if (!moneyHidden) void save();
+          }}
           onKeyDown={(event) => {
             if (event.key === "Enter") {
               event.preventDefault();
@@ -193,6 +199,7 @@ function WeekRow({ week }: { week: SpendWeek }) {
 
 export function SpendPlanSummary() {
   const snap = useFinanceHome();
+  const moneyHidden = useMoneyHidden("finance");
   const plan = snap?.view.spendPlan;
   if (!plan) return null;
 
@@ -243,7 +250,7 @@ export function SpendPlanSummary() {
           </p>
         </div>
       </div>
-      <p className="mt-3 text-sm leading-relaxed text-[#C8D0DB]">{plan.note}</p>
+      <p className="mt-3 text-sm leading-relaxed text-[#C8D0DB]">{maskMoneyInText(plan.note, moneyHidden)}</p>
     </Panel>
   );
 }
