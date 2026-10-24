@@ -400,7 +400,9 @@ export const operationalPendings = pgTable("operational_pendings", {
   quantity: integer("quantity").notNull().default(1),
   costAmount: numeric("cost_amount", { precision: 12, scale: 2 }),
   potentialRevenue: numeric("potential_revenue", { precision: 12, scale: 2 }),
-  status: text("status", { enum: ["open", "resolved", "converted_to_loss"] })
+  status: text("status", {
+    enum: ["open", "resolved", "converted_to_loss", "closed_with_caveat"],
+  })
     .notNull()
     .default("open"),
   description: text("description").notNull(),
