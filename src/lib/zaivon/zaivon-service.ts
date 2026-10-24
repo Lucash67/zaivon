@@ -54,6 +54,22 @@ const MONTH_LABELS = [
 ];
 
 /** Dados do dia que não existem nas tabelas do diário. */
+interface ProvisionalReceivableLine {
+  id: string;
+  date: string;
+  amount: number;
+  /** Só a linha de 21/10 entra na competência; as anteriores existem para a carteira. */
+  inCompetence: boolean;
+  description: string;
+}
+
+interface ProvisionalReceivable {
+  id: string;
+  label: string;
+  promiseDate?: string;
+  lines: ProvisionalReceivableLine[];
+}
+
 interface ZaivonMeta {
   /** Cofrinho prático informado no fim de cada dia. */
   cofrinho: Record<string, number>;
@@ -62,9 +78,17 @@ interface ZaivonMeta {
   extraSettlements: Settlement[];
   /** Vendas pendentes que o dono baixou como perda. */
   lossSaleIds: string[];
+  /** Crédito com saldo. Não é fiado e não é entrada de caixa. */
+  customerCredits?: unknown[];
+  /** Compromissos cuja identidade ainda não pode ir para um cartão. */
+  provisionalReceivables?: ProvisionalReceivable[];
+  /** Diferença entre o fechamento anterior e a abertura informada. */
+  openingBridges?: unknown[];
 }
 
 const EMPTY_META: ZaivonMeta = { cofrinho: {}, closure: {}, extraSettlements: [], lossSaleIds: [] };
+
+const JOAO_LUCAS_TOKEN = "IDENTITY-PENDING:zaivon-2026-10-21-joao-lucas-identity-pending";
 
 async function readMeta(): Promise<ZaivonMeta> {
   const raw = (await listSettingsMap())[META_KEY];
@@ -188,6 +212,7 @@ interface SaleRow {
   totalAmount: string;
   amountReceived: string;
   clientName: string | null;
+  notes: string | null;
 }
 
 async function loadSalesForZaivon(from: string): Promise<{ open: SaleRow[]; settled: SaleRow[]; items: Map<string, { product: string; qty: number }[]> }> {
@@ -201,6 +226,7 @@ async function loadSalesForZaivon(from: string): Promise<{ open: SaleRow[]; sett
     totalAmount: sales.totalAmount,
     amountReceived: sales.amountReceived,
     clientName: clients.name,
+    notes: sales.notes,
   };
   const [open, settled] = await Promise.all([
     queryAll(
@@ -255,6 +281,7 @@ async function loadMonthSales(month: string): Promise<Map<string, RegisteredSale
         paymentStatus: sales.paymentStatus,
         totalAmount: sales.totalAmount,
         clientName: clients.name,
+        notes: sales.notes,
       })
       .from(sales)
       .leftJoin(clients, eq(clients.id, sales.clientId))
@@ -282,11 +309,42 @@ async function loadMonthSales(month: string): Promise<Map<string, RegisteredSale
   const byDate = new Map<string, RegisteredSale[]>();
   for (const r of rows) {
     const its = items.get(r.id) ?? [];
+    const notes = r.notes ?? "";
+    const identityPending = notes.includes(JOAO_LUCAS_TOKEN);
+    const prepaid = notes.includes("PREPAID-APPLIED:");
+    const credit = notes.includes("CREDIT-APPLIED:");
+    if (notes.includes("MIGRATED-2210-PIX-140")) continue;
+    const aggregate = notes.includes("AGGREGATE-2210");
+    const courtesy = notes.includes("CORTESIA-2210");
+    const partialBuyer = notes.includes("PARCIAL-2210:Francisco de Assis");
+    const local = notes.match(/LOCAL:([A-Za-z]+)/);
+    const confidence = notes.match(/CONFIANCA:(confirmado|provisorio)/);
+    const extra = prepaid
+      ? " Pré-pago aplicado, sem Pix em 21/10."
+      : credit
+        ? " Crédito aplicado, sem Pix novo."
+        : aggregate
+          ? " Consolidado do fechamento, sem lista nominal."
+          : courtesy
+            ? " Cortesia, valor recebido zero."
+            : partialBuyer
+              ? " Espécie líquida de R$10. Identidade incompleta."
+              : local
+                ? ` ${local[1]}, classificação ${confidence?.[1] ?? "não informada"}.`
+                : "";
     const sale: RegisteredSale = {
       id: r.id,
       time: String(r.saleTime).slice(0, 5),
-      person: r.clientName ?? "Sem nome",
-      description: describeItems(its),
+      person: identityPending
+        ? "João Lucas (identidade pendente)"
+        : credit
+          ? "Vanderson (identidade pendente)"
+          : partialBuyer
+            ? "Francisco de Assis (identidade incompleta)"
+            : aggregate
+              ? "Vendas de salgados sem lista nominal"
+              : (r.clientName ?? "Sem nome"),
+      description: `${describeItems(its)}${extra}`,
       qty: its.reduce((s, i) => s + i.qty, 0),
       amount: round2(Number(r.totalAmount) || 0),
       status: r.paymentStatus as RegisteredSale["status"],
@@ -352,8 +410,9 @@ export async function getZaivonData(requestedMonth?: string): Promise<ZaivonData
 
   const lost = new Set(meta.lossSaleIds);
   const debts: Debt[] = salesData.open.map((s) => {
-    const name = s.clientName ?? "Não identificado";
-    const type = debtType(name);
+    const identityPending = (s.notes ?? "").includes(JOAO_LUCAS_TOKEN);
+    const name = identityPending ? "João Lucas (identidade pendente)" : (s.clientName ?? "Não identificado");
+    const type = identityPending ? "fiado" : debtType(name);
     const person = type === "investigacao" ? "Não identificado" : name;
     return {
       id: s.id,
@@ -364,9 +423,26 @@ export async function getZaivonData(requestedMonth?: string): Promise<ZaivonData
       paid: round2(s.paymentStatus === "partial" ? Number(s.amountReceived) || 0 : 0),
       description: describeItems(salesData.items.get(s.id) ?? []),
       status: lost.has(s.id) ? "loss" : "open",
-      deferredUntil: deferredUntilFor(person),
+      deferredUntil: identityPending ? "2026-10-30" : deferredUntilFor(person),
     };
   });
+  for (const book of meta.provisionalReceivables ?? []) {
+    for (const line of book.lines) {
+      if (line.inCompetence) continue;
+      if (debts.some((d) => d.id === line.id)) continue;
+      debts.push({
+        id: line.id,
+        person: book.label,
+        type: "fiado",
+        originDate: line.date,
+        amount: round2(line.amount),
+        paid: 0,
+        description: line.description,
+        status: "open",
+        deferredUntil: book.promiseDate,
+      });
+    }
+  }
 
   const sorted = [...entries].sort((a, b) => a.date.localeCompare(b.date));
   const days: OperationDay[] = sorted

@@ -165,20 +165,22 @@ function DayStrip() {
               disabled={hol}
               onClick={() => o.selectDate(d)}
               aria-pressed={sel}
-              title={provisional ? "Competência provisória — valores históricos visíveis" : undefined}
+              title={
+                provisional
+                  ? "Resultado de caixa. O P marca competência provisória; este valor não está em aberto."
+                  : "Resultado de caixa"
+              }
               className={cn(
                 "min-w-14 shrink-0 rounded-lg border px-2 py-1 text-center sm:min-w-16",
                 sel ? "border-o-primary bg-o-primary/12" : "border-transparent hover:bg-o-muted",
-                provisional && !sel && "border-o-pending/50",
-                provisional && sel && "ring-1 ring-o-pending/40",
                 hol && "opacity-50",
               )}
             >
               <div className="text-[10px] text-o-muted-foreground sm:text-xs">
                 {weekday(d)} {ddmm(d)}
-                {provisional ? " · P" : ""}
+                {provisional ? <span className="text-o-pending"> · P</span> : null}
               </div>
-              <div className={cn("num text-xs font-semibold", p == null ? "text-o-muted-foreground" : provisional ? "text-o-pending" : "text-o-ok")}>
+              <div className={cn("num text-xs font-semibold", p == null ? "text-o-muted-foreground" : "text-o-ok")}>
                 {hol ? "feriado" : p == null ? "—" : hidden ? mask : `R$ ${Math.round(p)}`}
               </div>
             </button>
