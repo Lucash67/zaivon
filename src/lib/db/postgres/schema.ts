@@ -285,6 +285,92 @@ export const cashFlowEvents = pgTable(
   }),
 );
 
+export const vaultAccounts = pgTable(
+  "vault_accounts",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    businessId: uuid("business_id")
+      .notNull()
+      .references(() => businesses.id),
+    name: text("name").notNull(),
+    slug: text("slug").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    businessSlug: unique("vault_accounts_business_slug_unique").on(table.businessId, table.slug),
+  }),
+);
+
+export const vaultMovements = pgTable(
+  "vault_movements",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    businessId: uuid("business_id")
+      .notNull()
+      .references(() => businesses.id),
+    accountId: uuid("account_id")
+      .notNull()
+      .references(() => vaultAccounts.id),
+    counterAccountId: uuid("counter_account_id").references(() => vaultAccounts.id),
+    movementType: text("movement_type", {
+      enum: [
+        "deposit",
+        "withdrawal",
+        "transfer",
+        "adjustment",
+        "yield",
+        "reversal",
+        "reclassification",
+        "opening_balance",
+      ],
+    }).notNull(),
+    effect: text("effect", { enum: ["credit", "debit"] }).notNull(),
+    amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
+    effectiveDate: date("effective_date").notNull(),
+    competenceDate: date("competence_date"),
+    description: text("description").notNull(),
+    sourceLabel: text("source_label"),
+    operationDayId: uuid("operation_day_id").references(() => operationDays.id),
+    saleId: uuid("sale_id").references(() => sales.id),
+    externalId: text("external_id"),
+    idempotencyKey: text("idempotency_key").notNull(),
+    status: text("status", { enum: ["posted", "reversed"] }).notNull().default("posted"),
+    reversesMovementId: uuid("reverses_movement_id"),
+    metadata: jsonb("metadata").notNull().default({}),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    businessKey: unique("vault_movements_business_idempotency_unique").on(
+      table.businessId,
+      table.idempotencyKey,
+    ),
+    accountDateIdx: index("idx_vault_movements_account_date").on(table.accountId, table.effectiveDate),
+    amountCheck: check("vault_movements_amount_check", sql`${table.amount} > 0`),
+    transferCheck: check(
+      "vault_movements_transfer_check",
+      sql`${table.movementType} <> 'transfer' OR ${table.counterAccountId} IS NOT NULL`,
+    ),
+  }),
+);
+
+export const vaultMovementRevisions = pgTable(
+  "vault_movement_revisions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    movementId: uuid("movement_id")
+      .notNull()
+      .references(() => vaultMovements.id),
+    before: jsonb("before"),
+    after: jsonb("after").notNull(),
+    reason: text("reason").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    movementIdx: index("idx_vault_movement_revisions_movement").on(table.movementId, table.createdAt),
+  }),
+);
+
 export const stockMovements = pgTable(
   "stock_movements",
   {
