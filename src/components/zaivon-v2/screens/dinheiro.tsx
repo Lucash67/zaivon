@@ -39,6 +39,15 @@ function DinheiroBody() {
   });
   const selected = o.selectedDay;
   const selectedFinance = dayFinance(selected, o.settlements);
+  const vaultPoints = o.vault.movements
+    .filter((movement) => !rows.some((row) => row.fullDate === movement.date))
+    .map((movement) => ({
+      date: ddmm(movement.date),
+      fullDate: movement.date,
+      provisional: false,
+      cofrinho: movement.balanceAfter,
+    }));
+  const chartRows = [...rows, ...vaultPoints].sort((a, b) => a.fullDate.localeCompare(b.fullDate));
   return (
     <div className="mx-auto max-w-6xl">
       <PageHeader title="Dinheiro" question={`Onde está meu dinheiro? · ${o.plan.label} · 5 dimensões`} right={<ScreenHideMoneyButton />} />
@@ -55,24 +64,24 @@ function DinheiroBody() {
             <Kpi
               big
               tone="info"
-              label={FINANCE_LABELS.piggyBalance.short}
-              value={money(ms.lastCofrinho)}
-              formula={FINANCE_LABELS.piggyBalance.formula}
-              explain={`Início do mês: ${money(o.plan.practicalAtStart)}`}
+              label="Saldo atual"
+              value={money(o.vault.balance)}
+              formula="Saldo do razão: saldo confirmado mais as movimentações posteriores. Depósito não é lucro."
+              explain={o.vault.asOf ? `Atualizado em ${ddmm(o.vault.asOf)}. O fechamento de cada dia permanece o saldo daquela data.` : "Nenhuma movimentação no razão."}
             />
             <Kpi
               tone="ok"
               label={FINANCE_LABELS.bankOfMonth.short}
               value={money(ms.bank)}
               formula={FINANCE_LABELS.bankOfMonth.formula}
-              explain={`${money(ms.diaryProfit)} de ${FINANCE_LABELS.cashManagementResult.short.toLowerCase()} + ${money(ms.yields)} rendimentos`}
+              explain={`${money(ms.diaryProfit)} de ${FINANCE_LABELS.cashManagementResult.short.toLowerCase()} + ${money(ms.yields)} rendimentos. O último fechamento diário é ${money(ms.lastCofrinho)}.`}
             />
             <Kpi label="Rendimentos" value={money(ms.yields)} formula="Banco do mês − resultados de caixa do diário. Entra no banco, mas não é lucro." explain={`≈ ${money(ms.avgYieldPerDay)} por dia`} />
           </div>
           <Panel title="Evolução do cofrinho" subtitle={`Saldo no fim de cada dia · ${o.plan.label}`}>
             <div className="h-64">
               <ResponsiveContainer>
-                <LineChart data={rows} margin={{ left: 8, right: 8 }}>
+                <LineChart data={chartRows} margin={{ left: 8, right: 8 }}>
                   <CartesianGrid stroke="var(--color-border)" vertical={false} />
                   <XAxis dataKey="date" {...chartAxis} />
                   <YAxis {...chartAxis} domain={["dataMin - 100", "dataMax + 50"]} tickFormatter={axisTick} width={70} />
@@ -81,6 +90,31 @@ function DinheiroBody() {
                 </LineChart>
               </ResponsiveContainer>
             </div>
+          </Panel>
+          <Panel title="Movimentações do cofrinho" subtitle="Independentes do dia operacional. Uma transferência não é receita.">
+            <div className="overflow-x-auto">
+              <table className="num w-full min-w-[520px] text-sm">
+                <thead className="text-left text-xs text-o-muted-foreground">
+                  <tr>
+                    <th className="py-2">Data</th>
+                    <th>Tipo</th>
+                    <th>Valor</th>
+                    <th>Saldo após</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {o.vault.movements.map((movement) => (
+                    <tr key={movement.id} className="border-t">
+                      <td className="py-2">{ddmm(movement.date)}</td>
+                      <td>{movement.type === "opening_balance" ? "Saldo confirmado" : movement.type === "deposit" ? "Depósito" : movement.type === "withdrawal" ? "Retirada" : movement.type === "transfer" ? "Transferência" : movement.type === "yield" ? "Rendimento" : movement.type === "reversal" ? "Estorno" : movement.type === "reclassification" ? "Reclassificação" : "Ajuste"}</td>
+                      <td>{movement.effect === "credit" ? money(movement.amount) : `−${money(movement.amount)}`}</td>
+                      <td>{money(movement.balanceAfter)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {o.vault.movements.length === 0 ? <p className="text-sm text-o-muted-foreground">Nenhuma movimentação persistida.</p> : null}
           </Panel>
           <Panel
             title="Batimento diário"

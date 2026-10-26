@@ -28,6 +28,7 @@ import { normalizeSaleShiftTime } from "@/lib/sale-shift";
 import { generateId } from "@/shared/ids/generate-id";
 import { getMonthPlan } from "@/lib/planning/month-plans";
 import { round2, settlementsOn } from "@/lib/zaivon/finance/day";
+import { loadVaultSnapshot } from "@/lib/vault/vault-service";
 import { parseDraftFinancials, type DraftFinancials } from "@/lib/zaivon/finance/draft-financials";
 import { ZAIVON_CHANNELS, ZAIVON_PRODUCTS } from "@/lib/zaivon/catalog";
 import type {
@@ -317,6 +318,7 @@ async function loadMonthSales(month: string): Promise<Map<string, RegisteredSale
     const aggregate = notes.includes("AGGREGATE-2210");
     const courtesy = notes.includes("CORTESIA-2210");
     const partialBuyer = notes.includes("PARCIAL-2210:Francisco de Assis");
+    const informedName = notes.match(/NOME-INFORMADO:([^|]+)/);
     const local = notes.match(/LOCAL:([A-Za-z]+)/);
     const confidence = notes.match(/CONFIANCA:(confirmado|provisorio)/);
     const extra = prepaid
@@ -343,7 +345,9 @@ async function loadMonthSales(month: string): Promise<Map<string, RegisteredSale
             ? "Francisco de Assis (identidade incompleta)"
             : aggregate
               ? "Vendas de salgados sem lista nominal"
-              : (r.clientName ?? "Sem nome"),
+              : informedName
+                ? `${informedName[1].trim()} (vínculo pendente)`
+                : (r.clientName ?? "Sem nome"),
       description: `${describeItems(its)}${extra}`,
       qty: its.reduce((s, i) => s + i.qty, 0),
       amount: round2(Number(r.totalAmount) || 0),
@@ -411,8 +415,13 @@ export async function getZaivonData(requestedMonth?: string): Promise<ZaivonData
   const lost = new Set(meta.lossSaleIds);
   const debts: Debt[] = salesData.open.map((s) => {
     const identityPending = (s.notes ?? "").includes(JOAO_LUCAS_TOKEN);
-    const name = identityPending ? "João Lucas (identidade pendente)" : (s.clientName ?? "Não identificado");
-    const type = identityPending ? "fiado" : debtType(name);
+    const informedName = (s.notes ?? "").match(/NOME-INFORMADO:([^|]+)/);
+    const name = identityPending
+      ? "João Lucas (identidade pendente)"
+      : informedName
+        ? `${informedName[1].trim()} (vínculo pendente)`
+        : (s.clientName ?? "Não identificado");
+    const type = identityPending || informedName ? "fiado" : debtType(name);
     const person = type === "investigacao" ? "Não identificado" : name;
     return {
       id: s.id,
@@ -506,6 +515,7 @@ export async function getZaivonData(requestedMonth?: string): Promise<ZaivonData
     },
     today,
     availableMonths,
+    vault: await loadVaultSnapshot(BUSINESS),
   };
 }
 

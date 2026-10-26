@@ -201,11 +201,16 @@ function HojeBody() {
                 value={day.cofrinhoEnd != null ? money(day.cofrinhoEnd) : "—"}
                 formula={FINANCE_LABELS.piggyBalance.formula}
                 explain={
-                  day.dayClosing?.piggyBank.deposit != null
-                    ? `Depósito do dia: ${money(day.dayClosing.piggyBank.deposit)}`
-                    : day.cofrinhoEnd != null
-                      ? "Informado no fechamento"
-                      : "Ainda não informado"
+                  [
+                    day.dayClosing?.piggyBank.deposit != null
+                      ? `Depósito do dia: ${money(day.dayClosing.piggyBank.deposit)}`
+                      : day.cofrinhoEnd != null
+                        ? "Informado no fechamento"
+                        : "Ainda não informado",
+                    o.vault.asOf && day.cofrinhoEnd != null && Math.abs(o.vault.balance - day.cofrinhoEnd) > 0.009
+                      ? `Saldo atual: ${money(o.vault.balance)} em ${ddmm(o.vault.asOf)}.`
+                      : "",
+                  ].filter(Boolean).join(" ")
                 }
               />
             </div>

@@ -143,6 +143,24 @@ export interface PreviousMonthStats {
   avgOwnCostPerDay: number;
 }
 
+export interface VaultMovementView {
+  id: string;
+  date: string;
+  type: string;
+  effect: "credit" | "debit";
+  amount: number;
+  description: string;
+  balanceAfter: number;
+}
+
+/** Saldo atual do cofrinho, calculado por movimentações. Independente do fechamento do dia. */
+export interface VaultSnapshot {
+  accountName: string;
+  balance: number;
+  asOf: string | null;
+  movements: VaultMovementView[];
+}
+
 /** Tudo que as telas da ZAIVON v2 precisam, entregue por GET /api/zaivon. */
 export interface ZaivonData {
   plan: MonthPlan;
@@ -155,4 +173,6 @@ export interface ZaivonData {
   today: string;
   /** Meses com dados no diário, do mais recente ao mais antigo. */
   availableMonths: { month: string; label: string }[];
+  /** Razão do cofrinho. O saldo do dia fechado continua em `days[].cofrinhoEnd`. */
+  vault: VaultSnapshot;
 }
