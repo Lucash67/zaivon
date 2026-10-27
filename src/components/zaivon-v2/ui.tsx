@@ -131,7 +131,8 @@ export function RegisteredSalesList({
 }) {
   const { money } = useScreenHideMoney();
   if (!sales?.length) return <p className="text-xs text-o-muted-foreground">Nenhuma venda gravada individualmente neste dia.</p>;
-  const units = sales.reduce((s, x) => s + x.qty, 0);
+  const units = sales.reduce((s, x) => s + (x.receiptWithoutComposition ? 0 : x.qty), 0);
+  const receipts = sales.filter((s) => s.receiptWithoutComposition).length;
   const total = sales.reduce((s, x) => s + x.amount, 0);
   const paid = sales.filter((s) => s.status === "paid").reduce((s, x) => s + x.amount, 0);
   const pending = sales.filter((s) => s.status !== "paid").reduce((s, x) => s + x.amount, 0);
@@ -140,7 +141,8 @@ export function RegisteredSalesList({
   return (
     <div>
       <p className="num mb-1 text-xs text-o-muted-foreground">
-        {sales.length} registros · {units} un · cadastrado {money(total)}
+        {sales.length} registros · {units} un{receipts > 0 ? " com produto" : ""} · cadastrado {money(total)}
+        {receipts > 0 ? ` · ${receipts} recebimentos sem composição, fora da contagem de unidades` : ""}
         {` · pagos ${money(paid)} · pendentes/perda ${money(pending)}`}
       </p>
       {(salesReceived != null || competence != null) && (
@@ -158,7 +160,16 @@ export function RegisteredSalesList({
           return (
             <li key={s.id} className="flex items-center justify-between gap-2 rounded-lg bg-o-surface px-3 py-2 text-sm">
               <span className="min-w-0 truncate">
-                <span className="text-xs text-o-muted-foreground">{formatSaleShift(s.time)}</span> · {s.person} · {s.description}
+                <span className="text-xs text-o-muted-foreground">
+                  {s.timeConfidence === "nao-informado"
+                    ? "horário não informado"
+                    : s.timeConfidence === "comprovado"
+                      ? s.time
+                      : s.timeConfidence === "estimado"
+                        ? `${s.time} estimado`
+                        : formatSaleShift(s.time)}
+                </span>{" "}
+                · {s.person} · {s.description}
               </span>
               <span className="flex shrink-0 items-center gap-2">
                 <span className="num">{money(s.amount)}</span>

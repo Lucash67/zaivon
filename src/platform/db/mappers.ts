@@ -99,7 +99,7 @@ export function mapSaleRow(row: SqliteSale | PgSale): LegacySale {
       id: s.id,
       businessId: fromDbBusinessId(s.businessId),
       date: toDateString(s.saleDate),
-      time: String(s.saleTime).slice(0, 5),
+      time: s.saleTime ? String(s.saleTime).slice(0, 5) : "",
       clientId: s.clientId,
       department: s.department,
       paymentMethod: s.paymentMethod,

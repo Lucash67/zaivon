@@ -321,6 +321,12 @@ async function loadMonthSales(month: string): Promise<Map<string, RegisteredSale
     const informedName = notes.match(/NOME-INFORMADO:([^|]+)/);
     const local = notes.match(/LOCAL:([A-Za-z]+)/);
     const confidence = notes.match(/CONFIANCA:(confirmado|provisorio)/);
+    const timeConfidence = notes.match(/HORARIO-CONFIANCA:(comprovado|estimado|nao-informado)/)?.[1] as
+      | "comprovado"
+      | "estimado"
+      | "nao-informado"
+      | undefined;
+    const receipt = notes.includes("RECEBIMENTO-SEM-COMPOSICAO");
     const extra = prepaid
       ? " Pré-pago aplicado, sem Pix em 21/10."
       : credit
@@ -336,7 +342,9 @@ async function loadMonthSales(month: string): Promise<Map<string, RegisteredSale
                 : "";
     const sale: RegisteredSale = {
       id: r.id,
-      time: String(r.saleTime).slice(0, 5),
+      time: r.saleTime ? String(r.saleTime).slice(0, 5) : "",
+      timeConfidence,
+      receiptWithoutComposition: receipt || undefined,
       person: identityPending
         ? "João Lucas (identidade pendente)"
         : credit
@@ -348,7 +356,7 @@ async function loadMonthSales(month: string): Promise<Map<string, RegisteredSale
               : informedName
                 ? `${informedName[1].trim()} (vínculo pendente)`
                 : (r.clientName ?? "Sem nome"),
-      description: `${describeItems(its)}${extra}`,
+      description: receipt ? "Pix Acal, composição não identificada" : `${describeItems(its)}${extra}`,
       qty: its.reduce((s, i) => s + i.qty, 0),
       amount: round2(Number(r.totalAmount) || 0),
       status: r.paymentStatus as RegisteredSale["status"],

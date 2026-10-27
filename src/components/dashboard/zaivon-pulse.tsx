@@ -114,6 +114,24 @@ export function ZaivonPulse({ pulse, className, hideMoneyScreen = "dashboard" }:
         {PULSE_METRIC_META.map((meta) => {
           const raw = pulse.metrics[meta.key];
           const accent = raw != null && raw < 0 ? "#ff8585" : meta.accent;
+          const label = pulse.personalProfitPending
+            ? meta.key === "competenceRevenue"
+              ? "Receita identificada"
+              : meta.key === "competenceProfit"
+                ? "Resultado por competência"
+                : meta.key === "cashIn"
+                  ? "Pix recebidos"
+                  : "Fiados identificados"
+            : meta.label;
+          const sub = pulse.personalProfitPending
+            ? meta.key === "competenceRevenue"
+              ? "Pix e fiados nominais"
+              : meta.key === "competenceProfit"
+                ? "Antes dos custos dos sanduíches. Lucro pessoal pendente."
+                : meta.key === "cashIn"
+                  ? "Entradas do dia"
+                  : "Reconhecidos, não recebidos"
+            : meta.sub;
           return (
             <div
               key={meta.key}
@@ -124,7 +142,7 @@ export function ZaivonPulse({ pulse, className, hideMoneyScreen = "dashboard" }:
                 <span className="text-[15px]" style={{ color: accent }} aria-hidden>
                   {meta.symbol}
                 </span>
-                {meta.label}
+                {label}
               </div>
               <div
                 className="mt-3 whitespace-nowrap text-[21px] font-extrabold tracking-[-0.05em] tabular-nums sm:text-[clamp(19px,2.1vw,27px)]"
@@ -132,7 +150,7 @@ export function ZaivonPulse({ pulse, className, hideMoneyScreen = "dashboard" }:
               >
                 {formatPulseMoney(raw, maskMoney)}
               </div>
-              <div className="mt-1.5 text-[10px] text-[#8e9ca9] sm:text-[11px]">{meta.sub}</div>
+              <div className="mt-1.5 text-[10px] text-[#8e9ca9] sm:text-[11px]">{sub}</div>
             </div>
           );
         })}

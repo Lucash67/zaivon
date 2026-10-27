@@ -147,7 +147,9 @@ function HojeBody() {
         <div className="grid gap-4">
           {f.competenceStatus === "provisional" && (
             <div className="rounded-xl border border-o-pending/40 bg-o-pending/10 px-4 py-3 text-sm text-o-pending">
-              {PROVISIONAL_HINT}
+              {day.dayClosing?.definitivePersonalProfit === "pending"
+                ? "O resultado por competência deste dia é anterior aos custos dos sanduíches. O lucro pessoal definitivo permanece pendente e não entra no lucro mensal confirmado."
+                : PROVISIONAL_HINT}
             </div>
           )}
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.3fr_1fr]">
@@ -155,7 +157,11 @@ function HojeBody() {
               <Kpi
                 big
                 tone="ok"
-                label={FINANCE_LABELS.cashManagementResult.short}
+                label={
+                  day.dayClosing?.definitivePersonalProfit === "pending"
+                    ? "Resultado de caixa antes dos custos dos sanduíches"
+                    : FINANCE_LABELS.cashManagementResult.short
+                }
                 value={money(f.profit)}
                 formula={FINANCE_LABELS.cashManagementResult.formula}
                 explain={`${money(f.cashIn)} de entrada${f.bonus ? ` + ${money(f.bonus)} de bônus` : ""} − ${money(f.ownCost)} de custo próprio`}
@@ -163,9 +169,11 @@ function HojeBody() {
               <Kpi
                 big
                 label={
-                  f.competenceStatus === "provisional"
-                    ? `${FINANCE_LABELS.competenceProfit.short} (provisório)`
-                    : FINANCE_LABELS.competenceProfit.short
+                  day.dayClosing?.definitivePersonalProfit === "pending"
+                    ? "Resultado por competência antes dos custos dos sanduíches"
+                    : f.competenceStatus === "provisional"
+                      ? `${FINANCE_LABELS.competenceProfit.short} (provisório)`
+                      : FINANCE_LABELS.competenceProfit.short
                 }
                 value={money(f.competenceProfit)}
                 formula={FINANCE_LABELS.competenceProfit.formula}

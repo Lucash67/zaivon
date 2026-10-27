@@ -111,6 +111,11 @@ export interface DayClosingFinance {
    * Batimento operacional por resumo (quando não há lines[] unitárias).
    * Permite distinguir salgados conciliados de sanduíches ainda pendentes.
    */
+  /**
+   * pending = o número em competenceProfit ainda não é lucro pessoal definitivo.
+   * Ausente nos dias anteriores: o rótulo histórico permanece.
+   */
+  definitivePersonalProfit?: "pending";
   operationalAudit?: {
     salgados?: {
       initial: number;
@@ -156,6 +161,7 @@ export function buildDayClosing(input: {
   ownCostPaymentDates?: DayClosingCosts["ownCostPaymentDates"];
   extraNotes?: string[];
   competenceStatus?: "confirmed" | "provisional";
+  definitivePersonalProfit?: "pending";
   provisionalCompetence?: ProvisionalCompetencePair;
   cashAtClose?: CashAtCloseReconstruction;
   historicalWriteOffs?: DayClosingFinance["historicalWriteOffs"];
@@ -226,6 +232,7 @@ export function buildDayClosing(input: {
       depositMinusCashResult,
       notes,
     },
+    definitivePersonalProfit: input.definitivePersonalProfit,
     provisionalCompetence: input.provisionalCompetence,
     cashAtClose: input.cashAtClose,
     historicalWriteOffs: input.historicalWriteOffs,

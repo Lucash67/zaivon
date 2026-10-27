@@ -106,6 +106,10 @@ export interface RegisteredSale {
   qty: number;
   amount: number;
   status: "paid" | "pending" | "partial";
+  /** Ausente nas vendas antigas: a lista continua mostrando o turno. */
+  timeConfidence?: "comprovado" | "estimado" | "nao-informado";
+  /** Recebimento sem item. Não entra na soma de unidades. */
+  receiptWithoutComposition?: boolean;
 }
 
 /** Dias anteriores usados só para tendência (lucro final por dia útil). */

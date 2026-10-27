@@ -147,7 +147,7 @@ export const sales = pgTable(
       .references(() => operationDays.id),
     clientId: uuid("client_id").references(() => clients.id),
     saleDate: date("sale_date").notNull(),
-    saleTime: time("sale_time").notNull(),
+    saleTime: time("sale_time"),
     department: text("department"),
     paymentMethod: text("payment_method", { enum: ["pix", "card", "cash"] }),
     paymentStatus: text("payment_status", { enum: ["paid", "pending", "partial"] })
@@ -483,7 +483,8 @@ export const operationalPendings = pgTable("operational_pendings", {
   productId: uuid("product_id").references(() => products.id),
   clientId: uuid("client_id").references(() => clients.id),
   saleId: uuid("sale_id").references(() => sales.id),
-  quantity: integer("quantity").notNull().default(1),
+  /** Nulo significa contagem desconhecida. Zero significa ausência real de unidades. */
+  quantity: integer("quantity").default(1),
   costAmount: numeric("cost_amount", { precision: 12, scale: 2 }),
   potentialRevenue: numeric("potential_revenue", { precision: 12, scale: 2 }),
   status: text("status", {
