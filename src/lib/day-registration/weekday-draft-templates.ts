@@ -95,6 +95,27 @@ export function officialDraftNoteTitle(_date: string | Date): string {
   return "Salgados";
 }
 
+/**
+ * A partir desta data o quadro nasce vazio.
+ * O carregamento das notas não volta a criar o rascunho automático.
+ */
+export const SEEDED_NOTE_CUTOFF = "2026-10-27";
+
+/** Rascunho vazio ou modelo oficial colocado sozinho numa data futura. */
+export function isSeededFutureNote(note: {
+  title?: string | null;
+  body?: string | null;
+  noteDate?: string | null;
+}): boolean {
+  if (!note.noteDate || note.noteDate < SEEDED_NOTE_CUTOFF) return false;
+  const title = (note.title ?? "").trim();
+  const body = (note.body ?? "").replace(/\r\n/g, "\n").trim();
+  const blankTitle = title === "" || title === officialDraftNoteTitle(note.noteDate);
+  if (body.length === 0 && blankTitle) return true;
+  const template = buildWeekdayDraftTemplate().replace(/\r\n/g, "\n").trim();
+  return blankTitle && body === template;
+}
+
 /** Detecta se a nota já é o rascunho oficial daquele dia (idempotência). */
 export function isOfficialDraftNote(
   note: { title?: string | null; noteDate?: string | null },
