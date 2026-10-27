@@ -41,6 +41,8 @@ export interface ZaivonPulseView {
   periodLabel: string;
   source: "dayClosing" | "diary" | "metrics";
   competenceProvisional: boolean;
+  /** Neste dia, competenceProfit não é lucro pessoal definitivo. */
+  personalProfitPending: boolean;
 }
 
 export interface BuildZaivonPulseInput {
@@ -254,6 +256,7 @@ export function buildZaivonPulse(input: BuildZaivonPulseInput): ZaivonPulseView 
     periodLabel: formatPeriodLabel(input.focusDate, input.isToday),
     source,
     competenceProvisional: dc?.competenceStatus === "provisional",
+    personalProfitPending: dc?.definitivePersonalProfit === "pending",
   };
 }
 
