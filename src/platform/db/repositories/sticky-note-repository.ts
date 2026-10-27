@@ -7,8 +7,10 @@ import { generateId } from "@/shared/ids/generate-id";
 import type { StickyNote, StickyNoteColor } from "@/lib/sticky-notes/types";
 import {
   buildWeekdayDraftTemplate,
+  isSeededFutureNote,
   officialDraftNoteTitle,
   operationalDatesOfYear,
+  SEEDED_NOTE_CUTOFF,
   stripLeadingDraftDate,
 } from "@/lib/day-registration/weekday-draft-templates";
 
@@ -256,17 +258,28 @@ export async function deleteStickyNote(ownerId: string, id: string): Promise<boo
 }
 
 /**
- * Garante um bloco vazio em cada dia do ano que ainda não tem nota.
+ * Garante um bloco vazio em cada dia do ano anterior a 27/10/2026 que ainda não tem nota.
+ * Datas dessa data em diante ficam sem bloco automático.
  * Também tira a data digitada no topo: a data oficial é noteDate.
  */
 export async function ensureYearDayBlocks(ownerId: string, year = new Date().getFullYear()): Promise<number> {
   const existing = await listStickyNotes(ownerId, { includeArchived: true });
+  const seeded = existing.filter((note) => isSeededFutureNote(note));
+  if (seeded.length > 0) {
+    for (const note of seeded) {
+      await deleteStickyNote(ownerId, note.id);
+    }
+  }
+  const removed = new Set(seeded.map((note) => note.id));
+  const kept = existing.filter((note) => !removed.has(note.id));
   const taken = new Set(
-    existing.filter((n) => !n.archived && n.noteDate).map((n) => n.noteDate as string),
+    kept.filter((n) => !n.archived && n.noteDate).map((n) => n.noteDate as string),
   );
   const now = new Date();
   const template = buildWeekdayDraftTemplate();
-  const missing = operationalDatesOfYear(year).filter((date) => !taken.has(date));
+  const missing = operationalDatesOfYear(year).filter(
+    (date) => date < SEEDED_NOTE_CUTOFF && !taken.has(date),
+  );
 
   if (isPostgres()) {
     const db = await getPostgresDb();
@@ -290,7 +303,7 @@ export async function ensureYearDayBlocks(ownerId: string, year = new Date().get
       }
     }
 
-    for (const note of existing) {
+    for (const note of kept) {
       if (!note.noteDate) continue;
       const next = stripLeadingDraftDate(note.body);
       if (next === note.body) continue;
@@ -324,7 +337,7 @@ export async function ensureYearDayBlocks(ownerId: string, year = new Date().get
       })
       .run();
   }
-  for (const note of existing) {
+  for (const note of kept) {
     if (!note.noteDate) continue;
     const next = stripLeadingDraftDate(note.body);
     if (next === note.body) continue;

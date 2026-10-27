@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
 import { generateId } from "@/shared/ids/generate-id";
+import { isSeededFutureNote } from "@/lib/day-registration/weekday-draft-templates";
 import type { StickyNote, StickyNoteColor } from "@/lib/sticky-notes/types";
 import {
   localClearPending,
@@ -141,7 +142,14 @@ export function useStickyNotes() {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const local = await localListNotes();
+      const stored = await localListNotes();
+      const seededLocal = stored.filter((note) => isSeededFutureNote(note));
+      for (const note of seededLocal) {
+        await localDeleteNote(note.id);
+        await localClearPending(note.id);
+        pendingRef.current.delete(note.id);
+      }
+      const local = stored.filter((note) => !isSeededFutureNote(note));
       if (!cancelled && local.length > 0) {
         setNotes(
           local
@@ -153,7 +161,7 @@ export function useStickyNotes() {
         );
       }
       try {
-        const server = await fetchNotes(showArchived);
+        const server = (await fetchNotes(showArchived)).filter((note) => !isSeededFutureNote(note));
         const merged = mergeNotes(server, local).filter((n) =>
           showArchived ? true : !n.archived,
         );
