@@ -1,4 +1,4 @@
-import { and, asc, eq, gte, inArray, lte } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, lte, sql } from "drizzle-orm";
 import { getPostgresDb } from "@/platform/db";
 import { toDbBusinessId } from "@/platform/db/business-id";
 import { queryAll, queryRun } from "@/platform/db/query";
@@ -7,9 +7,11 @@ import {
   dailyInvestments,
   diaryEntries,
   operationDays,
+  operationalPendings,
   products,
   saleItems,
   sales,
+  stockMovements,
 } from "@/lib/db/postgres/schema";
 import { listSettingsMap, upsertSetting } from "@/platform/db/repositories/settings-repository";
 import { createClient, listClientsRaw } from "@/platform/db/repositories/client-repository";
@@ -28,6 +30,7 @@ import { normalizeSaleShiftTime } from "@/lib/sale-shift";
 import { generateId } from "@/shared/ids/generate-id";
 import { getMonthPlan } from "@/lib/planning/month-plans";
 import { round2, settlementsOn } from "@/lib/zaivon/finance/day";
+import { buildDeclaredReferences } from "@/lib/zaivon/finance/debt-reading";
 import { loadVaultSnapshot } from "@/lib/vault/vault-service";
 import { parseDraftFinancials, type DraftFinancials } from "@/lib/zaivon/finance/draft-financials";
 import { ZAIVON_CHANNELS, ZAIVON_PRODUCTS } from "@/lib/zaivon/catalog";
@@ -44,6 +47,7 @@ import type {
   ProductId,
   RegisteredSale,
   Settlement,
+  StockReading,
 } from "@/lib/zaivon/types";
 
 const BUSINESS = SALGADOS_BUSINESS_ID;
@@ -85,6 +89,8 @@ interface ZaivonMeta {
   provisionalReceivables?: ProvisionalReceivable[];
   /** Diferença entre o fechamento anterior e a abertura informada. */
   openingBridges?: unknown[];
+  /** Confirmação fora da cobrança. Não é recebível. */
+  henriqueConfirmations?: Array<{ amount?: number; receivable?: boolean }>;
 }
 
 const EMPTY_META: ZaivonMeta = { cofrinho: {}, closure: {}, extraSettlements: [], lossSaleIds: [] };
@@ -457,10 +463,12 @@ export async function getZaivonData(requestedMonth?: string): Promise<ZaivonData
         description: line.description,
         status: "open",
         deferredUntil: book.promiseDate,
+        referenceOnly: /n[aã]o é venda/i.test(line.description) || undefined,
       });
     }
   }
 
+  const unlinked = await loadUnlinkedUnits();
   const sorted = [...entries].sort((a, b) => a.date.localeCompare(b.date));
   const days: OperationDay[] = sorted
     .filter((e) => e.date.startsWith(plan.month))
@@ -496,6 +504,8 @@ export async function getZaivonData(requestedMonth?: string): Promise<ZaivonData
         competenceStatus: dc?.competenceStatus,
         newCredit: dc?.newCredit,
         dayClosing: dc,
+        snapshotPending: e.revenue.pending,
+        unlinkedUnits: unlinked.get(e.date),
       };
     });
 
@@ -524,7 +534,81 @@ export async function getZaivonData(requestedMonth?: string): Promise<ZaivonData
     today,
     availableMonths,
     vault: await loadVaultSnapshot(BUSINESS),
+    stockReadings: await loadStockReadings(),
+    declaredReferences: buildDeclaredReferences(
+      debts,
+      (meta.henriqueConfirmations ?? []).map((item) => ({
+        person: "Henrique",
+        amount: Number(item.amount) || 0,
+        receivable: item.receivable === true,
+      })),
+    ),
   };
+}
+
+const DAILY_STOCK_IDS = [
+  "b1161a39-149e-475c-9eb1-345553006c0d",
+  "4da6e5b2-86ad-4f3e-8e71-9492f43f8291",
+];
+
+async function loadUnlinkedUnits(): Promise<Map<string, number>> {
+  const db = await getPostgresDb();
+  const rows = await queryAll(
+    db
+      .select({ date: operationDays.operationDate, quantity: stockMovements.quantity })
+      .from(stockMovements)
+      .innerJoin(operationDays, eq(stockMovements.operationDayId, operationDays.id))
+      .where(sql`${stockMovements.reason} ilike '%saida-sem-vinculo%'`),
+  );
+  const totals = new Map<string, number>();
+  for (const row of rows) totals.set(row.date, (totals.get(row.date) ?? 0) + row.quantity);
+  return totals;
+}
+
+async function loadStockReadings(): Promise<StockReading[]> {
+  const db = await getPostgresDb();
+  const catalog = await queryAll(
+    db
+      .select({ id: products.id, name: products.name, stock: products.stockQuantity })
+      .from(products)
+      .where(inArray(products.id, DAILY_STOCK_IDS)),
+  );
+  const pendings = await queryAll(
+    db
+      .select({
+        id: operationalPendings.id,
+        productId: operationalPendings.productId,
+        quantity: operationalPendings.quantity,
+        description: operationalPendings.description,
+        dayId: operationalPendings.operationDayId,
+      })
+      .from(operationalPendings)
+      .where(and(
+        eq(operationalPendings.status, "open"),
+        eq(operationalPendings.pendingType, "inventory_investigation"),
+        inArray(operationalPendings.productId, DAILY_STOCK_IDS),
+      )),
+  );
+  const dayIds = Array.from(new Set(pendings.map((row) => row.dayId)));
+  const days = dayIds.length === 0
+    ? []
+    : await queryAll(
+      db.select({ id: operationDays.id, date: operationDays.operationDate }).from(operationDays).where(inArray(operationDays.id, dayIds)),
+    );
+  const dates = new Map(days.map((row) => [row.id, row.date]));
+  return catalog.map((product) => ({
+    productId: product.id,
+    name: product.name,
+    bookQuantity: product.stock,
+    openInvestigations: pendings
+      .filter((row) => row.productId === product.id)
+      .map((row) => ({
+        id: row.id,
+        date: dates.get(row.dayId) ?? "",
+        quantity: row.quantity,
+        summary: row.description.slice(0, 180),
+      })),
+  }));
 }
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;

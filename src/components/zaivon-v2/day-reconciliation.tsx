@@ -3,20 +3,57 @@
 import type { DayClosingFinance } from "@/lib/finance/day-closing";
 import { FINANCE_LABELS, PROVISIONAL_HINT } from "@/lib/finance/labels";
 import type { DayFinance } from "@/lib/zaivon/finance/day";
+import { compareSnapshotToLive, dayLayerFacts } from "@/lib/zaivon/finance/snapshot-vs-live";
+import type { Debt, OperationDay, Settlement, VaultSnapshot } from "@/lib/zaivon/types";
 import { Panel, Pill } from "@/components/zaivon-v2/ui";
 import { useScreenHideMoney } from "@/components/zaivon-v2/hide-money";
 
 type Props = {
+  date?: string;
   finance: DayFinance;
   dayClosing?: DayClosingFinance | null;
   cofrinhoEnd: number | null;
+  informedBalance?: number | null;
+  responsiblePayment?: number | null;
+  snapshotPending?: number;
+  liveOpen?: number;
+  settledLater?: number;
+  unlinkedUnits?: number;
+  dayGap?: number | null;
 };
+
+export function reconciliationExtras(day: OperationDay, debts: Debt[], settlements: Settlement[], vault: VaultSnapshot) {
+  const moves = vault.movements.filter((movement) => movement.date === day.date);
+  const layers = dayLayerFacts({ date: day.date, debts, settlements });
+  return {
+    date: day.date,
+    informedBalance: [...moves].reverse().find((movement) => movement.informedBalance != null)?.informedBalance ?? null,
+    responsiblePayment: [...moves].reverse().find((movement) => movement.responsiblePayment != null)?.responsiblePayment ?? null,
+    snapshotPending: day.snapshotPending,
+    liveOpen: layers.liveOpen,
+    settledLater: layers.settledLater,
+    unlinkedUnits: day.unlinkedUnits,
+    dayGap: vault.gapParts.find((part) => part.date === day.date)?.amount ?? null,
+  };
+}
 
 /**
  * Explica por que faturamento, caixa, lucros e depósito/cofrinho diferem —
  * sem forçar os indicadores a coincidir.
  */
-export function DayReconciliationPanel({ finance, dayClosing, cofrinhoEnd }: Props) {
+export function DayReconciliationPanel({
+  date,
+  finance,
+  dayClosing,
+  cofrinhoEnd,
+  informedBalance = null,
+  responsiblePayment = null,
+  snapshotPending,
+  liveOpen,
+  settledLater,
+  unlinkedUnits,
+  dayGap = null,
+}: Props) {
   const { money } = useScreenHideMoney();
   const dc = dayClosing;
   const provisional = finance.competenceStatus === "provisional" || dc?.competenceStatus === "provisional";
@@ -26,41 +63,74 @@ export function DayReconciliationPanel({ finance, dayClosing, cofrinhoEnd }: Pro
   const depositGap =
     deposit != null ? dc!.reconciliation.depositMinusCashResult : null;
 
+  const informedGap = informedBalance != null && cofrinhoEnd != null ? Math.round((informedBalance - cofrinhoEnd) * 100) / 100 : null;
   const rows: Array<{ label: string; value: string; note: string }> = [
     {
       label: FINANCE_LABELS.competenceRevenue.short,
       value: money(finance.competenceRevenue),
-      note: provisional
-        ? "Working figure (provisório se houver Δ diário×sales)."
-        : "Inclui fiados do dia.",
+      note: provisional ? "Provisório enquanto houver diferença entre o diário e as vendas." : "Vendas do dia, inclusive fiados.",
+    },
+    {
+      label: "Recebido das vendas do dia",
+      value: money(finance.received),
+      note: "Só o que as vendas deste dia receberam.",
+    },
+    {
+      label: "Quitações antigas",
+      value: money(finance.settlements),
+      note: "Dinheiro de vendas de dias anteriores. Não entra de novo na competência.",
     },
     {
       label: FINANCE_LABELS.cashIn.short,
       value: money(finance.cashIn),
-      note:
-        finance.otherInflows > 0
-          ? `${money(finance.received)} vendas do dia + ${money(finance.settlements)} quitações + ${money(finance.otherInflows)} outras (ex.: crédito sem origem).`
-          : `${money(finance.received)} vendas do dia + ${money(finance.settlements)} quitações.`,
+      note: "Recebido do dia + quitações antigas + outras entradas.",
     },
     {
-      label: FINANCE_LABELS.competenceProfit.short,
-      value: money(finance.competenceProfit),
-      note: provisional ? "PROVISÓRIO — ver par diário/sales abaixo." : "Faturamento − meu custo.",
+      label: "Fiados novos",
+      value: money(finance.newCredit),
+      note: "Competência ainda não recebida.",
+    },
+    {
+      label: "Custos",
+      value: money(finance.ownCost),
+      note: finance.thirdPartyCost > 0 ? `Custo próprio. Terceiros: ${money(finance.thirdPartyCost)}.` : "Custo próprio.",
     },
     {
       label: FINANCE_LABELS.cashManagementResult.short,
       value: money(finance.operationalProfit),
-      note: "Caixa − meu custo (sem bônus neste card).",
+      note: "Caixa operacional − custo próprio.",
+    },
+    {
+      label: FINANCE_LABELS.competenceProfit.short,
+      value: money(finance.competenceProfit),
+      note: provisional ? "Resultado por competência provisório." : "Faturamento − custo próprio.",
+    },
+    {
+      label: "Pagamento definido",
+      value: responsiblePayment != null ? money(responsiblePayment) : "—",
+      note: "Definido pelo responsável. Não é custo, lucro nem depósito.",
     },
     {
       label: FINANCE_LABELS.piggyDeposit.short,
       value: deposit != null ? money(deposit) : "—",
-      note: deposit != null ? "Transferência efetiva registrada no dayClosing." : "Sem depósito explícito neste snapshot.",
+      note: "Depósito registrado no razão.",
     },
     {
-      label: FINANCE_LABELS.piggyBalance.short,
+      label: "Saldo do razão",
       value: cofrinhoEnd != null ? money(cofrinhoEnd) : "—",
-      note: "Saldo informado no Mercado Pago.",
+      note: "Fechamento contábil do dia.",
+    },
+    {
+      label: "Saldo informado",
+      value: informedBalance != null ? money(informedBalance) : "—",
+      note: "Valor observado. A origem da diferença não está identificada.",
+    },
+    {
+      label: "Diferença não conciliada",
+      value: informedGap != null ? money(informedGap) : "—",
+      note: dayGap != null
+        ? `Acumulada até este fechamento. Neste dia entrou ${money(dayGap)}, origem não identificada. Não é rendimento.`
+        : "Acumulada até este fechamento. Não é rendimento.",
     },
   ];
 
@@ -72,7 +142,7 @@ export function DayReconciliationPanel({ finance, dayClosing, cofrinhoEnd }: Pro
     >
       {provisional && <p className="mb-3 text-xs text-o-pending">{PROVISIONAL_HINT}</p>}
 
-      <div className="overflow-x-auto">
+      <div className="min-w-0 max-w-full overflow-x-auto">
         <table className="num w-full min-w-[480px] text-sm">
           <thead className="text-left text-xs text-o-muted-foreground">
             <tr>
@@ -93,6 +163,19 @@ export function DayReconciliationPanel({ finance, dayClosing, cofrinhoEnd }: Pro
         </table>
       </div>
 
+      {snapshotPending != null && liveOpen != null && settledLater != null && (
+        <p className="mt-3 text-xs text-o-muted-foreground">
+          {compareSnapshotToLive({ snapshotPending, liveOpen, settledLater })}
+        </p>
+      )}
+      {unlinkedUnits != null && unlinkedUnits > 0 && (
+        <p className="mt-2 text-xs text-o-muted-foreground">
+          Saídas sem vínculo: {unlinkedUnits} unidades, fora da competência e sem classificação de perda.
+          {date === "2026-10-28" && unlinkedUnits === 5
+            ? " No fechamento, são R$ 25. A taxa registrada é 5/35 = 14,29%: Acal 5/18 e Unifor 0/17."
+            : ""}
+        </p>
+      )}
       <ul className="mt-3 grid gap-1.5 text-xs text-o-muted-foreground">
         <li>
           Faturamento − caixa = {money(gapFatCash)}

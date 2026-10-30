@@ -61,6 +61,8 @@ export interface Debt {
    * (ex.: acordo Ana Laura até o pagamento salarial de novembro).
    */
   deferredUntil?: string | undefined;
+  /** Compromisso informado que o próprio texto exclui de venda e de cobrança. */
+  referenceOnly?: boolean | undefined;
 }
 
 export type ClosureStatus = "closed" | "closed_with_note" | "draft" | "summary" | "open";
@@ -80,8 +82,12 @@ export interface OperationDay {
   available?: number | undefined;
   soldUnits: number;
   lostUnits: number;
-  /** Cofrinho prático informado no fim do dia (Mercado Pago). */
+  /** Saldo do razão no fechamento. O saldo informado fica nos metadados do depósito. */
   cofrinhoEnd: number | null;
+  /** Pendente gravado no diário. Não muda quando uma venda é quitada depois. */
+  snapshotPending?: number;
+  /** Saídas de estoque sem venda. Ficam fora da competência. */
+  unlinkedUnits?: number;
   lines: SaleLine[];
   closure: ClosureStatus;
   closureNote?: string | undefined;
@@ -155,6 +161,14 @@ export interface VaultMovementView {
   amount: number;
   description: string;
   balanceAfter: number;
+  informedBalance?: number | null;
+  responsiblePayment?: number | null;
+}
+
+export interface VaultGapPart {
+  date: string;
+  amount: number;
+  origin: "nao-identificada";
 }
 
 /** Saldo atual do cofrinho, calculado por movimentações. Independente do fechamento do dia. */
@@ -162,7 +176,36 @@ export interface VaultSnapshot {
   accountName: string;
   balance: number;
   asOf: string | null;
+  informedBalance: number | null;
+  reconciliationGap: number | null;
+  gapParts: VaultGapPart[];
   movements: VaultMovementView[];
+}
+
+export interface StockInvestigation {
+  id: string;
+  date: string;
+  quantity: number | null;
+  summary: string;
+}
+
+export interface StockReading {
+  productId: string;
+  name: string;
+  bookQuantity: number;
+  openInvestigations: StockInvestigation[];
+}
+
+/** Referência declarada. A diferença não vira cobrança. */
+export interface DeclaredDebtReference {
+  id: string;
+  person: string;
+  declaredAmount: number | null;
+  liveOpenAmount: number;
+  lossAmount: number;
+  nonReceivableAmount: number;
+  unreconciledNote: string;
+  source: string;
 }
 
 /** Tudo que as telas da ZAIVON v2 precisam, entregue por GET /api/zaivon. */
@@ -179,4 +222,6 @@ export interface ZaivonData {
   availableMonths: { month: string; label: string }[];
   /** Razão do cofrinho. O saldo do dia fechado continua em `days[].cofrinhoEnd`. */
   vault: VaultSnapshot;
+  stockReadings?: StockReading[];
+  declaredReferences?: DeclaredDebtReference[];
 }

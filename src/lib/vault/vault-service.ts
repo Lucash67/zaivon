@@ -4,6 +4,7 @@ import { getPostgresDb } from "@/platform/db";
 import { toDbBusinessId } from "@/platform/db/business-id";
 import { queryAll } from "@/platform/db/query";
 import { centsToMoney, foldVaultCents, moneyToCents, movementCents, type VaultFoldRow } from "@/lib/vault/balance";
+import { informedGapParts, readInformedBalance, readResponsiblePayment, roundMoney } from "@/lib/vault/informed-balance";
 import type { VaultSnapshot } from "@/lib/zaivon/types";
 
 const ACCOUNT_SLUG = "salgados-e-sanduiches";
@@ -13,6 +14,9 @@ export async function loadVaultSnapshot(businessSlug: string): Promise<VaultSnap
     accountName: "Salgados e Sanduíches",
     balance: 0,
     asOf: null,
+    informedBalance: null,
+    reconciliationGap: null,
+    gapParts: [],
     movements: [],
   };
   const db = await getPostgresDb();
@@ -37,6 +41,7 @@ export async function loadVaultSnapshot(businessSlug: string): Promise<VaultSnap
           description: vaultMovements.description,
           status: vaultMovements.status,
           key: vaultMovements.idempotencyKey,
+          metadata: vaultMovements.metadata,
         })
         .from(vaultMovements)
         .where(eq(vaultMovements.accountId, account.id))
@@ -62,11 +67,20 @@ export async function loadVaultSnapshot(businessSlug: string): Promise<VaultSnap
         amount: Number(row.amount),
         description: row.description,
         balanceAfter: centsToMoney(running),
+        informedBalance: readInformedBalance(row.metadata),
+        responsiblePayment: readResponsiblePayment(row.metadata),
       };
     });
     const balance = centsToMoney(foldVaultCents(foldRows));
     const asOf = [...rows].reverse().find((row) => row.status === "posted" && row.type !== "reversal")?.date ?? null;
-    return { accountName: account.name, balance, asOf, movements };
+    const informedBalance = [...movements].reverse().find((row) => row.informedBalance != null)?.informedBalance ?? null;
+    const reconciliationGap = informedBalance == null ? null : roundMoney(informedBalance - balance);
+    const gapParts = informedGapParts(movements.map((row) => ({
+      date: row.date,
+      bookAfter: row.balanceAfter,
+      informed: row.informedBalance ?? null,
+    })));
+    return { accountName: account.name, balance, asOf, informedBalance, reconciliationGap, gapParts, movements };
   } catch (error) {
     const message = error instanceof Error ? error.message : "";
     if (/vault_movements|vault_accounts/.test(message)) return empty;

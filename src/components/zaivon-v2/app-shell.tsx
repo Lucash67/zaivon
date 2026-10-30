@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
 import { Button, Toaster, selectClass } from "@/components/zaivon-v2/primitives";
 import { useZaivon } from "@/components/zaivon-v2/store";
 import { salesDays } from "@/lib/zaivon/finance/month";
-import { dayFinance, recovery } from "@/lib/zaivon/finance/day";
+import { dayFinance, recovery, savedDeposit } from "@/lib/zaivon/finance/day";
 import { ddmm, money as formatMoney, weekday } from "@/lib/zaivon/format";
 import { ZAIVON_V2_NAV } from "@/constants/navigation";
 import { cn } from "@/lib/utils";
@@ -156,7 +156,7 @@ function DayStrip() {
           const day = o.days.find((x) => x.date === d);
           const hol = o.plan.holidays.includes(d);
           const fin = day ? dayFinance(day, o.settlements) : null;
-          const p = fin?.profit ?? null;
+          const deposit = day ? savedDeposit(day) : null;
           const provisional = fin?.competenceStatus === "provisional";
           const sel = d === o.selectedDate;
           return (
@@ -165,11 +165,12 @@ function DayStrip() {
               disabled={hol}
               onClick={() => o.selectDate(d)}
               aria-pressed={sel}
-              title={
-                provisional
-                  ? "Resultado de caixa. O P marca competência provisória; este valor não está em aberto."
-                  : "Resultado de caixa"
+              aria-label={
+                hol
+                  ? `${weekday(d)} ${ddmm(d)}, feriado`
+                  : `${weekday(d)} ${ddmm(d)}, depósito no cofrinho ${deposit == null ? "não informado" : `R$ ${Math.round(deposit)}`}${provisional ? ", competência provisória" : ""}`
               }
+              title="Depósito efetivo no cofrinho. O lucro do dia continua na conciliação."
               className={cn(
                 "min-w-14 shrink-0 rounded-lg border px-2 py-1 text-center sm:min-w-16",
                 sel ? "border-o-primary bg-o-primary/12" : "border-transparent hover:bg-o-muted",
@@ -180,8 +181,9 @@ function DayStrip() {
                 {weekday(d)} {ddmm(d)}
                 {provisional ? <span className="text-o-pending"> · P</span> : null}
               </div>
-              <div className={cn("num text-xs font-semibold", p == null ? "text-o-muted-foreground" : "text-o-ok")}>
-                {hol ? "feriado" : p == null ? "—" : hidden ? mask : `R$ ${Math.round(p)}`}
+              {!hol && <div className="text-[9px] uppercase tracking-wide text-o-info">guardado</div>}
+              <div className={cn("num text-xs font-semibold", deposit == null ? "text-o-muted-foreground" : "text-o-info")}>
+                {hol ? "feriado" : deposit == null ? "—" : hidden ? mask : `R$ ${Math.round(deposit)}`}
               </div>
             </button>
           );

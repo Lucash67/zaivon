@@ -32,7 +32,7 @@ function PendenciasBody() {
   const [amount, setAmount] = useState("");
   const [paidDate, setPaidDate] = useState(o.today);
   const rec = recovery(o.debts);
-  const open = o.debts.filter((d) => d.status === "open" && (filter === "all" || d.type === filter));
+  const open = o.debts.filter((d) => d.status === "open" && !d.referenceOnly && (filter === "all" || d.type === filter));
   const groups = Array.from(new Set(open.map((d) => d.person)))
     .map((person) => {
       const items = open.filter((d) => d.person === person).sort((a, b) => a.originDate.localeCompare(b.originDate));
@@ -71,6 +71,39 @@ function PendenciasBody() {
         <Kpi label="Fiados" tone="pending" value={money(rec.fiado)} explain={`Parceiros: ${money(rec.parceiro)}`} />
         <Kpi label="Investigação" tone="alert" value={money(rec.investigacao)} explain="Nunca vira perda sozinho" />
       </div>
+
+      {(o.declaredReferences ?? []).length > 0 && (
+        <Panel title="Referências declaradas" subtitle="Valores informados pelo responsável. A diferença não vira cobrança." className="mt-4">
+          <div className="grid gap-3">
+            {(o.declaredReferences ?? []).map((row) => (
+              <div key={row.id} className="rounded-xl bg-o-surface p-3 text-sm">
+                <p className="font-medium">{row.person}</p>
+                <p className="mt-1 text-xs text-o-muted-foreground">
+                  Aberto no cadastro: {money(row.liveOpenAmount)}
+                  {row.declaredAmount != null ? ` · referência declarada: ${money(row.declaredAmount)}` : ""}
+                  {row.lossAmount > 0 ? ` · perda classificada: ${money(row.lossAmount)}` : ""}
+                  {row.nonReceivableAmount > 0 ? ` · confirmação fora da cobrança: ${money(row.nonReceivableAmount)}` : ""}
+                </p>
+                <p className="mt-1 text-xs text-o-muted-foreground">{row.unreconciledNote} Fonte: {row.source}.</p>
+              </div>
+            ))}
+            <p className="text-xs text-o-muted-foreground">Os 14 salgados pagos na Unifor em 28/10 continuam sem pagadores individualizados.</p>
+          </div>
+        </Panel>
+      )}
+
+      {o.debts.some((debt) => debt.status === "loss") && (
+        <Panel title="Perdas de crédito" subtitle="Continuam pendentes na venda e ficam fora do total a recuperar." className="mt-4">
+          <ul className="grid gap-1.5">
+            {o.debts.filter((debt) => debt.status === "loss").map((debt) => (
+              <li key={debt.id} className="flex items-center justify-between rounded-lg bg-o-surface px-3 py-2 text-sm">
+                <span>{debt.person} · {ddmm(debt.originDate)}</span>
+                <span className="num">{money(debt.amount - debt.paid)}</span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+      )}
 
       <Tabs value={filter} onValueChange={(v) => setFilter(v as typeof filter)} className="mt-5">
         <TabsList>
