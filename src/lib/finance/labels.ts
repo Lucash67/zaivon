@@ -36,7 +36,7 @@ export const FINANCE_LABELS = {
   },
   piggyBalance: {
     short: "Saldo do cofrinho",
-    formula: "Saldo real no Mercado Pago no fim do dia (inclui rendimentos).",
+    formula: "Saldo do razão no fechamento. O valor visto no Mercado Pago pode diferir e essa diferença não é rendimento.",
     legacyAliases: ["Cofrinho", "Banco prático", "Profit bank"],
   },
   bankOfMonth: {

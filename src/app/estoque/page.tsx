@@ -24,7 +24,7 @@ interface StockData {
 export default function EstoquePage() {
   const queryClient = useQueryClient();
   const { activeBusinessId, canWrite, withQuery, writeBlockedMessage } = useBusinessScope();
-  const [form, setForm] = useState({ productId: "", type: "entry", quantity: "", reason: "" });
+  const [form, setForm] = useState({ productId: "", type: "entry", quantity: "", reason: "", physicalCount: "" });
   const [formError, setFormError] = useState<string | null>(null);
 
   const { data, isLoading, isError, error, refetch } = useQuery<StockData>({
@@ -49,7 +49,7 @@ export default function EstoquePage() {
       queryClient.invalidateQueries({ queryKey: ["stock"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-      setForm({ ...form, quantity: "", reason: "" });
+      setForm({ ...form, quantity: "", reason: "", physicalCount: "" });
     },
     onError: (error: Error) => setFormError(error.message),
   });
@@ -79,7 +79,7 @@ export default function EstoquePage() {
 
   return (
     <ModuleShell title="Estoque" subtitle="Controle de entrada, saída e saldo">
-      <div className="space-y-6">
+      <div className="min-w-0 space-y-6">
         {!canWrite && <BusinessWriteNotice message={writeBlockedMessage} />}
 
         {data.products.length === 0 ? (
@@ -134,9 +134,14 @@ export default function EstoquePage() {
                   setFormError(writeBlockedMessage);
                   return;
                 }
+                const selected = data?.products.find((product) => product.id === form.productId);
+                if (form.type === "entry" && (selected?.stockQuantity ?? 0) > 0 && form.physicalCount === "") {
+                  setFormError("Informe a contagem física antes de dar entrada sobre um saldo existente.");
+                  return;
+                }
                 updateStock.mutate(form);
               }}
-              className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+              className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
             >
               <Select label="Produto" value={form.productId} onChange={(e) => setForm({ ...form, productId: e.target.value })} required disabled={!canWrite}>
                 <option value="">Selecione</option>
@@ -149,6 +154,18 @@ export default function EstoquePage() {
               </Select>
               <Input label="Quantidade" type="number" min="1" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} required disabled={!canWrite} />
               <Input label="Motivo" value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} disabled={!canWrite} />
+              {form.type === "entry" && (data?.products.find((product) => product.id === form.productId)?.stockQuantity ?? 0) > 0 && (
+                <Input
+                  label="Contagem física agora"
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={form.physicalCount}
+                  onChange={(e) => setForm({ ...form, physicalCount: e.target.value })}
+                  required
+                  disabled={!canWrite}
+                />
+              )}
               {formError && <p className="text-sm text-brand-red sm:col-span-2 lg:col-span-4">{formError}</p>}
               <div className="sm:col-span-2 lg:col-span-4">
                 <Button type="submit" size="lg" className="w-full sm:w-auto" disabled={!canWrite || updateStock.isPending}>
@@ -159,8 +176,8 @@ export default function EstoquePage() {
           </CardContent>
         </Card>
 
-        <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
-          <Card>
+        <div className="grid min-w-0 grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
+          <Card className="min-w-0">
             <CardHeader><CardTitle>Produtos em Estoque</CardTitle></CardHeader>
             <CardContent className="space-y-2">
               {data.products.map((p) => (
@@ -181,7 +198,7 @@ export default function EstoquePage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="min-w-0">
             <CardHeader><CardTitle>Histórico</CardTitle></CardHeader>
             <CardContent className="space-y-2 lg:max-h-96 lg:overflow-y-auto">
               {data.movements.map((m) => (

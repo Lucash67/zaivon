@@ -4,16 +4,17 @@ import { useMemo } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { useZaivon } from "@/components/zaivon-v2/store";
-import { dayChecks, dayFinance, daysOpen, recovery } from "@/lib/zaivon/finance/day";
+import { dayChecks, dayFinance, daysOpen, recovery, savedDeposit } from "@/lib/zaivon/finance/day";
 import { monthSummary } from "@/lib/zaivon/finance/month";
 import { dayLabel, ddmm, pctFmt } from "@/lib/zaivon/format";
 import { CheckRow, Kpi, PageHeader, Panel, Pill, Progress, RegisteredSalesList } from "@/components/zaivon-v2/ui";
-import { DayReconciliationPanel } from "@/components/zaivon-v2/day-reconciliation";
+import { DayReconciliationPanel, reconciliationExtras } from "@/components/zaivon-v2/day-reconciliation";
 import { buttonClass } from "@/components/zaivon-v2/primitives";
 import { ZAIVON_BASE } from "@/components/zaivon-v2/app-shell";
 import { HideMoneyScope, ScreenHideMoneyButton, useScreenHideMoney } from "@/components/zaivon-v2/hide-money";
 import { ZaivonPulse } from "@/components/dashboard/zaivon-pulse";
 import { buildZaivonPulse } from "@/lib/zaivon-pulse";
+import { informedPhysicalFromText } from "@/lib/stock/physical-count";
 import { FINANCE_LABELS, PROVISIONAL_HINT } from "@/lib/finance/labels";
 
 const closureLabel = {
@@ -38,6 +39,7 @@ function HojeBody() {
   const day = o.selectedDay;
   const exists = o.days.some((d) => d.date === day.date);
   const f = dayFinance(day, o.settlements);
+  const vaultDay = reconciliationExtras(day, o.debts, o.settlements, o.vault);
   const checks = dayChecks(day, o.days, o.settlements, o.plan);
   const rec = recovery(o.debts);
   const ms = monthSummary(o.days, o.settlements, o.plan);
@@ -50,14 +52,15 @@ function HojeBody() {
     .filter(
       (d) =>
         d.status === "open" &&
+        !d.referenceOnly &&
         d.type !== "investigacao" &&
         (!d.deferredUntil || d.deferredUntil <= o.selectedDate),
     )
     .sort((a, b) => a.originDate.localeCompare(b.originDate))[0];
   const deferredOpen = o.debts.filter(
-    (d) => d.status === "open" && d.deferredUntil && d.deferredUntil > o.selectedDate,
+    (d) => d.status === "open" && !d.referenceOnly && d.deferredUntil && d.deferredUntil > o.selectedDate,
   );
-  const inv = o.debts.filter((d) => d.status === "open" && d.type === "investigacao");
+  const inv = o.debts.filter((d) => d.status === "open" && !d.referenceOnly && d.type === "investigacao");
   const closing = `${ZAIVON_BASE}/registrar?tab=fechamento`;
   const pendings = `${ZAIVON_BASE}/pendencias`;
   const cofCheck = checks.find((c) => c.id === "cofrinho");
@@ -119,6 +122,7 @@ function HojeBody() {
       }),
     [day.date, day.dayClosing, exists, f.cashIn, f.competenceProfit, f.competenceRevenue, f.newCredit, o.today],
   );
+  const guarded = savedDeposit(day);
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -144,7 +148,7 @@ function HojeBody() {
           </div>
         </Panel>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid min-w-0 grid-cols-1 gap-4">
           {f.competenceStatus === "provisional" && (
             <div className="rounded-xl border border-o-pending/40 bg-o-pending/10 px-4 py-3 text-sm text-o-pending">
               {day.dayClosing?.definitivePersonalProfit === "pending"
@@ -153,9 +157,17 @@ function HojeBody() {
             </div>
           )}
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.3fr_1fr]">
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid min-w-0 gap-4">
               <Kpi
                 big
+                tone="info"
+                label={FINANCE_LABELS.piggyDeposit.short}
+                value={guarded != null ? money(guarded) : "—"}
+                formula={FINANCE_LABELS.piggyDeposit.formula}
+                explain="Dinheiro efetivamente guardado neste dia. O lucro continua calculado ao lado e não ocupa este lugar."
+              />
+              <div className="grid gap-4 sm:grid-cols-2">
+              <Kpi
                 tone="ok"
                 label={
                   day.dayClosing?.definitivePersonalProfit === "pending"
@@ -167,7 +179,6 @@ function HojeBody() {
                 explain={`${money(f.cashIn)} de entrada${f.bonus ? ` + ${money(f.bonus)} de bônus` : ""} − ${money(f.ownCost)} de custo próprio`}
               />
               <Kpi
-                big
                 label={
                   day.dayClosing?.definitivePersonalProfit === "pending"
                     ? "Resultado por competência antes dos custos dos sanduíches"
@@ -179,17 +190,22 @@ function HojeBody() {
                 formula={FINANCE_LABELS.competenceProfit.formula}
                 explain={
                   f.competenceStatus === "provisional"
-                    ? `PROVISÓRIO — working figure ${money(f.competenceRevenue)} − ${money(f.ownCost)}. Há Δ diário×sales; não tratar como confirmado.`
+                    ? `Provisório: ${money(f.competenceRevenue)} − ${money(f.ownCost)}. Há diferença entre o diário e as vendas; não tratar como confirmado.`
                     : `${FINANCE_LABELS.competenceRevenue.short} ${money(f.competenceRevenue)} − custo ${money(f.ownCost)} · gap vs caixa ${money(f.competenceProfit - f.operationalProfit)}`
                 }
               />
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <Kpi
                 label={FINANCE_LABELS.competenceRevenue.short}
                 value={money(f.competenceRevenue)}
                 formula={FINANCE_LABELS.competenceRevenue.formula}
-                explain={f.competenceStatus === "provisional" ? "Working figure (provisório)" : `Fiados novos: ${money(f.newCredit)}`}
+                explain={
+                  f.competenceStatus === "provisional"
+                    ? `Provisório · fiados novos ${money(f.newCredit)}`
+                    : `Fiados novos: ${money(f.newCredit)}`
+                }
               />
               <Kpi
                 label={FINANCE_LABELS.cashIn.short}
@@ -213,10 +229,14 @@ function HojeBody() {
                     day.dayClosing?.piggyBank.deposit != null
                       ? `Depósito do dia: ${money(day.dayClosing.piggyBank.deposit)}`
                       : day.cofrinhoEnd != null
-                        ? "Informado no fechamento"
+                        ? "Saldo do razão neste fechamento"
                         : "Ainda não informado",
+                    vaultDay.informedBalance != null && day.cofrinhoEnd != null
+                      ? `Saldo informado neste dia: ${money(vaultDay.informedBalance)}. Diferença acumulada: ${money(Math.round((vaultDay.informedBalance - day.cofrinhoEnd) * 100) / 100)}.`
+                      : "",
+                    vaultDay.responsiblePayment != null ? `Pagamento definido: ${money(vaultDay.responsiblePayment)}.` : "",
                     o.vault.asOf && day.cofrinhoEnd != null && Math.abs(o.vault.balance - day.cofrinhoEnd) > 0.009
-                      ? `Saldo atual: ${money(o.vault.balance)} em ${ddmm(o.vault.asOf)}.`
+                      ? `Razão atual: ${money(o.vault.balance)} em ${ddmm(o.vault.asOf)}.`
                       : "",
                   ].filter(Boolean).join(" ")
                 }
@@ -224,7 +244,29 @@ function HojeBody() {
             </div>
           </div>
 
-          <DayReconciliationPanel finance={f} dayClosing={day.dayClosing} cofrinhoEnd={day.cofrinhoEnd} />
+          <DayReconciliationPanel finance={f} dayClosing={day.dayClosing} cofrinhoEnd={day.cofrinhoEnd} {...vaultDay} />
+
+          {(o.stockReadings ?? []).length > 0 && (
+            <Panel title="Estoque contábil e pendências" subtitle="O catálogo é o saldo contábil vivo. O físico informado só aparece quando uma pendência o registrou. Pendência aberta não é baixa, venda nem perda.">
+              <div className="grid gap-3">
+                {(o.stockReadings ?? []).map((reading) => {
+                  const physical = reading.openInvestigations.map((item) => informedPhysicalFromText(item.summary)).find((value) => value != null);
+                  return (
+                    <div key={reading.productId}>
+                      <p className="text-sm font-medium">{reading.name}: contábil {reading.bookQuantity}{physical != null ? ` · físico informado ${physical}` : ""}</p>
+                      {reading.openInvestigations.length === 0 ? (
+                        <p className="text-xs text-o-muted-foreground">Nenhuma investigação de estoque aberta neste produto.</p>
+                      ) : reading.openInvestigations.map((item) => (
+                        <p key={item.id} className="text-xs text-o-muted-foreground">
+                          {item.date ? `${ddmm(item.date)} · ` : ""}{item.quantity == null ? "quantidade desconhecida" : `${item.quantity} un.`} · {item.summary}
+                        </p>
+                      ))}
+                    </div>
+                  );
+                })}
+              </div>
+            </Panel>
+          )}
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <Panel

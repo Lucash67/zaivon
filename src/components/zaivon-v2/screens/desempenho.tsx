@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useZaivon } from "@/components/zaivon-v2/store";
-import { dayFinance } from "@/lib/zaivon/finance/day";
+import { dayFinance, savedDeposit } from "@/lib/zaivon/finance/day";
 import { weekStart, weekSummary } from "@/lib/zaivon/finance/month";
 import { dayLabel, ddmm, pctFmt } from "@/lib/zaivon/format";
 import { chartAxis, chartTooltip, Kpi, PageHeader, Panel, Pill } from "@/components/zaivon-v2/ui";
@@ -52,6 +52,11 @@ function Semana() {
   const { t } = useTrend();
   const prevW = [...t.weeks].reverse().find((x) => x.start < (w.dates[0] ?? start));
   const rows = w.dates.map((d) => ({ date: dayLabel(d), lucro: dayFinance(o.days.find((x) => x.date === d)!, o.settlements).profit }));
+  const guarded = w.dates.reduce((sum, d) => {
+    const day = o.days.find((x) => x.date === d);
+    const deposit = day ? savedDeposit(day) : null;
+    return deposit == null ? sum : sum + deposit;
+  }, 0);
   return (
     <div className="grid gap-4">
       <div className="flex items-center gap-2">
@@ -59,7 +64,8 @@ function Semana() {
         <span className="text-sm font-semibold">{ddmm(w.dates[0] ?? start)} – {ddmm(w.dates.at(-1)!)}</span>
         <Button variant="outline" size="icon" disabled={i >= starts.length - 1} onClick={() => setI(i + 1)} aria-label="Próxima semana"><ChevronRight className="size-4" /></Button>
       </div>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Kpi tone="info" label="Guardado na semana" value={money(guarded)} formula="Soma dos depósitos efetivos no cofrinho" explain="É o dinheiro que entrou no cofrinho. O resultado de caixa continua nesta tela." />
         <Kpi tone="ok" label="Resultado de caixa (semana)" value={money(w.profit)} formula="Soma do resultado gerencial de caixa dos dias" explain={`${w.dates.length} dias fechados`} />
         <Kpi label="Média por dia" value={money(w.avg)} explain={prevW ? `${pctFmt(w.avg / prevW.avg - 1)} vs semana anterior (${money(prevW.avg)})` : undefined} />
         <Kpi label="Rendimentos" value={money(w.yields)} formula="Soma do rendimento implícito de cada dia" />

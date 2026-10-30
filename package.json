@@ -9,6 +9,7 @@
     "start": "next start -p 3001",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
+    "test": "tsx --tsconfig tsconfig.json --test src/lib/vault/informed-balance.test.ts src/lib/zaivon/finance/debt-reading.test.ts src/lib/zaivon/finance/snapshot-vs-live.test.ts src/lib/zaivon/finance/closure-2810.test.ts src/lib/stock/physical-count.test.ts",
     "db:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio"
   },

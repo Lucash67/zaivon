@@ -6,7 +6,7 @@ import { COFRINHO_TOLERANCE, dayFinance, impliedYield } from "@/lib/zaivon/finan
 import { monthDays, monthSummary } from "@/lib/zaivon/finance/month";
 import { ddmm } from "@/lib/zaivon/format";
 import { chartAxis, chartTooltip, Kpi, PageHeader, Panel, Pill } from "@/components/zaivon-v2/ui";
-import { DayReconciliationPanel } from "@/components/zaivon-v2/day-reconciliation";
+import { DayReconciliationPanel, reconciliationExtras } from "@/components/zaivon-v2/day-reconciliation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/zaivon-v2/primitives";
 import { HideMoneyScope, ScreenHideMoneyButton, useScreenHideMoney } from "@/components/zaivon-v2/hide-money";
 import { FINANCE_LABELS } from "@/lib/finance/labels";
@@ -59,24 +59,32 @@ function DinheiroBody() {
           <TabsTrigger value="conciliacao">Conciliação do dia</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="cofrinho" className="mt-4 grid gap-4">
+        <TabsContent value="cofrinho" className="mt-4 grid min-w-0 grid-cols-1 gap-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <Kpi
               big
               tone="info"
-              label="Saldo atual"
+              label="Saldo do razão"
               value={money(o.vault.balance)}
-              formula="Saldo do razão: saldo confirmado mais as movimentações posteriores. Depósito não é lucro."
-              explain={o.vault.asOf ? `Atualizado em ${ddmm(o.vault.asOf)}. O fechamento de cada dia permanece o saldo daquela data.` : "Nenhuma movimentação no razão."}
+              formula="Soma dos movimentos lançados. Depósito não é lucro."
+              explain={o.vault.asOf ? `Último movimento em ${ddmm(o.vault.asOf)}.` : "Nenhuma movimentação no razão."}
             />
             <Kpi
               tone="ok"
-              label={FINANCE_LABELS.bankOfMonth.short}
-              value={money(ms.bank)}
-              formula={FINANCE_LABELS.bankOfMonth.formula}
-              explain={`${money(ms.diaryProfit)} de ${FINANCE_LABELS.cashManagementResult.short.toLowerCase()} + ${money(ms.yields)} rendimentos. O último fechamento diário é ${money(ms.lastCofrinho)}.`}
+              label="Saldo informado"
+              value={o.vault.informedBalance != null ? money(o.vault.informedBalance) : "—"}
+              formula="Valor observado no fechamento mais recente que registrou saldo informado."
+              explain="Não substitui o razão e não cria rendimento."
             />
-            <Kpi label="Rendimentos" value={money(ms.yields)} formula="Banco do mês − resultados de caixa do diário. Entra no banco, mas não é lucro." explain={`≈ ${money(ms.avgYieldPerDay)} por dia`} />
+            <Kpi
+              tone={o.vault.reconciliationGap != null && Math.abs(o.vault.reconciliationGap) >= 0.01 ? "alert" : "neutral"}
+              label="Diferença não conciliada"
+              value={o.vault.reconciliationGap != null ? money(o.vault.reconciliationGap) : "—"}
+              formula="Saldo informado − saldo do razão."
+              explain={o.vault.gapParts.length
+                ? o.vault.gapParts.map((part) => `${ddmm(part.date)} ${money(part.amount)}`).join(" + ") + ". Origem não identificada."
+                : "Sem diferença registrada."}
+            />
           </div>
           <Panel title="Evolução do cofrinho" subtitle={`Saldo no fim de cada dia · ${o.plan.label}`}>
             <div className="h-64">
@@ -91,8 +99,8 @@ function DinheiroBody() {
               </ResponsiveContainer>
             </div>
           </Panel>
-          <Panel title="Movimentações do cofrinho" subtitle="Independentes do dia operacional. Uma transferência não é receita.">
-            <div className="overflow-x-auto">
+          <Panel title="Movimentações do cofrinho" subtitle={o.vault.gapParts.length ? `Os cinco movimentos permanecem. Diferença não conciliada: ${o.vault.gapParts.map((part) => `${ddmm(part.date)} ${money(part.amount)}`).join(" + ")}. Origem não identificada.` : "Independentes do dia operacional. Uma transferência não é receita."}>
+            <div className="min-w-0 max-w-full overflow-x-auto">
               <table className="num w-full min-w-[520px] text-sm">
                 <thead className="text-left text-xs text-o-muted-foreground">
                   <tr>
@@ -120,7 +128,7 @@ function DinheiroBody() {
             title="Batimento diário"
             subtitle="Batimento: saldo − (abertura + depósito − retirada + rendimento). Não comparar com resultado de caixa (tol. R$ 5)"
           >
-            <div className="overflow-x-auto">
+            <div className="min-w-0 max-w-full overflow-x-auto">
               <table className="num w-full min-w-[520px] text-sm">
                 <thead className="text-left text-xs text-o-muted-foreground">
                   <tr>
@@ -160,7 +168,7 @@ function DinheiroBody() {
           </Panel>
         </TabsContent>
 
-        <TabsContent value="fluxo" className="mt-4 grid gap-4">
+        <TabsContent value="fluxo" className="mt-4 grid min-w-0 grid-cols-1 gap-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Kpi
               big
@@ -195,7 +203,7 @@ function DinheiroBody() {
           </Panel>
         </TabsContent>
 
-        <TabsContent value="custos" className="mt-4 grid gap-4">
+        <TabsContent value="custos" className="mt-4 grid min-w-0 grid-cols-1 gap-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Kpi
               big
@@ -234,7 +242,7 @@ function DinheiroBody() {
           </Panel>
         </TabsContent>
 
-        <TabsContent value="conciliacao" className="mt-4 grid gap-4">
+        <TabsContent value="conciliacao" className="mt-4 grid min-w-0 grid-cols-1 gap-4">
           <p className="text-sm text-o-muted-foreground">
             Dia selecionado na faixa superior: <strong className="text-o-foreground">{selected.date}</strong>
             {selectedFinance.competenceStatus === "provisional" ? " · provisório" : ""}.
@@ -243,6 +251,7 @@ function DinheiroBody() {
             finance={selectedFinance}
             dayClosing={selected.dayClosing}
             cofrinhoEnd={selected.cofrinhoEnd}
+            {...reconciliationExtras(selected, o.debts, o.settlements, o.vault)}
           />
         </TabsContent>
       </Tabs>

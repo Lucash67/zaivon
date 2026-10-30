@@ -39,6 +39,12 @@ export interface DayFinance {
   newCredit: number;
 }
 
+/** Dinheiro guardado no dia: o depósito efetivo no cofrinho, não o lucro. */
+export function savedDeposit(day: OperationDay): number | null {
+  const deposit = day.dayClosing?.piggyBank.deposit;
+  return deposit == null ? null : deposit;
+}
+
 /**
  * Indicadores do dia.
  * Quando há dayClosing v2, ele é a fonte canônica das 5 dimensões
@@ -207,7 +213,7 @@ export function dayChecks(
       label: "Batimento físico",
       ok: null,
       detail: dc
-        ? `Sem linhas unitárias nem operationalAudit. Estoque remanescente (dayClosing): ${dc.stockRemainingUnits} un · perdas ${dc.lossesUnits} un.`
+        ? `Sem linhas unitárias nem operationalAudit. Estoque remanescente gravado no fechamento: ${dc.stockRemainingUnits} un · perdas ${dc.lossesUnits} un. Esse retrato não acompanha uma baixa registrada depois.`
         : "Dia registrado só por resumo — faltam linhas de saída (paid/fiado/perda) para batimento físico.",
     };
   }
@@ -267,7 +273,7 @@ export function dayChecks(
 
 /** Recuperação = fiados + parceiros + investigação (somente em aberto). */
 export function recovery(debts: Debt[]) {
-  const open = debts.filter((d) => d.status === "open");
+  const open = debts.filter((d) => d.status === "open" && !d.referenceOnly);
   const by = (t: Debt["type"]) =>
     round2(open.filter((d) => d.type === t).reduce((s, d) => s + d.amount - d.paid, 0));
   const fiado = by("fiado");

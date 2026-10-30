@@ -15,6 +15,7 @@ import { desc } from "drizzle-orm";
 import { isAuthFailure, requireApiSession } from "@/lib/auth/require-api-session";
 import { withTenantScope } from "@/lib/auth/with-tenant-api";
 import { requireTenantBusinessWrite } from "@/lib/auth/tenant-scope";
+import { applyStockQuantity, entryReasonWithCount } from "@/lib/stock/physical-count";
 
 export async function GET(request: NextRequest) {
   const auth = await requireApiSession();
@@ -80,7 +81,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     return await withTenantScope(auth, request.nextUrl.searchParams.get("businessId"), async (scope) => {
       const businessId = requireTenantBusinessWrite(scope, request.nextUrl.searchParams.get("businessId"));
-      const { productId, type, quantity, reason } = body;
+      const { productId, type, quantity, reason, physicalCount } = body;
 
       const product = await getProductById(productId);
       if (!product) return apiError(MSG.STOCK_PRODUCT_NOT_FOUND, 404);
@@ -94,10 +95,15 @@ export async function POST(request: NextRequest) {
         return apiError("Informe uma quantidade válida.", 400);
       }
 
-      let newBalance = product.stockQuantity;
-      if (type === "entry") newBalance += qty;
-      else if (type === "exit") newBalance = Math.max(0, newBalance - qty);
-      else newBalance = qty;
+      const counted = entryReasonWithCount({
+        currentStock: product.stockQuantity,
+        type: String(type ?? ""),
+        reason: typeof reason === "string" ? reason : null,
+        physicalCount,
+      });
+      if (!counted.ok) return apiError(counted.message, 400);
+
+      const newBalance = applyStockQuantity(product.stockQuantity, String(type ?? ""), qty);
 
       await updateStockQuantity(productId, newBalance);
       await recordStockMovement({
@@ -105,7 +111,7 @@ export async function POST(request: NextRequest) {
         type,
         quantity: qty,
         balanceAfter: newBalance,
-        reason: reason || null,
+        reason: counted.reason,
       });
 
       return NextResponse.json({ success: true, balance: newBalance });
