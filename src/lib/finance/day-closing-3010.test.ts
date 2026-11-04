@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
+import { preliminaryEconomicResult } from "../zaivon/finance/day";
 import { buildDayClosing } from "./day-closing";
 
 describe("fechamento de 30/10/2026", () => {
@@ -56,6 +57,9 @@ describe("fechamento de 30/10/2026", () => {
     assert.equal(closing.competenceRevenue, 130);
     assert.equal(closing.newCredit, 20);
     assert.equal(closing.competenceProfit, 130);
+    assert.equal(preliminaryEconomicResult(130, 0, 91.2), 38.8);
+    assert.notEqual(closing.competenceProfit, preliminaryEconomicResult(130, 0, 91.2));
+    assert.notEqual(closing.piggyBank.deposit, preliminaryEconomicResult(130, 0, 91.2));
     assert.equal(closing.cashManagementResult, 110);
     assert.equal(closing.reconciliation.depositMinusCashResult, 0);
     assert.equal(closing.lossesAmount, 0);

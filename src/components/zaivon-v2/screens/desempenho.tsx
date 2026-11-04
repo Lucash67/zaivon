@@ -25,7 +25,7 @@ export function Desempenho() {
         />
         <p className="mb-3 rounded-xl bg-o-surface px-3 py-2 text-xs text-o-muted-foreground">
           Nesta tela, &quot;lucro&quot; significa <strong className="text-o-foreground">resultado gerencial de caixa</strong>{" "}
-          (caixa − meu custo ± bônus), não lucro por competência. Depósitos e saldo do cofrinho são dimensões separadas.
+          (caixa − meu custo ± bônus), não o resultado após desembolso próprio nem o resultado econômico preliminar. Depósitos e saldo do cofrinho são dimensões separadas.
         </p>
         <Tabs defaultValue="semana">
           <TabsList className="flex h-auto w-full flex-wrap gap-1">
@@ -69,7 +69,7 @@ function Semana() {
         <Kpi tone="ok" label="Resultado de caixa (semana)" value={money(w.profit)} formula="Soma do resultado gerencial de caixa dos dias" explain={`${w.dates.length} dias fechados`} />
         <Kpi label="Média por dia" value={money(w.avg)} explain={prevW ? `${pctFmt(w.avg / prevW.avg - 1)} vs semana anterior (${money(prevW.avg)})` : undefined} />
         <Kpi label="Rendimentos" value={money(w.yields)} formula="Soma do rendimento implícito de cada dia" />
-        <Kpi tone="info" label="Δ saldo cofrinho" value={w.cofrinhoDelta != null ? `+${money(w.cofrinhoDelta)}` : "—"} formula="Resultados de caixa + rendimentos (não é depósito automático do lucro por competência)" />
+        <Kpi tone="info" label="Δ saldo cofrinho" value={w.cofrinhoDelta != null ? `+${money(w.cofrinhoDelta)}` : "—"} formula="Resultados de caixa + rendimentos. Não é depósito automático do resultado após desembolso próprio." />
       </div>
       <Panel title="Resultado de caixa por dia" subtitle={`R$ · semana de ${ddmm(w.dates[0] ?? start)}`}>
         <div className="h-56 min-h-[14rem]"><ResponsiveContainer><BarChart data={rows}><CartesianGrid stroke="var(--color-border)" vertical={false} /><XAxis dataKey="date" {...chartAxis} /><YAxis {...chartAxis} width={50} tickFormatter={axisTick} /><Tooltip {...chartTooltip} formatter={(v: number) => money(v)} /><ReferenceLine y={o.plan.dailyTarget} stroke="var(--color-pending)" strokeDasharray="4 4" label={{ value: "alvo", fill: "var(--color-pending)", fontSize: 12 }} /><Bar dataKey="lucro" name="Resultado caixa" fill="var(--color-ok)" radius={[6, 6, 0, 0]} /></BarChart></ResponsiveContainer></div>

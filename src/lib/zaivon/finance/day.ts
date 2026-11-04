@@ -1,6 +1,11 @@
 import type { Debt, MonthPlan, OperationDay, SaleLine, Settlement } from "@/lib/zaivon/types";
 
 export const round2 = (n: number) => Math.round(n * 100) / 100;
+
+/** Faturamento − custo próprio − custo de terceiros. Não substitui o resultado após desembolso próprio e não é depósito. */
+export function preliminaryEconomicResult(revenue: number, ownCost: number, thirdPartyCost: number) {
+  return round2(revenue - ownCost - thirdPartyCost);
+}
 const lineValue = (l: SaleLine) => l.qty * l.unitPrice;
 const sumLines = (lines: SaleLine[], pred: (l: SaleLine) => boolean) =>
   round2(lines.filter(pred).reduce((s, l) => s + lineValue(l), 0));
@@ -31,7 +36,7 @@ export interface DayFinance {
   profit: number;
   /** Faturamento por competência (vendas do dia, incl. fiados/parceiro/investigar). */
   competenceRevenue: number;
-  /** Lucro pessoal por competência = faturamento − meu custo. */
+  /** Faturamento − desembolso próprio. O custo de terceiros fica de fora. */
   competenceProfit: number;
   /** confirmed = auditado; provisional = Δ pendente (não tratar como definitivo). */
   competenceStatus: "confirmed" | "provisional";
@@ -150,7 +155,7 @@ export function previousCofrinho(day: OperationDay, days: OperationDay[], plan: 
  * Batimento do cofrinho:
  * saldo final − (abertura + depósito − retirada + rendimento declarado).
  * Com dayClosing, usa a abertura/depósito do snapshot — NÃO comparar com
- * resultado de caixa nem lucro por competência (isso inventa Δ falso, ex. R$15,38).
+ * resultado de caixa nem resultado após desembolso próprio (isso inventa Δ falso, ex. R$15,38).
  */
 export function impliedYield(
   day: OperationDay,
@@ -268,7 +273,7 @@ export function dayChecks(
             Math.abs(y) < 0.01 && piggy
               ? `Saldo ${piggy.closingBalance.toFixed(2).replace(".", ",")} = abertura ${piggy.openingBalance.toFixed(2).replace(".", ",")} + depósito ${piggy.deposit.toFixed(2).replace(".", ",")} − retirada ${(piggy.withdrawal ?? 0).toFixed(2).replace(".", ",")} + rendimento ${(piggy.bankYield ?? 0).toFixed(2).replace(".", ",")} (batimento OK; depósito único). Não comparar com resultado de caixa.`
               : piggy
-                ? `Saldo informado − (abertura + depósito − retirada + rendimento) = R$ ${y.toFixed(2).replace(".", ",")} (tol. R$ ${COFRINHO_TOLERANCE}). Não comparar com resultado de caixa nem lucro por competência.`
+                ? `Saldo informado − (abertura + depósito − retirada + rendimento) = R$ ${y.toFixed(2).replace(".", ",")} (tol. R$ ${COFRINHO_TOLERANCE}). Não comparar com resultado de caixa nem com o resultado após desembolso próprio.`
                 : `Variação − resultado de caixa = R$ ${y.toFixed(2).replace(".", ",")} (tol. R$ ${COFRINHO_TOLERANCE}).`,
         };
   return [fis, fin, cof];

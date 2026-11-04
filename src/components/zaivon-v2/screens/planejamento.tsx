@@ -41,7 +41,7 @@ function PlanejamentoBody() {
       <PageHeader title="Planejamento" question={`Vou bater a meta? · ${o.plan.label}`} right={<ScreenHideMoneyButton />} />
       <p className="mb-3 rounded-xl bg-o-surface px-3 py-2 text-xs text-o-muted-foreground">
         Meta e &quot;realizado&quot; usam o <strong className="text-o-foreground">banco do mês / resultado gerencial de caixa</strong>{" "}
-        (legado). Lucro por competência e depósitos do cofrinho não entram automaticamente neste plano.
+        (legado). O resultado após desembolso próprio, o resultado econômico preliminar e os depósitos do cofrinho não entram automaticamente neste plano.
       </p>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr_1fr]">
         <Panel>

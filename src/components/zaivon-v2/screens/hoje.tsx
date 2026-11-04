@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { useZaivon } from "@/components/zaivon-v2/store";
-import { dayChecks, dayFinance, daysOpen, recovery, savedDeposit } from "@/lib/zaivon/finance/day";
+import { dayChecks, dayFinance, daysOpen, preliminaryEconomicResult, recovery, savedDeposit } from "@/lib/zaivon/finance/day";
 import { monthSummary } from "@/lib/zaivon/finance/month";
 import { dayLabel, ddmm, pctFmt } from "@/lib/zaivon/format";
 import { CheckRow, Kpi, PageHeader, Panel, Pill, Progress, RegisteredSalesList } from "@/components/zaivon-v2/ui";
@@ -153,7 +153,7 @@ function HojeBody() {
           {f.competenceStatus === "provisional" && (
             <div className="rounded-xl border border-o-pending/40 bg-o-pending/10 px-4 py-3 text-sm text-o-pending">
               {day.dayClosing?.definitivePersonalProfit === "pending"
-                ? "O resultado por competência deste dia é anterior aos custos dos sanduíches. O lucro pessoal definitivo permanece pendente e não entra no lucro mensal confirmado."
+                ? "O resultado após desembolso próprio deste dia é anterior aos custos dos sanduíches. O resultado econômico definitivo permanece pendente e não entra no total mensal confirmado."
                 : PROVISIONAL_HINT}
             </div>
           )}
@@ -165,7 +165,7 @@ function HojeBody() {
                 label={FINANCE_LABELS.piggyDeposit.short}
                 value={guarded != null ? money(guarded) : "—"}
                 formula={FINANCE_LABELS.piggyDeposit.formula}
-                explain="Dinheiro efetivamente guardado neste dia. O lucro continua calculado ao lado e não ocupa este lugar."
+                explain="Dinheiro efetivamente guardado neste dia. Os resultados ao lado não ocupam este lugar."
               />
               <div className="grid gap-4 sm:grid-cols-2">
               <Kpi
@@ -182,7 +182,7 @@ function HojeBody() {
               <Kpi
                 label={
                   day.dayClosing?.definitivePersonalProfit === "pending"
-                    ? "Resultado por competência antes dos custos dos sanduíches"
+                    ? "Resultado após desembolso próprio, antes dos custos dos sanduíches"
                     : f.competenceStatus === "provisional"
                       ? `${FINANCE_LABELS.competenceProfit.short} (provisório)`
                       : FINANCE_LABELS.competenceProfit.short
@@ -191,10 +191,18 @@ function HojeBody() {
                 formula={FINANCE_LABELS.competenceProfit.formula}
                 explain={
                   f.competenceStatus === "provisional"
-                    ? `Provisório: ${money(f.competenceRevenue)} − ${money(f.ownCost)}. Há diferença entre o diário e as vendas; não tratar como confirmado.`
-                    : `${FINANCE_LABELS.competenceRevenue.short} ${money(f.competenceRevenue)} − custo ${money(f.ownCost)} · gap vs caixa ${money(f.competenceProfit - f.operationalProfit)}`
+                    ? `Provisório: ${money(f.competenceRevenue)} − desembolso próprio ${money(f.ownCost)}. Há diferença entre o diário e as vendas.`
+                    : `${FINANCE_LABELS.competenceRevenue.short} ${money(f.competenceRevenue)} − desembolso próprio ${money(f.ownCost)}. O custo de terceiros fica de fora.`
                 }
               />
+              <div className="sm:col-span-2">
+                <Kpi
+                  label={FINANCE_LABELS.preliminaryEconomicResult.short}
+                  value={money(preliminaryEconomicResult(f.competenceRevenue, f.ownCost, f.thirdPartyCost))}
+                  formula={FINANCE_LABELS.preliminaryEconomicResult.formula}
+                  explain={`${money(f.competenceRevenue)} − desembolso próprio ${money(f.ownCost)} − terceiros ${money(f.thirdPartyCost)}. Não é o depósito do cofrinho.`}
+                />
+              </div>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -250,17 +258,19 @@ function HojeBody() {
           {o.unlinkedRegister && o.unlinkedRegister.registeredUnits > 0 && (
             <Panel
               title="Retiradas sem vínculo"
-              subtitle="Contagem registrada no histórico. O valor comercial só entra quando a ocorrência o gravou. Nada disso é perda confirmada."
+              subtitle="O total histórico permanece. O valor de 30/10 foi conferido item a item. O restante continua sujeito a auditoria e não é perda confirmada."
             >
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 <Kpi label="Unidades registradas" value={String(o.unlinkedRegister.registeredUnits)} explain="Soma das saídas sem vínculo. Não é um prejuízo fechado." />
                 <Kpi label="Em investigação" tone="pending" value={String(o.unlinkedRegister.investigationUnits)} explain="Unidades que continuam abertas." />
-                <Kpi label="Valor em investigação" tone="pending" value={money(o.unlinkedRegister.investigationCommercial)} explain="Exposição comercial das ocorrências abertas com valor gravado." />
+                <Kpi label="Valor em investigação" tone="pending" value={money(o.unlinkedRegister.investigationCommercial)} explain="Soma histórica das ocorrências abertas. Não é prejuízo confirmado." />
+                <Kpi label="Conferidos em 30/10" value={money(o.unlinkedRegister.auditedCommercial)} explain={`${o.unlinkedRegister.auditedUnits} un. conferidas. Exposição comercial, não perda.`} />
+                <Kpi label="Sujeitos a auditoria" tone="pending" value={money(o.unlinkedRegister.pendingAuditCommercial)} explain={`${o.unlinkedRegister.pendingAuditUnits} un. ainda sem conferência item a item.`} />
               </div>
               <div className="mt-3 grid gap-2">
                 {o.unlinkedRegister.occurrences.map((item) => (
                   <p key={item.id} className="text-xs text-o-muted-foreground">
-                    {ddmm(item.date)} · {item.quantity} un.{item.commercialValue != null ? ` · ${money(item.commercialValue)}` : ""} · {item.status === "open" ? "em investigação" : item.status} · {item.summary}
+                    {ddmm(item.date)} · {item.quantity} un.{item.commercialValue != null ? ` · ${money(item.commercialValue)}` : ""} · {item.audit === "conferido" ? "conferido" : "sujeito a auditoria"} · {item.summary}
                   </p>
                 ))}
               </div>
@@ -308,7 +318,7 @@ function HojeBody() {
                 {pctFmt(ms.pctGoal, false)} da meta no <strong className="text-o-foreground">banco do mês</strong>{" "}
                 (último cofrinho − início do mês). Precisa de{" "}
                 <strong className="text-o-foreground">{money(ms.neededPerDay)}/dia</strong> nos {ms.remainingDays} dias
-                restantes (alvo {money(o.plan.dailyTarget)}). Não usa lucro por competência nem o caixa de um único dia.
+                restantes (alvo {money(o.plan.dailyTarget)}). Não usa o resultado após desembolso próprio nem o caixa de um único dia.
               </p>
               <Link href={`${ZAIVON_BASE}/planejamento`} className={buttonClass("link", "default", "mt-1 h-auto p-0")}>Ver planejamento <ArrowRight className="size-3" /></Link>
             </Panel>

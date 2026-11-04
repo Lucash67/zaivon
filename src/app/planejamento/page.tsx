@@ -389,7 +389,7 @@ export default function PlanejamentoPage() {
       <div className="space-y-8">
         <p className="rounded-xl border border-border/60 bg-surface-2/40 px-3 py-2 text-xs text-text-muted">
           Meta e realizado usam lucro/banco do diário legado (próximo do{" "}
-          <strong className="text-text-primary">resultado gerencial de caixa</strong>), não lucro por competência.
+          <strong className="text-text-primary">resultado gerencial de caixa</strong>), não o resultado após desembolso próprio.
           Visão canônica em <span className="text-text-primary">/v2/planejamento</span>.
         </p>
         <div className="space-y-1">

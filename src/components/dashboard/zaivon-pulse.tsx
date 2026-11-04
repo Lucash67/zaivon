@@ -7,6 +7,7 @@ import { getFirstName, getTimeGreeting, resolveUserTimeZone } from "@/lib/time-g
 import { useSessionUser } from "@/hooks/use-session-user";
 import { useHideMoney, type HideMoneyScreen } from "@/hooks/use-hide-money";
 import { formatCurrency } from "@/lib/utils";
+import { FINANCE_LABELS } from "@/lib/finance/labels";
 import {
   PULSE_METRIC_META,
   PULSE_TONE_STYLES,
@@ -118,27 +119,31 @@ export function ZaivonPulse({ pulse, className, hideMoneyScreen = "dashboard" }:
             ? meta.key === "competenceRevenue"
               ? "Receita identificada"
               : meta.key === "competenceProfit"
-                ? "Resultado por competência"
+                ? FINANCE_LABELS.competenceProfit.short
                 : meta.key === "cashIn"
                   ? "Pix recebidos"
                   : "Fiados identificados"
-            : meta.label;
+            : meta.key === "competenceProfit"
+              ? FINANCE_LABELS.competenceProfit.short
+              : meta.label;
           const sub = pulse.personalProfitPending
             ? meta.key === "competenceRevenue"
               ? "Pix e fiados nominais"
               : meta.key === "competenceProfit"
-                ? "Antes dos custos dos sanduíches. Lucro pessoal pendente."
+                ? "Antes dos custos dos sanduíches. O custo de terceiros fica de fora."
                 : meta.key === "cashIn"
                   ? "Entradas do dia"
                   : "Reconhecidos, não recebidos"
-            : meta.sub;
+            : meta.key === "competenceProfit"
+              ? FINANCE_LABELS.competenceProfit.formula
+              : meta.sub;
           return (
             <div
               key={meta.key}
               className="min-w-0 rounded-[15px] border border-[#2d3540] bg-[#1a2028] px-3 py-4 sm:px-4"
               style={{ ["--accent" as string]: accent }}
             >
-              <div className="flex items-center gap-1.5 whitespace-nowrap text-[10px] text-[#a6b1be] sm:gap-2 sm:text-xs">
+              <div className="flex items-center gap-1.5 text-[10px] text-[#a6b1be] sm:gap-2 sm:text-xs">
                 <span className="text-[15px]" style={{ color: accent }} aria-hidden>
                   {meta.symbol}
                 </span>

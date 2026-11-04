@@ -4,7 +4,7 @@ import { getPostgresDb } from "@/platform/db";
 import { toDbBusinessId } from "@/platform/db/business-id";
 import { queryAll } from "@/platform/db/query";
 import { centsToMoney, foldVaultCents, moneyToCents, movementCents, type VaultFoldRow } from "@/lib/vault/balance";
-import { informedGapParts, readInformedBalance, readResponsiblePayment, roundMoney } from "@/lib/vault/informed-balance";
+import { informedGapParts, orderVaultRowsForPresentation, readInformedBalance, readResponsiblePayment, roundMoney } from "@/lib/vault/informed-balance";
 import type { VaultSnapshot } from "@/lib/zaivon/types";
 
 const ACCOUNT_SLUG = "salgados-e-sanduiches";
@@ -48,7 +48,8 @@ export async function loadVaultSnapshot(businessSlug: string): Promise<VaultSnap
         .orderBy(asc(vaultMovements.effectiveDate), asc(vaultMovements.createdAt)),
     );
     if (rows.length === 0) return { ...empty, accountName: account.name };
-    const foldRows: VaultFoldRow[] = rows.map((row) => ({
+    const ordered = orderVaultRowsForPresentation(rows);
+    const foldRows: VaultFoldRow[] = ordered.map((row) => ({
       idempotencyKey: row.key,
       type: row.type,
       effect: row.effect,
@@ -57,7 +58,7 @@ export async function loadVaultSnapshot(businessSlug: string): Promise<VaultSnap
       effectiveDate: row.date,
     }));
     let running = 0;
-    const movements = rows.map((row, index) => {
+    const movements = ordered.map((row, index) => {
       running += movementCents(foldRows[index]!);
       return {
         id: row.id,
@@ -72,7 +73,7 @@ export async function loadVaultSnapshot(businessSlug: string): Promise<VaultSnap
       };
     });
     const balance = centsToMoney(foldVaultCents(foldRows));
-    const asOf = [...rows].reverse().find((row) => row.status === "posted" && row.type !== "reversal")?.date ?? null;
+    const asOf = [...ordered].reverse().find((row) => row.status === "posted" && row.type !== "reversal")?.date ?? null;
     const informedBalance = [...movements].reverse().find((row) => row.informedBalance != null)?.informedBalance ?? null;
     const reconciliationGap = informedBalance == null ? null : roundMoney(informedBalance - balance);
     const gapParts = informedGapParts(movements.map((row) => ({

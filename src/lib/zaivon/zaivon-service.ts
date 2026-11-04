@@ -31,6 +31,7 @@ import { generateId } from "@/shared/ids/generate-id";
 import { getMonthPlan } from "@/lib/planning/month-plans";
 import { round2, settlementsOn } from "@/lib/zaivon/finance/day";
 import { buildDeclaredReferences } from "@/lib/zaivon/finance/debt-reading";
+import { summarizeUnlinkedAudit, unlinkedAuditMark } from "@/lib/zaivon/finance/unlinked-audit";
 import { loadVaultSnapshot } from "@/lib/vault/vault-service";
 import { parseDraftFinancials, type DraftFinancials } from "@/lib/zaivon/finance/draft-financials";
 import { ZAIVON_CHANNELS, ZAIVON_PRODUCTS } from "@/lib/zaivon/catalog";
@@ -616,15 +617,17 @@ async function loadUnlinkedUnits(): Promise<{ byDate: Map<string, number>; regis
       commercialValue: row.potential == null ? null : Number(row.potential),
       summary: (row.description ?? "").replace(/\s+/g, " ").slice(0, 220),
       status: row.status,
+      audit: unlinkedAuditMark(row.date),
     }))
     .sort((a, b) => b.date.localeCompare(a.date) || a.id.localeCompare(b.id));
   const open = occurrences.filter((row) => row.status === "open");
+  const audit = summarizeUnlinkedAudit(occurrences);
   return {
     byDate: totals,
     register: {
       registeredUnits: rows.reduce((sum, row) => sum + row.quantity, 0),
       investigationUnits: open.reduce((sum, row) => sum + row.quantity, 0),
-      investigationCommercial: Math.round(open.reduce((sum, row) => sum + (row.commercialValue ?? 0), 0) * 100) / 100,
+      ...audit,
       occurrences,
     },
   };

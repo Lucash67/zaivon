@@ -21,7 +21,7 @@ export type PulseInsightKind =
 export interface ZaivonPulseMetrics {
   /** Faturamento por competência (ou total do diário). */
   competenceRevenue: number | null;
-  /** Lucro pessoal por competência. */
+  /** Faturamento − desembolso próprio. Não é o resultado econômico. */
   competenceProfit: number | null;
   /** Caixa recebido (entradas reais). */
   cashIn: number | null;
@@ -271,8 +271,8 @@ export const PULSE_METRIC_META = [
   {
     key: "competenceProfit" as const,
     symbol: "↗",
-    label: "Lucro pessoal",
-    sub: "Resultado por competência",
+    label: "Após desembolso próprio",
+    sub: "Faturamento − desembolso próprio",
     accent: "#2ed3a7",
   },
   {

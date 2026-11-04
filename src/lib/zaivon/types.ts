@@ -238,11 +238,18 @@ export interface UnlinkedOccurrence {
   commercialValue: number | null;
   summary: string;
   status: string;
+  /** Leitura da auditoria. Não altera o status persistido da pendência. */
+  audit: "conferido" | "sujeito-a-auditoria";
 }
 
 export interface UnlinkedRegister {
   registeredUnits: number;
   investigationUnits: number;
+  /** Soma histórica das ocorrências abertas. Não é perda confirmada. */
   investigationCommercial: number;
+  auditedUnits: number;
+  auditedCommercial: number;
+  pendingAuditUnits: number;
+  pendingAuditCommercial: number;
   occurrences: UnlinkedOccurrence[];
 }
