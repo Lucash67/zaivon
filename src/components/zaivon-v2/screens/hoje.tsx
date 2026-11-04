@@ -53,14 +53,15 @@ function HojeBody() {
       (d) =>
         d.status === "open" &&
         !d.referenceOnly &&
+        !d.reviewOnly &&
         d.type !== "investigacao" &&
         (!d.deferredUntil || d.deferredUntil <= o.selectedDate),
     )
     .sort((a, b) => a.originDate.localeCompare(b.originDate))[0];
   const deferredOpen = o.debts.filter(
-    (d) => d.status === "open" && !d.referenceOnly && d.deferredUntil && d.deferredUntil > o.selectedDate,
+    (d) => d.status === "open" && !d.referenceOnly && !d.reviewOnly && d.deferredUntil && d.deferredUntil > o.selectedDate,
   );
-  const inv = o.debts.filter((d) => d.status === "open" && !d.referenceOnly && d.type === "investigacao");
+  const inv = o.debts.filter((d) => d.status === "open" && !d.referenceOnly && !d.reviewOnly && d.type === "investigacao");
   const closing = `${ZAIVON_BASE}/registrar?tab=fechamento`;
   const pendings = `${ZAIVON_BASE}/pendencias`;
   const cofCheck = checks.find((c) => c.id === "cofrinho");
@@ -245,6 +246,26 @@ function HojeBody() {
           </div>
 
           <DayReconciliationPanel finance={f} dayClosing={day.dayClosing} cofrinhoEnd={day.cofrinhoEnd} {...vaultDay} />
+
+          {o.unlinkedRegister && o.unlinkedRegister.registeredUnits > 0 && (
+            <Panel
+              title="Retiradas sem vínculo"
+              subtitle="Contagem registrada no histórico. O valor comercial só entra quando a ocorrência o gravou. Nada disso é perda confirmada."
+            >
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                <Kpi label="Unidades registradas" value={String(o.unlinkedRegister.registeredUnits)} explain="Soma das saídas sem vínculo. Não é um prejuízo fechado." />
+                <Kpi label="Em investigação" tone="pending" value={String(o.unlinkedRegister.investigationUnits)} explain="Unidades que continuam abertas." />
+                <Kpi label="Valor em investigação" tone="pending" value={money(o.unlinkedRegister.investigationCommercial)} explain="Exposição comercial das ocorrências abertas com valor gravado." />
+              </div>
+              <div className="mt-3 grid gap-2">
+                {o.unlinkedRegister.occurrences.map((item) => (
+                  <p key={item.id} className="text-xs text-o-muted-foreground">
+                    {ddmm(item.date)} · {item.quantity} un.{item.commercialValue != null ? ` · ${money(item.commercialValue)}` : ""} · {item.status === "open" ? "em investigação" : item.status} · {item.summary}
+                  </p>
+                ))}
+              </div>
+            </Panel>
+          )}
 
           {(o.stockReadings ?? []).length > 0 && (
             <Panel title="Estoque contábil e pendências" subtitle="O catálogo é o saldo contábil vivo. O físico informado só aparece quando uma pendência o registrou. Pendência aberta não é baixa, venda nem perda.">

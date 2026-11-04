@@ -194,7 +194,10 @@ export function dayChecks(
     };
   } else if (audit?.salgados) {
     const s = audit.salgados;
-    const sum = s.paidUnits + s.lostUnits;
+    const creditUnits = s.creditUnits ?? 0;
+    const ownConsumption = s.ownConsumption ?? 0;
+    const unlinkedUnits = s.unlinkedUnits ?? 0;
+    const sum = s.paidUnits + s.lostUnits + creditUnits + ownConsumption + unlinkedUnits;
     const salgadosOk = s.status === "ok" && s.initial === sum && s.final === 0;
     const sand = audit.sandwiches;
     const sandNote = sand
@@ -205,7 +208,7 @@ export function dayChecks(
       label: "Batimento físico (resumo)",
       // Só OK pleno se salgados batem E sanduíches não estão pendentes.
       ok: salgadosOk && sand?.status !== "pending" ? true : salgadosOk && sand?.status === "pending" ? null : false,
-      detail: `Salgados ${salgadosOk ? "OK" : "divergente"}: inicial ${s.initial} = ${s.paidUnits} pagos + ${s.lostUnits} perda → final ${s.final}.${sandNote}`,
+      detail: `Salgados ${salgadosOk ? "OK" : "divergente"}: inicial ${s.initial} = ${s.paidUnits} pagos + ${s.lostUnits} perda${creditUnits ? ` + ${creditUnits} fiados` : ""}${ownConsumption ? ` + ${ownConsumption} consumo próprio` : ""}${unlinkedUnits ? ` + ${unlinkedUnits} sem vínculo` : ""} → final ${s.final}.${sandNote}`,
     };
   } else {
     fis = {
@@ -271,9 +274,9 @@ export function dayChecks(
   return [fis, fin, cof];
 }
 
-/** Recuperação = fiados + parceiros + investigação (somente em aberto). */
+/** Recuperação = fiados + parceiros + investigação da carteira confirmada. */
 export function recovery(debts: Debt[]) {
-  const open = debts.filter((d) => d.status === "open" && !d.referenceOnly);
+  const open = debts.filter((d) => d.status === "open" && !d.referenceOnly && !d.reviewOnly);
   const by = (t: Debt["type"]) =>
     round2(open.filter((d) => d.type === t).reduce((s, d) => s + d.amount - d.paid, 0));
   const fiado = by("fiado");

@@ -176,6 +176,18 @@ export function DayReconciliationPanel({
             : ""}
         </p>
       )}
+      {dc?.operationalAudit?.unlinked && dc.operationalAudit.unlinked.items.length > 0 && (
+        <div className="mt-3 grid gap-2">
+          <p className="text-xs font-medium text-o-foreground">
+            Exposição em investigação: {money(dc.operationalAudit.unlinked.commercialTotal)}. Não é prejuízo confirmado e não entra na cobrança.
+          </p>
+          {dc.operationalAudit.unlinked.items.map((item) => (
+            <p key={item.id} className="text-xs text-o-muted-foreground">
+              {item.kind === "sanduiche" ? "Sanduíche" : "Salgado"} · {item.quantity} un. · {money(item.commercialValue)} · {item.note}
+            </p>
+          ))}
+        </div>
+      )}
       <ul className="mt-3 grid gap-1.5 text-xs text-o-muted-foreground">
         <li>
           Faturamento − caixa = {money(gapFatCash)}

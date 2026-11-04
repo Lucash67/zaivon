@@ -80,7 +80,7 @@ function CommandPalette({ open, onClose, onQuick }: { open: boolean; onClose: ()
     if (!open) setQ("");
   }, [open]);
   const people = useMemo(
-    () => Array.from(new Set(o.debts.filter((d) => d.status === "open").map((d) => d.person))),
+    () => Array.from(new Set(o.debts.filter((d) => d.status === "open" && !d.reviewOnly).map((d) => d.person))),
     [o.debts],
   );
   if (!open) return null;
