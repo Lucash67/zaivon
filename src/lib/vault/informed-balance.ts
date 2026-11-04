@@ -19,6 +19,30 @@ export function readInformedBalance(metadata: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? roundMoney(value) : null;
 }
 
+export function readBookBalance(metadata: unknown): number | null {
+  if (!metadata || typeof metadata !== "object") return null;
+  const value = (metadata as Record<string, unknown>).bookBalance;
+  return typeof value === "number" && Number.isFinite(value) ? roundMoney(value) : null;
+}
+
+/**
+ * Ordem de leitura. No mesmo dia, o saldo contábil gravado no metadado
+ * prevalece sobre a ordem de gravação. Não reordena o que está no banco.
+ */
+export function orderVaultRowsForPresentation<T extends { date: string; metadata: unknown }>(rows: readonly T[]): T[] {
+  return rows
+    .map((row, sequence) => ({ row, sequence }))
+    .sort((a, b) => {
+      const byDate = a.row.date.localeCompare(b.row.date);
+      if (byDate !== 0) return byDate;
+      const bookA = readBookBalance(a.row.metadata);
+      const bookB = readBookBalance(b.row.metadata);
+      if (bookA != null && bookB != null && Math.abs(bookA - bookB) >= 0.01) return bookA - bookB;
+      return a.sequence - b.sequence;
+    })
+    .map((item) => item.row);
+}
+
 export function readResponsiblePayment(metadata: unknown): number | null {
   if (!metadata || typeof metadata !== "object") return null;
   const value = (metadata as Record<string, unknown>).paymentInformed;

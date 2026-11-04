@@ -2,7 +2,7 @@
 
 import type { DayClosingFinance } from "@/lib/finance/day-closing";
 import { FINANCE_LABELS, PROVISIONAL_HINT } from "@/lib/finance/labels";
-import type { DayFinance } from "@/lib/zaivon/finance/day";
+import { preliminaryEconomicResult, type DayFinance } from "@/lib/zaivon/finance/day";
 import { compareSnapshotToLive, dayLayerFacts } from "@/lib/zaivon/finance/snapshot-vs-live";
 import type { Debt, OperationDay, Settlement, VaultSnapshot } from "@/lib/zaivon/types";
 import { Panel, Pill } from "@/components/zaivon-v2/ui";
@@ -103,7 +103,14 @@ export function DayReconciliationPanel({
     {
       label: FINANCE_LABELS.competenceProfit.short,
       value: money(finance.competenceProfit),
-      note: provisional ? "Resultado por competência provisório." : "Faturamento − custo próprio.",
+      note: provisional
+        ? "Provisório: faturamento − desembolso próprio. Há diferença entre o diário e as vendas."
+        : "Faturamento − desembolso próprio. O custo pago por terceiros fica de fora.",
+    },
+    {
+      label: FINANCE_LABELS.preliminaryEconomicResult.short,
+      value: money(preliminaryEconomicResult(finance.competenceRevenue, finance.ownCost, finance.thirdPartyCost)),
+      note: "Faturamento − custo próprio − custo de terceiros. Não é depósito no cofrinho.",
     },
     {
       label: "Pagamento definido",
@@ -137,7 +144,7 @@ export function DayReconciliationPanel({
   return (
     <Panel
       title="Conciliação do dia"
-      subtitle="Por que faturamento, caixa, lucros e depósito podem diferir — sem forçar igualdade."
+      subtitle="Por que faturamento, caixa, resultados e depósito podem diferir — sem forçar igualdade."
       action={provisional ? <Pill tone="pending">Provisório</Pill> : undefined}
     >
       {provisional && <p className="mb-3 text-xs text-o-pending">{PROVISIONAL_HINT}</p>}
@@ -197,7 +204,7 @@ export function DayReconciliationPanel({
           .
         </li>
         <li>
-          Lucro competência − resultado caixa = {money(gapCompCash)}
+          Resultado após desembolso próprio − resultado de caixa = {money(gapCompCash)}
           {finance.bonus ? ` · bônus do dia ${money(finance.bonus)} no lucro final` : ""}.
         </li>
         {depositGap != null && (

@@ -15,8 +15,13 @@ export const FINANCE_LABELS = {
     legacyAliases: ["Entrada de caixa", "Caixa", "Recebido"],
   },
   competenceProfit: {
-    short: "Lucro por competência",
-    formula: "Faturamento (competência) − meu custo próprio. Não deposita sozinho no cofrinho.",
+    short: "Resultado após desembolso próprio",
+    formula: "Faturamento (competência) − desembolso próprio. O custo pago por terceiros fica de fora. Não é depósito no cofrinho.",
+    legacyAliases: ["Lucro por competência", "Lucro pessoal"],
+  },
+  preliminaryEconomicResult: {
+    short: "Resultado econômico preliminar",
+    formula: "Faturamento (competência) − custo próprio − custo de terceiros. Não é depósito no cofrinho.",
     legacyAliases: [],
   },
   cashManagementResult: {
@@ -31,7 +36,7 @@ export const FINANCE_LABELS = {
   },
   piggyDeposit: {
     short: "Depósito no cofrinho",
-    formula: "Transferência efetiva no dia (em geral = resultado gerencial de caixa). Nunca é automática a partir do lucro por competência.",
+    formula: "Transferência efetiva no dia. Não sai automaticamente do resultado após desembolso próprio nem do resultado econômico preliminar.",
     legacyAliases: ["Depósito", "Transferência"],
   },
   piggyBalance: {

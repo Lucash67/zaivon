@@ -2,7 +2,7 @@
 
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useZaivon } from "@/components/zaivon-v2/store";
-import { COFRINHO_TOLERANCE, dayFinance, impliedYield } from "@/lib/zaivon/finance/day";
+import { COFRINHO_TOLERANCE, dayFinance, impliedYield, preliminaryEconomicResult, round2 } from "@/lib/zaivon/finance/day";
 import { monthDays, monthSummary } from "@/lib/zaivon/finance/month";
 import { ddmm } from "@/lib/zaivon/format";
 import { chartAxis, chartTooltip, Kpi, PageHeader, Panel, Pill } from "@/components/zaivon-v2/ui";
@@ -32,6 +32,7 @@ function DinheiroBody() {
       fullDate: d.date,
       provisional: f.competenceStatus === "provisional",
       ...f,
+      economic: preliminaryEconomicResult(f.competenceRevenue, f.ownCost, f.thirdPartyCost),
       cofrinho: d.cofrinhoEnd,
       yield: y,
       ok: y == null ? null : y >= -0.5 && y <= COFRINHO_TOLERANCE,
@@ -99,7 +100,7 @@ function DinheiroBody() {
               </ResponsiveContainer>
             </div>
           </Panel>
-          <Panel title="Movimentações do cofrinho" subtitle={o.vault.gapParts.length ? `Os cinco movimentos permanecem. Diferença não conciliada: ${o.vault.gapParts.map((part) => `${ddmm(part.date)} ${money(part.amount)}`).join(" + ")}. Origem não identificada.` : "Independentes do dia operacional. Uma transferência não é receita."}>
+          <Panel title="Movimentações do cofrinho" subtitle={o.vault.gapParts.length ? `Leitura pelo saldo contábil gravado em cada depósito. Nenhum movimento foi regravado. Diferença não conciliada: ${o.vault.gapParts.map((part) => `${ddmm(part.date)} ${money(part.amount)}`).join(" + ")}. Origem não identificada. Não é depósito, rendimento nem ajuste.` : "Independentes do dia operacional. Uma transferência não é receita."}>
             <div className="min-w-0 max-w-full overflow-x-auto">
               <table className="num w-full min-w-[520px] text-sm">
                 <thead className="text-left text-xs text-o-muted-foreground">
@@ -204,23 +205,29 @@ function DinheiroBody() {
         </TabsContent>
 
         <TabsContent value="custos" className="mt-4 grid min-w-0 grid-cols-1 gap-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <Kpi
               big
               tone="ok"
               label={`${FINANCE_LABELS.cashManagementResult.short} (mês)`}
               value={money(ms.diaryProfit)}
               formula={FINANCE_LABELS.cashManagementResult.formula}
-              explain={`${money(ms.cashIn)} + ${money(ms.bonus)} bônus − ${money(ms.ownCost)}`}
+              explain={`${money(ms.cashIn)} + ${money(ms.bonus)} bônus − ${money(ms.ownCost)}. Não é o depósito do cofrinho.`}
             />
             <Kpi
               label={`${FINANCE_LABELS.competenceProfit.short} (mês)`}
-              value={money(rows.filter((r) => r.competenceStatus !== "provisional").reduce((s, r) => s + r.competenceProfit, 0))}
-              formula="Σ dias com competência confirmada (exclui provisórios)"
-              explain={`Provisórios excluídos: ${rows.filter((r) => r.competenceStatus === "provisional").length} dia(s). Não é depósito automático no cofrinho.`}
+              value={money(round2(rows.filter((r) => r.competenceStatus !== "provisional").reduce((s, r) => s + r.competenceProfit, 0)))}
+              formula="Soma dos dias com competência confirmada. Provisórios ficam de fora."
+              explain={`Provisórios excluídos: ${rows.filter((r) => r.competenceStatus === "provisional").length} dia(s). É faturamento menos desembolso próprio. O custo de terceiros não entra. Não é depósito no cofrinho.`}
             />
-            <Kpi tone="third" label="Meu custo" value={money(ms.ownCost)} />
-            <Kpi tone="third" label="Terceiros" value={money(ms.thirdPartyCost)} explain="Não entra no meu lucro" />
+            <Kpi
+              label={`${FINANCE_LABELS.preliminaryEconomicResult.short} (mês)`}
+              value={money(round2(rows.filter((r) => r.competenceStatus !== "provisional").reduce((s, r) => s + r.economic, 0)))}
+              formula={FINANCE_LABELS.preliminaryEconomicResult.formula}
+              explain="Mesmos dias confirmados do card ao lado, agora também sem o custo de terceiros. Não é depósito no cofrinho."
+            />
+            <Kpi tone="third" label="Meu custo" value={money(ms.ownCost)} explain="Desembolso próprio. Entra nos dois resultados acima." />
+            <Kpi tone="third" label="Terceiros" value={money(ms.thirdPartyCost)} explain="Entra só no resultado econômico preliminar." />
           </div>
           <Panel title="Competência × caixa × custo" subtitle={`Método ZAIVON · 5 dimensões · ${o.plan.label}`}>
             <div className="h-64 min-h-[16rem]">
@@ -235,6 +242,7 @@ function DinheiroBody() {
                   <Bar dataKey="cashIn" name={FINANCE_LABELS.cashIn.short} fill="var(--color-pending)" />
                   <Bar dataKey="ownCost" name="Meu custo" fill="var(--color-third)" />
                   <Bar dataKey="competenceProfit" name={FINANCE_LABELS.competenceProfit.short} fill="var(--color-muted-foreground)" />
+                  <Bar dataKey="economic" name={FINANCE_LABELS.preliminaryEconomicResult.short} fill="var(--color-third)" />
                   <Bar dataKey="profit" name={FINANCE_LABELS.cashManagementResult.short} fill="var(--color-ok)" />
                 </BarChart>
               </ResponsiveContainer>

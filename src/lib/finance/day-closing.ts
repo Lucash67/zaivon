@@ -33,7 +33,7 @@ export interface DayClosingCofrinho {
 export interface DayClosingReconciliation {
   /** Faturamento − caixa = (fiados novos) − (quitações antigas) ± outros. */
   competenceMinusCash: number;
-  /** Lucro competência − resultado caixa (= mesma diferença, se custo próprio igual). */
+  /** Resultado após desembolso próprio − resultado caixa (= mesma diferença, se custo próprio igual). */
   competenceProfitMinusCashResult: number;
   /** Depósito no cofrinho − resultado caixa (deve ser 0 se depositou o gerencial). */
   depositMinusCashResult: number;
@@ -79,7 +79,7 @@ export interface DayClosingFinance {
   competenceRevenue: number;
   /** 2) Caixa. */
   cash: DayClosingCashBreakdown;
-  /** 3) Lucro pessoal por competência = faturamento − meu custo. */
+  /** 3) Resultado após desembolso próprio = faturamento − desembolso próprio. */
   competenceProfit: number;
   /** 4) Resultado gerencial de caixa = caixa − meu custo. */
   cashManagementResult: number;
@@ -199,8 +199,8 @@ export function buildDayClosing(input: {
   const notes: string[] = [
     ...(input.extraNotes ?? []),
     `Faturamento ${input.competenceRevenue} − caixa ${cashIn} = ${competenceMinusCash} (= fiados novos ${input.newCredit} − quitações antigas ${input.priorSettlements}${otherInflows ? ` ± outras ${otherInflows}` : ""}).`,
-    `Lucro competência ${competenceProfit} − resultado caixa ${cashManagementResult} = ${competenceProfitMinusCashResult}.`,
-    `Depósito cofrinho ${input.piggyDeposit} − resultado caixa ${cashManagementResult} = ${depositMinusCashResult} (não há transferência automática do lucro por competência).`,
+    `Resultado após desembolso próprio ${competenceProfit} − resultado caixa ${cashManagementResult} = ${competenceProfitMinusCashResult}.`,
+    `Depósito cofrinho ${input.piggyDeposit} − resultado caixa ${cashManagementResult} = ${depositMinusCashResult} (não há transferência automática do resultado após desembolso próprio).`,
   ];
   if (competenceStatus === "provisional") {
     notes.unshift(

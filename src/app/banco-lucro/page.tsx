@@ -139,7 +139,7 @@ export default function BancoLucroPage() {
       <div className="space-y-6">
         <p className="rounded-xl border border-border/60 bg-surface-2/40 px-3 py-2 text-xs text-text-muted">
           Aqui &quot;lucro&quot; no histórico costuma ser o <strong className="text-text-primary">resultado gerencial de caixa</strong>{" "}
-          do dia (não o lucro por competência). Saldo do cofrinho ≠ depósito automático. Visão diária canônica em{" "}
+          do dia (não o resultado após desembolso próprio). Saldo do cofrinho não é depósito automático. Visão diária canônica em{" "}
           <span className="text-text-primary">/v2/dinheiro</span>.
         </p>
         {scopedDays === 0 ? (
