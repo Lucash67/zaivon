@@ -30,13 +30,13 @@ const DECLARATIONS: Array<{
     id: "joao-lucas-nota-2810",
     person: "João Lucas",
     match: (person) => /jo[aã]o lucas/i.test(person),
-    declaredAmount: 20,
-    source: "Nota 03 de 28/10/2026",
+    declaredAmount: 30,
+    source: "Confirmação de 29/10/2026 mais o fiado novo de 30/10/2026",
     note: (row) => {
       const informed = row.informedNotSaleAmount > 0
-        ? ` Compromissos informados que não são venda: R$ ${row.informedNotSaleAmount.toFixed(2).replace(".", ",")}.`
+        ? ` Há R$ ${brMoney(row.informedNotSaleAmount)} informados que não são venda e ficam fora do saldo.`
         : "";
-      return `O cadastro em aberto soma R$ ${row.liveOpenAmount.toFixed(2).replace(".", ",")}. A referência informada é R$ 20.${informed} A diferença não é cobrança nova.`;
+      return `Saldo ativo confirmado: R$ 30,00. A confirmação anterior era R$ 25,00, sendo R$ 20 anteriores e R$ 5 de 29/10, com promessa em 30/10/2026 e sem pagamento. O fiado de 30/10 soma R$ 5,00, sem outro acréscimo de R$ 25,00. O cadastro em aberto soma R$ ${brMoney(row.liveOpenAmount)}.${informed}`;
     },
   },
   {
@@ -45,30 +45,42 @@ const DECLARATIONS: Array<{
     match: (person) => /^henrique\b/i.test(person),
     declaredAmount: 85,
     source: "Nota 03 de 28/10/2026",
-    note: () =>
-      "Compromisso declarado de R$ 85, ainda sem composição integral. A venda aberta e a confirmação fora da cobrança não são somadas a esse valor. O Pix pessoal de R$ 140 em 28/10 não quita o compromisso.",
+    note: (row) =>
+      `Cobrança encerrada por decisão do responsável. O histórico consolidado é R$ 85, com R$ 15 recebidos e R$ 70 de inadimplência. Desses R$ 70, R$ 20 já estavam baixados no recebível e R$ 50 são a parte histórica sem recebível, sem venda nova e sem saída de caixa. O saldo em aberto na cobrança é R$ ${brMoney(row.liveOpenAmount)}. A confirmação fora da cobrança permanece separada.`,
   },
   {
     id: "mikelly-nota-2710",
-    person: "Mikelly/Michele",
-    match: (person) => /mikelly|michele/i.test(person),
-    declaredAmount: null,
-    source: "Pendência de R$ 2 em 27/10 e baixa de 14/10",
-    note: (row) =>
-      `Cobrável em aberto: R$ ${row.liveOpenAmount.toFixed(2).replace(".", ",")}. A perda de crédito de R$ ${row.lossAmount.toFixed(2).replace(".", ",")} permanece classificada e fora dessa soma. A diferença histórica de R$ 2 continua sem comprovação.`,
+    person: "Mikelly",
+    match: (person) => /mikelly/i.test(person),
+    declaredAmount: 82,
+    source: "WhatsApp de 29/10/2026 mais o fiado novo de 30/10/2026",
+    note: (row) => {
+      const declared = 82;
+      const gap = round2(declared - row.liveOpenAmount);
+      const gapText = gap > 0
+        ? `Ainda faltam R$ ${brMoney(gap)} para o saldo confirmado.`
+        : gap < 0
+          ? `O cadastro supera o declarado em R$ ${brMoney(-gap)} e não foi reduzido.`
+          : "O cadastro em aberto coincide com o declarado.";
+      return `Saldo ativo confirmado: R$ 82,00. A confirmação anterior era R$ 77,00, com promessa em 30/10/2026 e sem pagamento. Esse valor de R$ 77,00 é a cobrança, não um acréscimo sobre ela. O fiado de 30/10 soma R$ 5,00. O cadastro em aberto soma R$ ${brMoney(row.liveOpenAmount)}. ${gapText} Composição provável e não confirmada da base: 11 sanduíches da Acal × R$ 7,00. A perda classificada de R$ ${brMoney(row.lossAmount)} permanece baixada. A diferença histórica de R$ 2 continua sem comprovação.`;
+    },
   },
 ];
+
+function brMoney(value: number): string {
+  return value.toFixed(2).replace(".", ",");
+}
 
 function openAmount(debts: Debt[], match: (person: string) => boolean, status: Debt["status"]): number {
   return round2(
     debts
-      .filter((debt) => debt.status === status && !debt.referenceOnly && match(debt.person))
+      .filter((debt) => debt.status === status && !debt.referenceOnly && !debt.reviewOnly && match(debt.person))
       .reduce((sum, debt) => sum + debt.amount - debt.paid, 0),
   );
 }
 
 export function collectibleTotal(debts: Debt[]): number {
-  return round2(debts.filter((debt) => debt.status === "open" && !debt.referenceOnly).reduce((sum, debt) => sum + debt.amount - debt.paid, 0));
+  return round2(debts.filter((debt) => debt.status === "open" && !debt.referenceOnly && !debt.reviewOnly).reduce((sum, debt) => sum + debt.amount - debt.paid, 0));
 }
 
 export function lossTotal(debts: Debt[]): number {

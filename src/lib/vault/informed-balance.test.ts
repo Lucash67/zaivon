@@ -21,4 +21,13 @@ describe("saldo informado do cofrinho", () => {
     assert.equal(parts.every((part) => part.origin === "nao-identificada"), true);
     assert.equal(Math.round(parts.reduce((sum, part) => sum + part.amount, 0) * 100) / 100, 7.76);
   });
+
+  it("separa os R$ 2,66 de 30/10 do buraco anterior, sem rendimento", () => {
+    const parts = informedGapParts([
+      { date: "2026-10-29", bookAfter: 6073.08, informed: 6083.43 },
+      { date: "2026-10-30", bookAfter: 6183.08, informed: 6196.09 },
+    ]);
+    assert.deepEqual(parts.map((part) => part.amount), [10.35, 2.66]);
+    assert.equal(parts.every((part) => part.origin === "nao-identificada"), true);
+  });
 });

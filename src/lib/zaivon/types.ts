@@ -63,6 +63,9 @@ export interface Debt {
   deferredUntil?: string | undefined;
   /** Compromisso informado que o próprio texto exclui de venda e de cobrança. */
   referenceOnly?: boolean | undefined;
+  /** Histórico fora da carteira confirmada. Continua pendente e pode voltar à cobrança. */
+  reviewOnly?: boolean | undefined;
+  reviewReason?: string | undefined;
 }
 
 export type ClosureStatus = "closed" | "closed_with_note" | "draft" | "summary" | "open";
@@ -224,4 +227,22 @@ export interface ZaivonData {
   vault: VaultSnapshot;
   stockReadings?: StockReading[];
   declaredReferences?: DeclaredDebtReference[];
+  /** Ocorrências sem vínculo. A contagem histórica não é perda confirmada. */
+  unlinkedRegister?: UnlinkedRegister;
+}
+
+export interface UnlinkedOccurrence {
+  id: string;
+  date: string;
+  quantity: number;
+  commercialValue: number | null;
+  summary: string;
+  status: string;
+}
+
+export interface UnlinkedRegister {
+  registeredUnits: number;
+  investigationUnits: number;
+  investigationCommercial: number;
+  occurrences: UnlinkedOccurrence[];
 }

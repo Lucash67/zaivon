@@ -91,6 +91,14 @@ interface ZaivonMeta {
   openingBridges?: unknown[];
   /** Confirmação fora da cobrança. Não é recebível. */
   henriqueConfirmations?: Array<{ amount?: number; receivable?: boolean }>;
+  /** Inadimplência reconhecida no fechamento, sem venda nem saída de caixa. */
+  henriqueDefault2910?: {
+    unbookedDeclared?: number;
+    activeCollection?: boolean;
+    historicalAdjustmentId?: string;
+  };
+  /** Recebíveis históricos fora da carteira confirmada. Não são pagamento nem perda. */
+  collectionReviews?: Array<{ saleId: string; reason: string }>;
 }
 
 const EMPTY_META: ZaivonMeta = { cofrinho: {}, closure: {}, extraSettlements: [], lossSaleIds: [] };
@@ -192,6 +200,8 @@ const COLLECTION_DEFERRED_UNTIL: Record<string, string> = {
 };
 
 function deferredUntilFor(clientName: string): string | undefined {
+  if (/jo[aã]o lucas/i.test(clientName)) return "2026-10-30";
+  if (/mikelly/i.test(clientName)) return "2026-10-30";
   for (const [name, until] of Object.entries(COLLECTION_DEFERRED_UNTIL)) {
     if (clientName === name || clientName.startsWith(name + " ")) return until;
   }
@@ -427,6 +437,7 @@ export async function getZaivonData(requestedMonth?: string): Promise<ZaivonData
   ];
 
   const lost = new Set(meta.lossSaleIds);
+  const reviews = new Map((meta.collectionReviews ?? []).map((item) => [item.saleId, item.reason]));
   const debts: Debt[] = salesData.open.map((s) => {
     const identityPending = (s.notes ?? "").includes(JOAO_LUCAS_TOKEN);
     const informedName = (s.notes ?? "").match(/NOME-INFORMADO:([^|]+)/);
@@ -437,6 +448,7 @@ export async function getZaivonData(requestedMonth?: string): Promise<ZaivonData
         : (s.clientName ?? "Não identificado");
     const type = identityPending || informedName ? "fiado" : debtType(name);
     const person = type === "investigacao" ? "Não identificado" : name;
+    const reviewReason = lost.has(s.id) ? undefined : reviews.get(s.id);
     return {
       id: s.id,
       person,
@@ -447,6 +459,8 @@ export async function getZaivonData(requestedMonth?: string): Promise<ZaivonData
       description: describeItems(salesData.items.get(s.id) ?? []),
       status: lost.has(s.id) ? "loss" : "open",
       deferredUntil: identityPending ? "2026-10-30" : deferredUntilFor(person),
+      reviewOnly: reviewReason ? true : undefined,
+      reviewReason,
     };
   });
   for (const book of meta.provisionalReceivables ?? []) {
@@ -464,6 +478,23 @@ export async function getZaivonData(requestedMonth?: string): Promise<ZaivonData
         status: "open",
         deferredUntil: book.promiseDate,
         referenceOnly: /n[aã]o é venda/i.test(line.description) || undefined,
+      });
+    }
+  }
+  const henriqueDefault = meta.henriqueDefault2910;
+  if (henriqueDefault?.activeCollection === false && henriqueDefault.unbookedDeclared === 50) {
+    const id = henriqueDefault.historicalAdjustmentId ?? "zaivon-2026-10-29-henrique-inadimplencia-historica-50";
+    if (!debts.some((debt) => debt.id === id)) {
+      debts.push({
+        id,
+        person: "Henrique",
+        type: "fiado",
+        originDate: "2026-10-29",
+        amount: 50,
+        paid: 0,
+        description:
+          "INADIMPLENCIA-ENCERRADA. Parcela histórica de R$ 50 sem recebível anterior. Compõe os R$ 70 com os R$ 20 já baixados no fiado. Não é lançamento de venda em 29/10, não é recebimento e não gera saída de caixa.",
+        status: "loss",
       });
     }
   }
@@ -505,7 +536,7 @@ export async function getZaivonData(requestedMonth?: string): Promise<ZaivonData
         newCredit: dc?.newCredit,
         dayClosing: dc,
         snapshotPending: e.revenue.pending,
-        unlinkedUnits: unlinked.get(e.date),
+        unlinkedUnits: unlinked.byDate.get(e.date),
       };
     });
 
@@ -535,6 +566,7 @@ export async function getZaivonData(requestedMonth?: string): Promise<ZaivonData
     availableMonths,
     vault: await loadVaultSnapshot(BUSINESS),
     stockReadings: await loadStockReadings(),
+    unlinkedRegister: unlinked.register,
     declaredReferences: buildDeclaredReferences(
       debts,
       (meta.henriqueConfirmations ?? []).map((item) => ({
@@ -551,7 +583,7 @@ const DAILY_STOCK_IDS = [
   "4da6e5b2-86ad-4f3e-8e71-9492f43f8291",
 ];
 
-async function loadUnlinkedUnits(): Promise<Map<string, number>> {
+async function loadUnlinkedUnits(): Promise<{ byDate: Map<string, number>; register: import("@/lib/zaivon/types").UnlinkedRegister }> {
   const db = await getPostgresDb();
   const rows = await queryAll(
     db
@@ -562,7 +594,40 @@ async function loadUnlinkedUnits(): Promise<Map<string, number>> {
   );
   const totals = new Map<string, number>();
   for (const row of rows) totals.set(row.date, (totals.get(row.date) ?? 0) + row.quantity);
-  return totals;
+  const pendings = await queryAll(
+    db
+      .select({
+        id: operationalPendings.id,
+        date: operationDays.operationDate,
+        quantity: operationalPendings.quantity,
+        potential: operationalPendings.potentialRevenue,
+        description: operationalPendings.description,
+        status: operationalPendings.status,
+      })
+      .from(operationalPendings)
+      .innerJoin(operationDays, eq(operationalPendings.operationDayId, operationDays.id))
+      .where(sql`${operationalPendings.description} ilike '%saida-sem-vinculo%'`),
+  );
+  const occurrences = pendings
+    .map((row) => ({
+      id: row.id,
+      date: row.date,
+      quantity: row.quantity ?? 0,
+      commercialValue: row.potential == null ? null : Number(row.potential),
+      summary: (row.description ?? "").replace(/\s+/g, " ").slice(0, 220),
+      status: row.status,
+    }))
+    .sort((a, b) => b.date.localeCompare(a.date) || a.id.localeCompare(b.id));
+  const open = occurrences.filter((row) => row.status === "open");
+  return {
+    byDate: totals,
+    register: {
+      registeredUnits: rows.reduce((sum, row) => sum + row.quantity, 0),
+      investigationUnits: open.reduce((sum, row) => sum + row.quantity, 0),
+      investigationCommercial: Math.round(open.reduce((sum, row) => sum + (row.commercialValue ?? 0), 0) * 100) / 100,
+      occurrences,
+    },
+  };
 }
 
 async function loadStockReadings(): Promise<StockReading[]> {

@@ -124,6 +124,9 @@ export interface DayClosingFinance {
       final: number;
       status: "ok" | "pending" | "diverged";
       note?: string;
+      creditUnits?: number;
+      ownConsumption?: number;
+      unlinkedUnits?: number;
     };
     sandwiches?: {
       initial: number;
@@ -132,6 +135,19 @@ export interface DayClosingFinance {
       counted: number;
       status: "ok" | "pending" | "diverged";
       note?: string;
+    };
+    /** Exposição comercial em investigação. Não é perda confirmada nem cobrança. */
+    unlinked?: {
+      commercialTotal: number;
+      confirmedLoss: false;
+      items: Array<{
+        id: string;
+        kind: "salgado" | "sanduiche";
+        quantity: number;
+        commercialValue: number;
+        note: string;
+        chargeAuthorized: false;
+      }>;
     };
   };
 }

@@ -78,7 +78,7 @@ describe("fechamento de 28/10 permanece separado", () => {
     assert.equal(collectibleTotal(debts.filter((item) => /mikelly/i.test(item.person))), 33);
     const rows = buildDeclaredReferences(debts, [{ person: "Henrique", amount: 22, receivable: false }]);
     assert.equal(rows.find((row) => row.person === "João Lucas")?.liveOpenAmount, 10);
-    assert.equal(rows.find((row) => row.person === "João Lucas")?.declaredAmount, 20);
+    assert.equal(rows.find((row) => row.person === "João Lucas")?.declaredAmount, 30);
     assert.equal(rows.find((row) => row.person === "Henrique")?.liveOpenAmount, 35);
     assert.equal(rows.find((row) => row.person === "Henrique")?.nonReceivableAmount, 22);
     assert.equal(rows.find((row) => row.person === "Henrique")?.declaredAmount, 85);

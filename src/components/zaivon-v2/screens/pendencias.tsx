@@ -32,7 +32,8 @@ function PendenciasBody() {
   const [amount, setAmount] = useState("");
   const [paidDate, setPaidDate] = useState(o.today);
   const rec = recovery(o.debts);
-  const open = o.debts.filter((d) => d.status === "open" && !d.referenceOnly && (filter === "all" || d.type === filter));
+  const open = o.debts.filter((d) => d.status === "open" && !d.referenceOnly && !d.reviewOnly && (filter === "all" || d.type === filter));
+  const reviews = o.debts.filter((d) => d.reviewOnly);
   const groups = Array.from(new Set(open.map((d) => d.person)))
     .map((person) => {
       const items = open.filter((d) => d.person === person).sort((a, b) => a.originDate.localeCompare(b.originDate));
@@ -89,6 +90,22 @@ function PendenciasBody() {
             ))}
             <p className="text-xs text-o-muted-foreground">Os 14 salgados pagos na Unifor em 28/10 continuam sem pagadores individualizados.</p>
           </div>
+        </Panel>
+      )}
+
+      {reviews.length > 0 && (
+        <Panel title="Divergências em conferência" subtitle="Fora da carteira confirmada. Não são pagamento nem perda, e a separação pode ser desfeita." className="mt-4">
+          <ul className="grid gap-2">
+            {reviews.map((debt) => (
+              <li key={debt.id} className="rounded-lg bg-o-surface px-3 py-2 text-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <span>{debt.person} · {ddmm(debt.originDate)}</span>
+                  <span className="num">{money(debt.amount - debt.paid)}</span>
+                </div>
+                {debt.reviewReason && <p className="mt-1 text-xs text-o-muted-foreground">{debt.reviewReason}</p>}
+              </li>
+            ))}
+          </ul>
         </Panel>
       )}
 

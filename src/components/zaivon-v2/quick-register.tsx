@@ -30,9 +30,9 @@ export function QuickRegisterForm({ initial = "venda", onDone }: { initial?: Kin
   const p = ZAIVON_PRODUCTS.find((x) => x.id === product)!;
   const unit = p.prices[channel] ?? p.prices.default;
   const units = Math.max(0, Math.round(Number(qty) || 0));
-  const people = Array.from(new Set(o.debts.filter((d) => d.status === "open" && d.type !== "investigacao").map((d) => d.person))).sort();
+  const people = Array.from(new Set(o.debts.filter((d) => d.status === "open" && !d.reviewOnly && d.type !== "investigacao").map((d) => d.person))).sort();
   const openOf = (name: string) =>
-    o.debts.filter((d) => d.status === "open" && d.person === name).reduce((s, d) => s + d.amount - d.paid, 0);
+    o.debts.filter((d) => d.status === "open" && !d.reviewOnly && d.person === name).reduce((s, d) => s + d.amount - d.paid, 0);
 
   const done = (title: string, description: string) => {
     toast.success(title, { description });
